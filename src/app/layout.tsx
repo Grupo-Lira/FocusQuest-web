@@ -5,7 +5,7 @@ import "./globals.css";
 const orbitron = Orbitron({
   subsets: ["latin"],
   variable: "--font-orbitron",
-  weight: ["600"]
+  weight: ["600"],
 });
 
 const poppins = Poppins({

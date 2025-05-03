@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "depcheck": "^1.4.7",
     "next": "15.2.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -20,8 +21,9 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "eslint": "^9",
+    "eslint": "^9.26.0",
     "eslint-config-next": "15.2.4",
+    "eslint-config-prettier": "^10.1.2",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
