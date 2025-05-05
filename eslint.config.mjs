@@ -23,7 +23,6 @@ const eslintConfig = [
       "prefer-arrow-callback": ["error"],
       "prefer-template": ["error"],
       "no-console": ["warn"],
-      "max-len": ["warn", { code:90}],
       "react-hooks/exhaustive-deps": "off",
       "react/jsx-filename-extension": "off",
       "no-console": "off",
