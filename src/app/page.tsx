@@ -3,6 +3,7 @@ import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { InputPassword } from "@/components/InputPassword";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -24,12 +25,12 @@ export default function Home() {
           <div className="flex flex-col items-center">
             <p>
               Ainda não possui uma conta?{" "}
-              <a className="text-[var(--primary)] font-bold">Crie uma</a>
+              <Link className="text-[var(--primary)] font-bold" href="/signin/">Crie uma</Link>
             </p>
             <a className="text-[var(--primary)] font-bold">Esqueci minha senha</a>
           </div>
         </div>
-        <Button />
+        <Button text="Login" href="/apresentation"/>
         <div className="flex items-center justify-center w-full">
           <hr className="flex-grow border-t border-gray-300" />
           <span className="mx-5">ou</span>
