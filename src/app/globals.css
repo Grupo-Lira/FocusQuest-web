@@ -1,21 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --white: #ffffff;
+  --white: #fff;
   --text: #3b3b3b;
   --primary: #ff7b00;
-  --font-sans: "Geist Sans", sans-serif;
-  --font-mono: "Geist Mono", monospace;
+  --font-orbitron: 'Orbitron', sans-serif;
+  --font-poppins: 'Poppins', sans-serif;
+  --input-bg: #EEE;
+  --input-color: #ACACAC
 }
 
 @theme inline {
   --white: #ffffff;
   --text: #3b3b3b;
   --primary: #ff7b00;
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-mono);
+  --input-bg: #EEE;
+  --input-color: #ACACAC
 }
 
+.font-orbitron {
+  font-family: var(--font-orbitron);
+}
 
 body {
   background-image: url("/img/background.png");
@@ -25,4 +30,8 @@ body {
   min-height: 100vh;
   color: var(--foreground);
   font-family: var(--font-poppins);
+}
+
+.button-glow:hover{
+  filter: drop-shadow(0 0 10px var(--primary))
 }
