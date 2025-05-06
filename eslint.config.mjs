@@ -40,7 +40,6 @@ const eslintConfig = [
       "@typescript-eslint/no-use-before-define": ["error"],
       "@typescript-eslint/no-unused-vars": "error",
       "react/no-array-index-key": "error",
-      "react/require-default-props": "error",
       "no-shadow": "error",
     },
   }),
