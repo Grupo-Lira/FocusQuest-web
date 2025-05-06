@@ -25,12 +25,14 @@ export default function Home() {
           <div className="flex flex-col items-center">
             <p>
               Ainda não possui uma conta?{" "}
-              <Link className="text-[var(--primary)] font-bold" href="/signin/">Crie uma</Link>
+              <Link className="text-[var(--primary)] font-bold" href="/signin/">
+                Crie uma
+              </Link>
             </p>
             <a className="text-[var(--primary)] font-bold">Esqueci minha senha</a>
           </div>
         </div>
-        <Button text="Login" href="/apresentation"/>
+        <Button text="Login" onClick={() => (window.location.href = "/apresentation")} />
         <div className="flex items-center justify-center w-full">
           <hr className="flex-grow border-t border-gray-300" />
           <span className="mx-5">ou</span>

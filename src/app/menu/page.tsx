@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Image from "next/image";
+import Link from "next/link";
 const levels = [
   {
     id: 1,
@@ -7,6 +8,7 @@ const levels = [
     position: { top: "28%", left: "10%" },
     positionNumber: { top: "70%", left: "15%" },
     disabled: false,
+    href: "/fase/1"
   },
   {
     id: 2,
@@ -14,6 +16,7 @@ const levels = [
     position: { top: "60%", left: "40%" },
     positionNumber: { top: "40%", left: "47%" },
     disabled: true,
+    href: "/fase/2"
   },
   {
     id: 3,
@@ -21,6 +24,7 @@ const levels = [
     position: { top: "20%", left: "75%" },
     positionNumber: { top: "65%", left: "83%" },
     disabled: true,
+    href: "/fase/3"
   },
 ];
 
@@ -31,7 +35,7 @@ export default function MenuPage() {
         <Navbar />
       </div>
       {levels.map((level) => (
-        <div key={level.id}>
+        <Link key={level.id} href={level.href}>
           <Image
             src={level.image}
             width={400}
@@ -63,7 +67,7 @@ export default function MenuPage() {
               {level.id}
             </p>
           </div>
-        </div>
+        </Link>
       ))}
     </div>
   );
