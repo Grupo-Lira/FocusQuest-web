@@ -1,3 +1,4 @@
+import Navbar from "@/components/Navbar";
 import Image from "next/image";
 const levels = [
   {
@@ -25,7 +26,10 @@ const levels = [
 
 export default function MenuPage() {
   return (
-    <div className="relative w-full h-screen  overflow-hidden">
+    <div className="relative w-full h-screen overflow-hidden ">
+      <div className="flex justify-center mt-6">
+        <Navbar />
+      </div>
       {levels.map((level) => (
         <div key={level.id}>
           <Image
@@ -36,7 +40,6 @@ export default function MenuPage() {
             className="absolute transition-transform duration-300"
             style={level.position}
           />
-          {/*background transparente*/}
           <div
             className={`absolute w-28 h-28 border-4 ${
               level.disabled

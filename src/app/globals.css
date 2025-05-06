@@ -35,3 +35,12 @@ body {
 .button-glow:hover{
   filter: drop-shadow(0 0 10px var(--primary))
 }
+
+.inner-shadow {
+  box-shadow: inset 2px 5px 4px rgba(0, 0, 0, 0.25);
+}
+
+.button-3d{
+  box-shadow: inset 5px 6px 4px rgba(255, 255, 255, 0.15),
+              0 4px 4px rgba(0, 0, 0, 0.25);
+}
