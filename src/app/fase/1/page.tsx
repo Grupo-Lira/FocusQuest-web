@@ -3,10 +3,12 @@ import { useEffect, useState } from "react";
 import NavbarGame from "@/components/NavbarGame";
 import Thermometer from "@/components/Thermometer";
 import Star from "@/components/Star";
+import { useGameContext } from "@/context/GameContext";
 
 export default function Fase1() {
   const [stars, setStars] = useState<{ top: number; left: number; id: number }[]>([]);
-    const [level, setLevel] = useState(0); 
+  const [level, setLevel] = useState(0);
+  const {hits, setHits, errors, setErrors } = useGameContext();
 
   const randomizeStart = (): void => {
     const numStars = 5;
@@ -48,10 +50,12 @@ export default function Fase1() {
 
   const handleHit = (id: number) => {
     setLevel((l) => Math.min(l + 20, 100)); // aumenta 10%
+    setHits(hits + 1);
     handleRemove(id);
   };
 
   const handleError = () => {
+    setErrors(errors + 1);
     setLevel((l) => Math.max(l - 15, 0)); // diminui 5%
   };
 

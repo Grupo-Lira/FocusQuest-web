@@ -1,21 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useGameContext } from "@/context/GameContext";
 
 export default function NavbarGame() {
-  const [isPaused, setIsPaused] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(60); // 1 minuto = 60s
-
-  useEffect(() => {
-    if (isPaused || timeLeft <= 0) return;
-
-    const interval = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [isPaused, timeLeft]);
+  const {
+    timeLeft,
+    setIsPaused,
+    isPaused,
+  } = useGameContext();
 
   // Formatador de MM:SS
   const formatTime = (seconds: number) => {
