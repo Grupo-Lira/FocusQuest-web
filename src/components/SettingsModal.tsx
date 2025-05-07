@@ -53,7 +53,7 @@ export default function SettingsModal({isInitialGame = false, isStoppedGame = fa
             <div className="flex gap-4">
               <Button
                 text="Voltar ao jogo"
-                onClick={() => (window.location.href = "/fase1")}
+                onClick={onClick}
               />
               <Button text="Sair" onClick={() => (window.location.href = "/menu")} />
             </div>

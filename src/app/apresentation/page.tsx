@@ -7,7 +7,6 @@ import { useState } from "react";
 export default function ApresentationPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-
   return (
     <div className="flex items-center justify-center min-h-screen">
       {!isModalOpen && (
