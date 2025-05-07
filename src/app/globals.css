@@ -36,6 +36,10 @@ body {
   filter: drop-shadow(0 0 10px var(--primary))
 }
 
+.glow{
+  filter: drop-shadow(0 0 10px var(--primary))
+}
+
 .inner-shadow {
   box-shadow: inset 2px 5px 4px rgba(0, 0, 0, 0.25);
 }
@@ -51,4 +55,12 @@ body {
   background-position: center;
   background-repeat: no-repeat;
   min-height: 100vh;
+}
+
+.thermometer-img {
+  background-image: url("/img/thermometer.svg");
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 497px;
+  width: 100%;
 }
