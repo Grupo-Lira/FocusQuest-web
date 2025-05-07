@@ -7,6 +7,7 @@ import SettingsModal from "@/components/SettingsModal";
 import { useEffect, useState } from "react";
 import { Bolt } from "lucide-react";
 import { useGameContext } from "@/context/GameContext";
+import { AnimatedElement } from "@/components/AnimatedElement";
 
 export default function GameScreen() {
   const { stars, level, handleHit, handleError } = useGameLogic();
@@ -51,14 +52,25 @@ export default function GameScreen() {
               />
             ))}
           </div>
+
+          <div className="h-screen w-screen relative">
+            <AnimatedElement
+              src="/img/nave.png"
+              initial={{ x: "100%", y: "0%" }}
+              animate={{ x: "1100%", y: "-500%" }}
+            />
+          </div>
         </div>
       )}
       {isModalOpen && (
         <div className="flex items-center justify-center min-h-screen">
-          <SettingsModal isStoppedGame={true} onClick={() => {
-            setIsModalOpen(false);
-            setIsPaused(false);
-            }} />
+          <SettingsModal
+            isStoppedGame={true}
+            onClick={() => {
+              setIsModalOpen(false);
+              setIsPaused(false);
+            }}
+          />
         </div>
       )}
     </>
