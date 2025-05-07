@@ -16,7 +16,7 @@ export default function SettingsModal({isInitialGame = false, isStoppedGame = fa
     <div className="bg-[var(--white)] px-[4.5rem] py-12 rounded-4xl flex flex-col gap-4 items-center">
       <p className="text-4xl text-[var(--primary)] font-orbitron">Configurações</p>
       <div className="flex flex-col gap-4">
-        <div>
+        <div className="flex flex-col items-center">
           <div className="flex items-center gap-4 mb-4">
             <Image src="/img/music.svg" height={40} width={40} alt="Icone de música" />
             <input
@@ -54,6 +54,7 @@ export default function SettingsModal({isInitialGame = false, isStoppedGame = fa
               <Button
                 text="Voltar ao jogo"
                 onClick={onClick}
+                className="px-1.5 py-2.5"
               />
               <Button text="Sair" onClick={() => (window.location.href = "/menu")} />
             </div>
