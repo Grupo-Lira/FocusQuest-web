@@ -10,21 +10,32 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [errors, setErrors] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
+  const [isGameActive, setIsGameActive] = useState(false);
 
   useEffect(() => {
-      if (isPaused || timeLeft <= 0) return;
-  
-      const interval = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
-  
-      return () => clearInterval(interval);
-    }, [isPaused, timeLeft]);
-  
+    if (!isGameActive || isPaused || timeLeft <= 0) return;
+
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isGameActive, isPaused, timeLeft]);
 
   return (
     <GameContext.Provider
-      value={{ hits, errors, timeLeft, setHits, setErrors, setTimeLeft, setIsPaused, isPaused }}
+      value={{
+        hits,
+        errors,
+        timeLeft,
+        setHits,
+        setErrors,
+        setTimeLeft,
+        setIsPaused,
+        isPaused,
+        isGameActive,
+        setIsGameActive,
+      }}
     >
       {children}
     </GameContext.Provider>

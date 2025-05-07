@@ -4,14 +4,21 @@ import Thermometer from "@/components/Thermometer";
 import Star from "@/components/Star";
 import { useGameLogic } from "./useGameLogic";
 import SettingsModal from "@/components/SettingsModal";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Bolt } from "lucide-react";
 import { useGameContext } from "@/context/GameContext";
 
 export default function GameScreen() {
   const { stars, level, handleHit, handleError } = useGameLogic();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { setIsPaused } = useGameContext();
+  const { setIsPaused, setIsGameActive } = useGameContext();
+
+  useEffect(() => {
+    setIsGameActive(true);
+    return () => {  
+      setIsGameActive(false);
+    };
+  }, [setIsGameActive]);
 
   return (
     <>
