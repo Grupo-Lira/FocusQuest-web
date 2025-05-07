@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useGameContext } from "@/context/GameContext";
+import { formatTime } from "@/utils/formatTime";
 
 export default function NavbarGame() {
   const {
@@ -9,15 +10,6 @@ export default function NavbarGame() {
     setIsPaused,
     isPaused,
   } = useGameContext();
-
-  // Formatador de MM:SS
-  const formatTime = (seconds: number) => {
-    const min = Math.floor(seconds / 60)
-      .toString()
-      .padStart(2, "0");
-    const sec = (seconds % 60).toString().padStart(2, "0");
-    return `${min}:${sec}`;
-  };
 
   return (
     <div className="bg-[var(--white)] px-6 py-3 flex w-fit rounded-full gap-40">
