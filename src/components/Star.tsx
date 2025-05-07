@@ -60,28 +60,15 @@ export default function Star({
     >
       {hovering && (
         <div
-          className="absolute z-0 bg-[#FFDDBD] opacity-30 rounded-full"
+          className="absolute z-0 bg-[#FFDDBD] opacity-30 rounded-full star-hover"
           style={{
             width: 80,
             height: 80,
             top: "-20px",
             left: "-20px",
             transform: "scale(0.2)",
-            animation: "grow 3s linear forwards",
-            transformOrigin: "center",
           }}
-        >
-          <style jsx>{`
-            @keyframes grow {
-              0% {
-                transform: scale(0);
-              }
-              100% {
-                transform: scale(1);
-              }
-            }
-          `}</style>
-        </div>
+        />
       )}
 
       <Image

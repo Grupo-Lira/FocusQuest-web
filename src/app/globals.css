@@ -64,3 +64,17 @@ body {
   min-height: 497px;
   width: 100%;
 }
+
+@keyframes grow {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.star-hover {
+  animation: grow 3s linear forwards;
+  transform-origin: center;
+}
