@@ -78,3 +78,25 @@ body {
   animation: grow 3s linear forwards;
   transform-origin: center;
 }
+
+.et {
+  background-image: url("/img/distracoes/et.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 11rem
+}
+
+.nave{
+   background-image: url("/img/distracoes/nave.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 10rem
+}
+
+.meteoro{
+   background-image: url("/img/distracoes/meteoro.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 25rem
+}
+

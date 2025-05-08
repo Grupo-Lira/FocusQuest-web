@@ -4,22 +4,93 @@ import Thermometer from "@/components/Thermometer";
 import Star from "@/components/Star";
 import { useGameLogic } from "./useGameLogic";
 import SettingsModal from "@/components/SettingsModal";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Bolt } from "lucide-react";
 import { useGameContext } from "@/context/GameContext";
-import { AnimatedElement } from "@/components/AnimatedElement";
+import { createTimeline } from "animejs";
 
 export default function GameScreen() {
   const { stars, level, handleHit, handleError } = useGameLogic();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { setIsPaused, setIsGameActive } = useGameContext();
 
+  const etRef = useRef<HTMLDivElement>(null);
+  const naveRef = useRef<HTMLDivElement>(null);
+  const meteoroRef = useRef<HTMLDivElement>(null);
+  const meteoroetRef = useRef<HTMLDivElement>(null);
+  const ovniRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     setIsGameActive(true);
-    return () => {  
+    return () => {
       setIsGameActive(false);
     };
   }, [setIsGameActive]);
+
+  useEffect(() => {
+    if (
+      !etRef.current ||
+      !naveRef.current ||
+      !meteoroRef.current ||
+      !meteoroetRef.current ||
+      !ovniRef.current
+    )
+      return;
+
+    const tl = createTimeline({
+      defaults: {
+        duration: 10000,
+      },
+      loop: true,
+    });
+
+    tl.label("start")
+      // ET vai e volta horizontalmente
+      .add(".et",
+        {
+          translateX: ["0vw", "100vw"],
+          direction: "alternate",
+        },
+        "start"
+      )
+
+      // Nave entra e sai
+      .add(".nave",
+        {
+          translateX: ["-10vw", "110vw"],
+          opacity: [0, 1, 1, 0],
+        },
+        "start+=1000"
+      )
+
+      // Meteoro entra e sai ao contrário
+      .add(".meteoro",
+        {
+          translateX: ["110vw", "-10vw"],
+          opacity: [0, 1, 1, 0],
+        },
+        "start+=2000"
+      )
+
+      // OVNI passeando
+      .add(".ovni",
+        {
+          translateX: ["0vw", "30vw", "60vw", "90vw", "0vw"],
+          translateY: ["0vh", "20vh", "10vh", "30vh", "0vh"],
+        },
+        "start+=2500"
+      )
+
+      // MeteoroET diagonal
+      .add(".meteoroet",
+        {
+          translateX: ["100vw", "-30vw"],
+          translateY: ["0vh", "80vh"],
+          opacity: [0, 1, 1, 0],
+        },
+        "start+=3000"
+      );
+  }, []);
 
   return (
     <>
@@ -53,15 +124,16 @@ export default function GameScreen() {
             ))}
           </div>
 
-          <div className="h-screen w-screen relative">
-            <AnimatedElement
-              src="/img/nave.png"
-              initial={{ x: "100%", y: "0%" }}
-              animate={{ x: "1100%", y: "-500%" }}
-            />
+          <div className="h-screen w-screen relative pointer-events-none">
+            <div ref={etRef} className="et absolute" />
+            <div ref={naveRef} className="nave absolute" />
+            <div ref={meteoroRef} className="meteoro absolute" />
+            <div ref={meteoroetRef} className="meteoroet absolute" />
+            <div ref={ovniRef} className="ovni absolute" />
           </div>
         </div>
       )}
+
       {isModalOpen && (
         <div className="flex items-center justify-center min-h-screen">
           <SettingsModal
