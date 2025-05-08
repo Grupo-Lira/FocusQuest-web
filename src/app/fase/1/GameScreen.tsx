@@ -28,7 +28,7 @@ export default function GameScreen() {
           <div className="flex justify-center mt-6">
             <NavbarGame />
           </div>
-          <div className="absolute top-44 ml-6">
+          <div className="absolute top-44 ml-6 z-20">
             <Thermometer level={level} />
           </div>
           <div
@@ -55,9 +55,36 @@ export default function GameScreen() {
 
           <div className="h-screen w-screen relative">
             <AnimatedElement
-              src="/img/nave.png"
-              initial={{ x: "100%", y: "0%" }}
-              animate={{ x: "1100%", y: "-500%" }}
+              src="/img/distracoes/nave.png"
+              initial={{ x: "0%", y: "0%" }}
+              animate={{ x: "100vw", y: "-100vh" }}
+              duration={5}
+            />
+            <AnimatedElement
+              src="/img/distracoes/meteoro.png"
+              initial={{ x: "100vw", y: "-100vh" }}
+              animate={{ x: "0vw", y: "-30vh" }}
+              duration={3}
+            />
+            <AnimatedElement
+              src="/img/distracoes/meteoroet.png"
+              initial={{ x: "0vw", y: "-150vh" }}
+              animate={{ x: "100vw", y: "-80vh" }}
+              duration={2}
+            />
+            <AnimatedElement
+              src="/img/distracoes/ovni.png"
+              initial={{ x: "0vw", y: "-130vh" }}
+              animate={{ x: "100vw", y: "-130vh" }}
+              duration={5}
+              repeatType="reverse"
+            />
+            <AnimatedElement
+              src="/img/distracoes/et.png"
+              initial={{ x: "30vw", y: "-130vh" }}
+              animate={{ x: "60vw", y: "-130vh" }}
+              duration={2}
+              repeatType="reverse"
             />
           </div>
         </div>

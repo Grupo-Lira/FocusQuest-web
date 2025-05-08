@@ -1,7 +1,15 @@
 "use client";
 import { motion } from "framer-motion";
 
-export const AnimatedElement = ({ src, initial, animate }: { src: string, initial: { x: string, y: string }, animate: { x: string, y: string } }) => {
+interface AnimatedElementProps {
+    src: string;
+    initial: { x: string; y: string };
+    animate: { x: string; y: string };
+    duration: number;
+    repeatType?: "loop" | "reverse" | "mirror";
+}
+
+export const AnimatedElement = ({ src, initial, animate, duration, repeatType }: AnimatedElementProps) => {
 
     return (
         <motion.img
@@ -9,7 +17,7 @@ export const AnimatedElement = ({ src, initial, animate }: { src: string, initia
             alt="Elemento"
             initial={initial}
             animate={animate}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            transition={{ duration: duration, repeat: Infinity, ease: "linear", repeatType: repeatType, }}
         />
     );
 };
