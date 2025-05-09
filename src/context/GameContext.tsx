@@ -11,6 +11,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isPaused, setIsPaused] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
   const [isGameActive, setIsGameActive] = useState(false);
+  const [audioGameStarted, setAudioGameStarted] = useState(false);
 
   useEffect(() => {
     if (!isGameActive || isPaused || timeLeft <= 0) return;
@@ -35,6 +36,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isPaused,
         isGameActive,
         setIsGameActive,
+        audioGameStarted,
+        setAudioGameStarted,
       }}
     >
       {children}
