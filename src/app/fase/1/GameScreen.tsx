@@ -7,7 +7,7 @@ import SettingsModal from "@/components/SettingsModal";
 import { useEffect, useState } from "react";
 import { Bolt } from "lucide-react";
 import { useGameContext } from "@/context/GameContext";
-import { AnimatedElement } from "@/components/AnimatedElement";
+import { AnimatedElement } from "@/components/AnimatedElements/AnimatedElement";
 import { Button } from "@/components/Button";
 
 const animatedElements = [
@@ -55,8 +55,14 @@ const gameAudio = typeof window !== "undefined" ? new Audio("/audio/fase1.mp3") 
 export default function GameScreen() {
   const { stars, level, handleHit, handleError } = useGameLogic();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { setIsPaused, setIsGameActive, audioGameStarted, setAudioGameStarted, isGameActive } =
-    useGameContext();
+  const {
+    isPaused,
+    setIsPaused,
+    setIsGameActive,
+    audioGameStarted,
+    setAudioGameStarted,
+    isGameActive,
+  } = useGameContext();
 
   const handleStartGame = () => {
     setIsGameActive(true);
@@ -133,14 +139,13 @@ export default function GameScreen() {
           {/* Elementos animados */}
           <div className="h-screen w-screen relative">
             {isGameActive &&
-              animatedElements.map((item: typeof animatedElements[number]) => (
+              animatedElements.map((item: (typeof animatedElements)[number]) => (
                 <AnimatedElement
                   key={item.id}
+                  id={item.id}
                   src={item.src}
-                  initial={item.initial}
-                  animate={item.animate}
                   duration={item.duration}
-                  repeatType={item.repeatType}
+                  isPaused={isPaused}
                 />
               ))}
           </div>

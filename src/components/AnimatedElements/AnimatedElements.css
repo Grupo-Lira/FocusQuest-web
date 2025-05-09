@@ -1,0 +1,57 @@
+@keyframes nave-animation {
+  from {
+    transform: translate(0%, 0%);
+  }
+  to {
+    transform: translate(100vw, -100vh);
+  }
+}
+
+@keyframes meteoro-animation {
+  from {
+    transform: translate(100vw, -100vh);
+  }
+  to {
+    transform: translate(0vw, -30vh);
+  }
+}
+
+@keyframes meteoroet-animation {
+  from {
+    transform: translate(0vw, -90vh);
+  }
+  to {
+    transform: translate(100vw, 0vh);
+  }
+}
+
+@keyframes ovni-animation {
+  0% {
+    transform: translate(0vw, -50vh);
+  }
+  100% {
+    transform: translate(100vw, -40vh);
+  }
+}
+
+@keyframes et-animation {
+  0% {
+    transform: translate(30vw, -10vh);
+  }
+  50% {
+    transform: translate(50vw, 5vh);
+  }
+  100% {
+    transform: translate(60vw, -10vh);
+  }
+}
+
+/* Classes dinâmicas */
+.animated-element {
+  position: absolute;
+  will-change: transform;
+}
+
+.paused {
+  animation-play-state: paused !important;
+}
