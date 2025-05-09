@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { Bolt } from "lucide-react";
 import { useGameContext } from "@/context/GameContext";
 import { AnimatedElement } from "@/components/AnimatedElement";
+import { Button } from "@/components/Button";
 
 const animatedElements = [
   {
@@ -49,38 +50,74 @@ const animatedElements = [
   },
 ];
 
+const gameAudio = typeof window !== "undefined" ? new Audio("/audio/fase1.mp3") : null;
+
 export default function GameScreen() {
   const { stars, level, handleHit, handleError } = useGameLogic();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { setIsPaused, setIsGameActive } = useGameContext();
+  const { setIsPaused, setIsGameActive, audioGameStarted, setAudioGameStarted, isGameActive } =
+    useGameContext();
+
+  const handleStartGame = () => {
+    setIsGameActive(true);
+    setAudioGameStarted(true);
+
+    if (gameAudio) {
+      gameAudio.loop = true;
+      gameAudio.play().catch((e) => {
+        console.warn("Falha ao tocar o áudio automaticamente:", e);
+      });
+    }
+  };
 
   useEffect(() => {
-    setIsGameActive(true);
-    return () => {  
+    if (!audioGameStarted) return;
+
+    return () => {
       setIsGameActive(false);
+      if (gameAudio) {
+        gameAudio.pause();
+        gameAudio.currentTime = 0;
+      }
     };
-  }, [setIsGameActive]);
+  }, [audioGameStarted, setAudioGameStarted]);
 
   return (
     <>
-      {!isModalOpen && (
+      {!isModalOpen ? (
         <div className="fase1 relative w-full h-screen overflow-hidden">
+          {/* Navbar */}
           <div className="flex justify-center mt-6">
             <NavbarGame />
           </div>
+
+          {/* Termômetro */}
           <div className="absolute top-44 ml-6 z-20">
             <Thermometer level={level} />
           </div>
+
+          {/* Botão para iniciar o jogo com fundo escuro */}
+          {!audioGameStarted && (
+            <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
+              <Button text="Clique para iniciar o jogo" onClick={handleStartGame} />
+            </div>
+          )}
+
+          {/* Botão para abrir configurações */}
           <div
             className="bg-[var(--primary)] w-11 h-11 rounded-full absolute flex items-center justify-center button-glow transition-all duration-300 top-9 right-9"
             onClick={() => {
               setIsModalOpen(true);
               setIsPaused(true);
+              if (gameAudio) {
+                gameAudio.pause();
+              }
             }}
           >
             <Bolt color="white" />
           </div>
 
+          {/* Estrelas */}
           <div className="h-[70%] w-screen ml-32 relative">
             {stars.map((star) => (
               <Star
@@ -93,27 +130,31 @@ export default function GameScreen() {
             ))}
           </div>
 
+          {/* Elementos animados */}
           <div className="h-screen w-screen relative">
-            {animatedElements.map((item) => (
-              <AnimatedElement
-                key={item.id}
-                src={item.src}
-                initial={item.initial}
-                animate={item.animate}
-                duration={item.duration}
-                repeatType={item.repeatType}
-              />
-            ))}
+            {isGameActive &&
+              animatedElements.map((item: typeof animatedElements[number]) => (
+                <AnimatedElement
+                  key={item.id}
+                  src={item.src}
+                  initial={item.initial}
+                  animate={item.animate}
+                  duration={item.duration}
+                  repeatType={item.repeatType}
+                />
+              ))}
           </div>
         </div>
-      )}
-      {isModalOpen && (
+      ) : (
         <div className="flex items-center justify-center min-h-screen">
           <SettingsModal
             isStoppedGame={true}
             onClick={() => {
               setIsModalOpen(false);
               setIsPaused(false);
+              if (gameAudio) {
+                gameAudio.play();
+              }
             }}
           />
         </div>
