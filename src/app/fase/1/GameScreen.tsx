@@ -12,10 +12,12 @@ import { Button } from "@/components/Button";
 import { useGameLogic } from "./useGameLogic";
 import { animatedElements } from "@/config/gameConfig";
 import { useGameAudio } from "@/hooks/useGameAudio";
+import TimeOut from "@/components/TimeOut";
 
 export default function GameScreen() {
   const { stars, level, handleHit, handleError } = useGameLogic();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isTimeUpModalOpen, setIsTimeUpModalOpen] = useState(false);
   const {
     isPaused,
     setIsPaused,
@@ -23,6 +25,7 @@ export default function GameScreen() {
     audioGameStarted,
     setAudioGameStarted,
     isGameActive,
+    timeLeft,
   } = useGameContext();
 
   const { startAudio, pauseAudio } = useGameAudio();
@@ -37,6 +40,14 @@ export default function GameScreen() {
     if (!audioGameStarted) return;
     void (isPaused ? pauseAudio() : startAudio());
   }, [isPaused, audioGameStarted]);
+
+  useEffect(() => {
+    if (timeLeft === 0) {
+      setIsTimeUpModalOpen(true);
+      setIsPaused(true);
+      pauseAudio();
+    }
+  }, [timeLeft]);
 
   return (
     <>
@@ -53,6 +64,12 @@ export default function GameScreen() {
           {!audioGameStarted && (
             <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
               <Button text="Clique para iniciar o jogo" onClick={handleStartGame} />
+            </div>
+          )}
+
+          {isTimeUpModalOpen && (
+            <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
+              <TimeOut />
             </div>
           )}
 
@@ -93,16 +110,18 @@ export default function GameScreen() {
           </div>
         </div>
       ) : (
-        <div className="flex items-center justify-center min-h-screen">
-          <SettingsModal
-            isStoppedGame={true}
-            onClick={() => {
-              setIsModalOpen(false);
-              setIsPaused(false);
-              startAudio();
-            }}
-          />
-        </div>
+        isModalOpen && (
+          <div className="flex items-center justify-center min-h-screen">
+            <SettingsModal
+              isStoppedGame={true}
+              onClick={() => {
+                setIsModalOpen(false);
+                setIsPaused(false);
+                startAudio();
+              }}
+            />
+          </div>
+        )
       )}
     </>
   );
