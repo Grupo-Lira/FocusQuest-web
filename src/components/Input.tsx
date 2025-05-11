@@ -1,12 +1,12 @@
 export const Input = ({
-    type,
-    placeholder,
-    name,
-    onChange,
+  type,
+  placeholder,
+  name,
+  onChange,
 }: Readonly<{
-    type: string;
-    placeholder: string;
-    name: string;
+  type: string;
+  placeholder: string;
+  name: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }>) => {
   return (

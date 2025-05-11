@@ -8,7 +8,7 @@ const levels = [
     position: { top: "28%", left: "10%" },
     positionNumber: { top: "70%", left: "15%" },
     disabled: false,
-    href: "/fase/1"
+    href: "/fase/1",
   },
   {
     id: 2,
@@ -16,7 +16,7 @@ const levels = [
     position: { top: "60%", left: "40%" },
     positionNumber: { top: "40%", left: "47%" },
     disabled: true,
-    href: "/fase/2"
+    href: "/fase/2",
   },
   {
     id: 3,
@@ -24,7 +24,7 @@ const levels = [
     position: { top: "20%", left: "75%" },
     positionNumber: { top: "65%", left: "83%" },
     disabled: true,
-    href: "/fase/3"
+    href: "/fase/3",
   },
 ];
 

@@ -1,6 +1,6 @@
 import { Card } from "@/components/Card";
 import RankingTable from "./RankingTable";
-import { RefreshCcw, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import Image from "next/image";
 
 export default function RankingScreen() {
@@ -30,21 +30,18 @@ export default function RankingScreen() {
           <input type="text" placeholder="Pesquisar por jogador" />
           <button
             className="button-3d bg-[var(--primary)] flex p-3 rounded-full cursor-pointer transition-transform duration-300 hover:scale-105 "
-            onClick={() => {
-              // Handle pause/play functionality here
-            }}
+            onClick={() => {}}
           >
             <Search color="white" strokeWidth={3} />
           </button>
         </div>
         <RankingTable results={results} />
         <div className="flex items-center gap-2">
-            <Image src="/img/icon/reload.svg" alt="Refresh" width={20} height={20} />
-            <p className="text-sm text-[var(--text)]">
-              Atualizado há:{" "}
-              <span className="text-[var(--primary)] font-semibold">10s</span>
-            </p>
-          
+          <Image src="/img/icon/reload.svg" alt="Refresh" width={20} height={20} />
+          <p className="text-sm text-[var(--text)]">
+            Atualizado há:{" "}
+            <span className="text-[var(--primary)] font-semibold">10s</span>
+          </p>
         </div>
       </div>
     </Card>

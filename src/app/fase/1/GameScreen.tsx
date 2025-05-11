@@ -29,7 +29,7 @@ export default function GameScreen() {
     hits,
     timeLeft,
   } = useGameContext();
-  const [ showSuccessModal, setShowSuccessModal ] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const { startAudio, pauseAudio } = useGameAudio();
 

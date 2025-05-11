@@ -3,7 +3,6 @@
 import Image from "next/image";
 
 export default function Thermometer({ level }: { level: number }) {
-
   return (
     <div className="bg-[var(--white)] px-2.5 py-4 flex flex-col items-center gap-1.5 w-16 rounded-full glow">
       <Image width={40} height={38} alt="Estrela" src="/img/star.svg" />
@@ -13,7 +12,6 @@ export default function Thermometer({ level }: { level: number }) {
           style={{ height: `${level}%` }}
         />
       </div>
-
     </div>
   );
 }

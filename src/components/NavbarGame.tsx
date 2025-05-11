@@ -5,11 +5,7 @@ import { useGameContext } from "@/context/GameContext";
 import { formatTime } from "@/utils/formatTime";
 
 export default function NavbarGame() {
-  const {
-    timeLeft,
-    setIsPaused,
-    isPaused,
-  } = useGameContext();
+  const { timeLeft, setIsPaused, isPaused } = useGameContext();
 
   return (
     <div className="bg-[var(--white)] px-6 py-3 flex w-fit rounded-full gap-40">

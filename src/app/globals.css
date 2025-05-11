@@ -4,18 +4,18 @@
   --white: #fff;
   --text: #3b3b3b;
   --primary: #ff7b00;
-  --font-orbitron: 'Orbitron', sans-serif;
-  --font-poppins: 'Poppins', sans-serif;
-  --input-bg: #EEE;
-  --input-color: #ACACAC
+  --font-orbitron: "Orbitron", sans-serif;
+  --font-poppins: "Poppins", sans-serif;
+  --input-bg: #eee;
+  --input-color: #acacac;
 }
 
 @theme inline {
   --white: #ffffff;
   --text: #3b3b3b;
   --primary: #ff7b00;
-  --input-bg: #EEE;
-  --input-color: #ACACAC
+  --input-bg: #eee;
+  --input-color: #acacac;
 }
 
 .font-orbitron {
@@ -32,26 +32,25 @@ body {
   font-family: var(--font-poppins);
 }
 
-.button-glow:hover{
-  filter: drop-shadow(0 0 10px var(--primary))
+.button-glow:hover {
+  filter: drop-shadow(0 0 10px var(--primary));
 }
 
-.glow{
-  filter: drop-shadow(0 0 10px var(--primary))
+.glow {
+  filter: drop-shadow(0 0 10px var(--primary));
 }
 
 .inner-shadow {
   box-shadow: inset 2px 5px 4px rgba(0, 0, 0, 0.25);
 }
 
-.button-3d{
-  box-shadow: inset 5px 6px 4px rgba(255, 255, 255, 0.15),
-              0 4px 4px rgba(0, 0, 0, 0.25);
+.button-3d {
+  box-shadow: inset 5px 6px 4px rgba(255, 255, 255, 0.15), 0 4px 4px rgba(0, 0, 0, 0.25);
 }
 
-.fase1{
+.fase1 {
   background-image: url("/img/planet1.png");
-    background-size: cover;
+  background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   min-height: 100vh;

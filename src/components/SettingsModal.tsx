@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { Button } from "./Button";
-import { Card } from "./Card"; 
+import { Card } from "./Card";
 
 interface SettingPageProps {
   isInitialGame?: boolean;

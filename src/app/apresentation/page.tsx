@@ -39,7 +39,10 @@ export default function ApresentationPage() {
               lugar no ranking da galáxia!
             </p>
           </div>
-          <Button text="Iniciar Jornada" onClick={() => (window.location.href = "/menu")} />
+          <Button
+            text="Iniciar Jornada"
+            onClick={() => (window.location.href = "/menu")}
+          />
         </div>
       )}
       {isModalOpen && (

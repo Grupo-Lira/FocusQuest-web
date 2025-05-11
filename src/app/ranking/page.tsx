@@ -8,7 +8,7 @@ export default function SettingdPage() {
       <div className="flex justify-center mt-6 absolute top-0">
         <Navbar />
       </div>
-        <RankingScreen/>
+      <RankingScreen />
     </div>
   );
 }
