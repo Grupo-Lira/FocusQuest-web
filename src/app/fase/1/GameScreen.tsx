@@ -13,6 +13,7 @@ import { useGameLogic } from "./useGameLogic";
 import { animatedElements } from "@/config/gameConfig";
 import { useGameAudio } from "@/hooks/useGameAudio";
 import TimeOut from "@/components/TimeOut";
+import SuccessScreen from "@/components/SuccessScreen";
 
 export default function GameScreen() {
   const { stars, level, handleHit, handleError } = useGameLogic();
@@ -25,8 +26,10 @@ export default function GameScreen() {
     audioGameStarted,
     setAudioGameStarted,
     isGameActive,
+    hits,
     timeLeft,
   } = useGameContext();
+  const [ showSuccessModal, setShowSuccessModal ] = useState(false);
 
   const { startAudio, pauseAudio } = useGameAudio();
 
@@ -49,6 +52,14 @@ export default function GameScreen() {
     }
   }, [timeLeft]);
 
+  useEffect(() => {
+    if (hits === 5) {
+      setShowSuccessModal(true);
+      setIsPaused(true);
+      pauseAudio();
+    }
+  }, [hits]);
+
   return (
     <>
       {!isModalOpen ? (
@@ -70,6 +81,12 @@ export default function GameScreen() {
           {isTimeUpModalOpen && (
             <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
               <TimeOut />
+            </div>
+          )}
+
+          {showSuccessModal && (
+            <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
+              <SuccessScreen />
             </div>
           )}
 
