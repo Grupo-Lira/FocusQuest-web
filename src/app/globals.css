@@ -75,6 +75,6 @@ body {
 }
 
 .star-hover {
-  animation: grow 3s linear forwards;
+  animation: grow 1s linear forwards;
   transform-origin: center;
 }

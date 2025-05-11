@@ -16,7 +16,7 @@ export function useStarBehavior(onRemove: () => void, onError: () => void) {
       setResolved(true);
       setRemoving(true);
       setTimeout(() => onRemove(), 10);
-    }, 3000);
+    }, 1000);
   };
 
   const handleMouseLeave = () => {
@@ -27,7 +27,7 @@ export function useStarBehavior(onRemove: () => void, onError: () => void) {
     }
 
     const timeHovered = Date.now() - enterTimeRef.current;
-    if (timeHovered >= 500 && timeHovered < 3000) {
+    if (timeHovered >= 500 && timeHovered < 1000) {
       onError();
     }
   };
