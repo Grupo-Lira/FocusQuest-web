@@ -1,36 +1,96 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FocusQuest
 
-## Getting Started
+FocusQuest é um jogo interativo que combina diversão e desafios para ajudar os jogadores a melhorar sua atenção, foco e precisão. Inspirado no **Teste de Desempenho Contínuo Roosevelt**, o jogo leva os jogadores em uma jornada intergaláctica para explorar planetas e superar distrações.
 
-First, run the development server:
+## 🚀 Funcionalidades
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Missões Intergalácticas**: Explore 3 planetas com desafios progressivos.
+- **Desafios de Foco**: Encontre e fixe o olhar em estrelas enquanto evita distrações.
+- **Sistema de Pontuação**: Acompanhe acertos, erros e precisão.
+- **Áudio Imersivo**: Sons de fundo para aumentar a imersão.
+- **Ranking Global**: Compare seu desempenho com outros jogadores.
+- **Configurações Personalizáveis**: Ajuste música e volume durante o jogo.
+
+## 🖼️ Capturas de Tela
+
+### Tela Inicial
+![Tela Inicial](public/img/screenshot-home.png)
+
+### Tela de Jogo
+![Tela de Jogo](public/img/screenshot-game.png)
+
+### Tela de Resultados
+![Tela de Resultados](public/img/screenshot-results.png)
+
+## 🛠️ Tecnologias Utilizadas
+
+- **Next.js**: Framework para renderização do lado do cliente e servidor.
+- **React**: Biblioteca para construção de interfaces de usuário.
+- **TypeScript**: Superset do JavaScript para tipagem estática.
+- **Tailwind CSS**: Framework para estilização.
+- **Framer Motion**: Animações fluidas e interativas.
+- **Lucide React**: Ícones modernos e personalizáveis.
+
+## 📂 Estrutura do Projeto
+
+```plaintext
+FocusQuest-web/
+├── src/
+│   ├── app/               # Páginas e rotas do Next.js
+│   ├── components/        # Componentes reutilizáveis
+│   ├── config/            # Configurações do jogo
+│   ├── context/           # Contexto global do jogo
+│   ├── hooks/             # Hooks personalizados
+│   ├── interface/         # Tipos e interfaces TypeScript
+│   ├── utils/             # Funções utilitárias
+├── public/                # Arquivos estáticos (imagens, áudio, etc.)
+├── .vscode/               # Configurações do editor
+├── .gitignore             # Arquivos ignorados pelo Git
+├── package.json           # Dependências e scripts do projeto
+├── tsconfig.json          # Configurações do TypeScript
+└── README.md              # Documentação do projeto
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 📦 Instalação
+1. Clone o repositório:
+     ```bash
+    git clone https://github.com/Grupo-Lira/FocusQuest-web.git
+    cd focusquest
+    ```
+2. Instale as dependências:
+    ```bash
+    npm install
+    ```
+3. Inicie o servidor de desenvolvimento:
+    ```bash
+    npm run dev
+    ```
+4. Acesse o jogo no navegador em `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🕹️ Como Jogar
+1. Clique em "Iniciar Jornada" na tela inicial.
+2. Inicie no primeiro planeta no menu.
+3. Encontre e fixe o olhar nas estrelas enquanto evita distrações.
+4. Complete o desafio para desbloquear o próximo nível.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📖 Documentação do Código
+### Contexto do Jogo
+O contexto global do jogo é gerenciado pelo `GameContext`, que fornece estados como `hits`, `errors`, `timeLeft`, e funções para atualizá-los.
 
-## Learn More
+### Lógica do Jogo
+A lógica principal do jogo está no hook `useGameLogic`, que gerencia as estrelas, nível de progresso e interações do jogador.
 
-To learn more about Next.js, take a look at the following resources:
+### Configurações do Jogo
+Os elementos animados e suas configurações estão definidos em `gameConfig`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🛠️ Scripts Disponíveis
+`npm run dev`: Inicia o servidor de desenvolvimento.
+`npm run build`: Gera a build de produção.
+`npm run start`: Inicia o servidor de produção.
+`npm run lint`: Executa o linter para verificar erros no código.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📄 Licença
+Este projeto está licenciado sob a MIT License.
+---
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Desenvolvido com ❤️ por Amanda, Arthur e Giovana. ```
