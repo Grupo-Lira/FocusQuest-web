@@ -5,19 +5,18 @@ import clsx from "clsx";
 import { useEffect, useState, useCallback } from "react";
 import { useStarBehavior } from "@/hooks/useStarBehavior";
 import StarHover from "./StarHover";
+import EyeTrackingPoint from "./EyeTrackingPoint";
 
 interface IrisPosition {
   x: number;
   y: number;
   timestamp?: string;
 }
+<EyeTrackingPoint />;
+const GAZE_TOLERANCE = 5;
+const SCREEN_WIDTH = 1560;
+const SCREEN_HEIGHT = 1024;
 
-// Constants
-const GAZE_TOLERANCE = 5; // % margin of error
-const SCREEN_WIDTH = 1560; // Should match API's WIDTH
-const SCREEN_HEIGHT = 1024; // Should match API's HEIGHT
-
-// Eye tracking service function
 function startEyeTracking(
   callback: (position: IrisPosition | null) => void,
   interval: number = 1000
@@ -28,17 +27,16 @@ function startEyeTracking(
     if (!isActive) return;
 
     try {
-      const res = await fetch('http://localhost:4000/eyetracking');
+      const res = await fetch("http://localhost:4000/eyetracking");
       const data = await res.json();
       callback(data.iris_position || null);
     } catch (error) {
-      console.error('Eye Tracking Error:', error);
+      console.error("Eye Tracking Error:", error);
       callback(null);
     }
   };
 
   const timerId = setInterval(fetchData, interval);
-
   return () => {
     isActive = false;
     clearInterval(timerId);
@@ -56,50 +54,50 @@ export default function Star({
   onRemove: () => void;
   onError: () => void;
 }) {
-  const { hovering, removing, handleMouseEnter, handleMouseLeave } = useStarBehavior(
-    onRemove,
-    onError
-  );
-  const [isBeingLookedAt, setIsBeingLookedAt] = useState(false);
+  const {
+    hovering,
+    removing,
+    handleMouseEnter,
+    handleMouseLeave,
+    handleEyeEnter,
+    handleEyeLeave,
+  } = useStarBehavior(onRemove, onError);
 
-  // Detect if gaze is on the star
+  // Detect se o olho está olhando
   const checkGazePosition = useCallback(
     (position: IrisPosition | null) => {
-      if (!position) return;
+      if (!position) {
+        handleEyeLeave();
+        return;
+      }
 
-      // Convert absolute coordinates (pixels) to percentage
       const gazeXPercent = (position.x / SCREEN_WIDTH) * 100;
       const gazeYPercent = (position.y / SCREEN_HEIGHT) * 100;
 
-      setIsBeingLookedAt(
+      const isLooking =
         Math.abs(gazeXPercent - left) < GAZE_TOLERANCE &&
-        Math.abs(gazeYPercent - top) < GAZE_TOLERANCE
-      );
+        Math.abs(gazeYPercent - top) < GAZE_TOLERANCE;
+
+      if (isLooking) {
+        handleEyeEnter();
+      } else {
+        handleEyeLeave();
+      }
     },
-    [top, left]
+    [top, left, handleEyeEnter, handleEyeLeave]
   );
 
-  // Start eye tracking
   useEffect(() => {
-    const stopTracking = startEyeTracking(checkGazePosition, 500);
-    return stopTracking;
+    const stop = startEyeTracking(checkGazePosition, 500);
+    return stop;
   }, [checkGazePosition]);
-
-  // Trigger hover behavior when being looked at
-  useEffect(() => {
-    if (isBeingLookedAt) {
-      handleMouseEnter();
-    } else {
-      handleMouseLeave();
-    }
-  }, [isBeingLookedAt, handleMouseEnter, handleMouseLeave]);
 
   return (
     <div
       className={clsx(
         "absolute transition-all duration-500",
         removing ? "rotate-[720deg] opacity-0 scale-0" : "opacity-100",
-        isBeingLookedAt ? "ring-4 ring-yellow-400 scale-110" : ""
+        hovering ? "ring-4 ring-yellow-400 scale-110" : ""
       )}
       style={{ top: `${top}%`, left: `${left}%` }}
       onMouseEnter={handleMouseEnter}
@@ -113,7 +111,7 @@ export default function Star({
         src="/img/star.svg"
         className={clsx(
           "relative z-10 transition-transform",
-          isBeingLookedAt ? "animate-pulse" : ""
+          hovering ? "animate-pulse" : ""
         )}
       />
     </div>

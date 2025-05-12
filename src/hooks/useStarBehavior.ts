@@ -7,11 +7,15 @@ export function useStarBehavior(onRemove: () => void, onError: () => void) {
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const enterTimeRef = useRef<number>(0);
+  const activeSourceRef = useRef<"mouse" | "eye" | null>(null);
 
-  const handleMouseEnter = () => {
-    if (resolved) return;
+  const handleEnter = (source: "mouse" | "eye") => {
+    if (resolved || hovering) return;
+
     setHovering(true);
     enterTimeRef.current = Date.now();
+    activeSourceRef.current = source;
+
     timeoutRef.current = setTimeout(() => {
       setResolved(true);
       setRemoving(true);
@@ -19,7 +23,9 @@ export function useStarBehavior(onRemove: () => void, onError: () => void) {
     }, 1000);
   };
 
-  const handleMouseLeave = () => {
+  const handleLeave = (source: "mouse" | "eye") => {
+    if (activeSourceRef.current !== source) return;
+
     setHovering(false);
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -30,7 +36,16 @@ export function useStarBehavior(onRemove: () => void, onError: () => void) {
     if (timeHovered >= 500 && timeHovered < 1000) {
       onError();
     }
+
+    activeSourceRef.current = null;
   };
 
-  return { hovering, removing, handleMouseEnter, handleMouseLeave };
+  return {
+    hovering,
+    removing,
+    handleMouseEnter: () => handleEnter("mouse"),
+    handleMouseLeave: () => handleLeave("mouse"),
+    handleEyeEnter: () => handleEnter("eye"),
+    handleEyeLeave: () => handleLeave("eye"),
+  };
 }
