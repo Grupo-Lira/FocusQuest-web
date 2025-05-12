@@ -1,26 +1,79 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --white: #fff;
+  --text: #3b3b3b;
+  --primary: #ff7b00;
+  --font-orbitron: "Orbitron", sans-serif;
+  --font-poppins: "Poppins", sans-serif;
+  --input-bg: #eee;
+  --input-color: #acacac;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --white: #ffffff;
+  --text: #3b3b3b;
+  --primary: #ff7b00;
+  --input-bg: #eee;
+  --input-color: #acacac;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.font-orbitron {
+  font-family: var(--font-orbitron);
 }
 
 body {
-  background: var(--background);
+  background-image: url("/img/background.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-poppins);
+}
+
+.button-glow:hover {
+  filter: drop-shadow(0 0 10px var(--primary));
+}
+
+.glow {
+  filter: drop-shadow(0 0 10px var(--primary));
+}
+
+.inner-shadow {
+  box-shadow: inset 2px 5px 4px rgba(0, 0, 0, 0.25);
+}
+
+.button-3d {
+  box-shadow: inset 5px 6px 4px rgba(255, 255, 255, 0.15), 0 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+.fase1 {
+  background-image: url("/img/planet1.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+}
+
+.thermometer-img {
+  background-image: url("/img/thermometer.svg");
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 497px;
+  width: 100%;
+}
+
+@keyframes grow {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.star-hover {
+  animation: grow 1s linear forwards;
+  transform-origin: center;
 }
