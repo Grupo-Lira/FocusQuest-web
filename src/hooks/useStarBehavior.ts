@@ -20,7 +20,7 @@ export function useStarBehavior(onRemove: () => void, onError: () => void) {
       setResolved(true);
       setRemoving(true);
       setTimeout(() => onRemove(), 10);
-    }, 1000);
+    }, 500);
   };
 
   const handleLeave = (source: "mouse" | "eye") => {

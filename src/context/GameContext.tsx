@@ -18,7 +18,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const interval = setInterval(() => {
       setTimeLeft((prev) => prev - 1);
-    }, 1000);
+    }, 500);
 
     return () => clearInterval(interval);
   }, [isGameActive, isPaused, timeLeft]);

@@ -6,7 +6,7 @@ export function useGameLogic() {
   const [stars, setStars] = useState<{ top: number; left: number; id: number }[]>([]);
   const [level, setLevel] = useState(0);
   const { hits, setHits, errors, setErrors } = useGameContext();
-  const { generate } = useRandomStars(5);
+  const { generate } = useRandomStars(15);
 
   useEffect(() => {
     setStars(generate());
@@ -17,14 +17,14 @@ export function useGameLogic() {
   };
 
   const handleHit = (id: number) => {
-    setLevel((l) => Math.min(l + 20, 100));
+    setLevel((l) => Math.min(l + (100 / 15), 100));
     setHits(hits + 1);
     handleRemove(id);
   };
 
   const handleError = () => {
     setErrors(errors + 1);
-    setLevel((l) => Math.max(l - 15, 0));
+    setLevel((l) => Math.max(l - 4, 0));
   };
 
   return { stars, level, handleHit, handleError };

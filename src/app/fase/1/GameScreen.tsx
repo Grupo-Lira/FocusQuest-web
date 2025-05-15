@@ -53,7 +53,7 @@ export default function GameScreen() {
   }, [timeLeft]);
 
   useEffect(() => {
-    if (hits === 5) {
+    if (hits === 15) {
       setShowSuccessModal(true);
       setIsPaused(true);
       pauseAudio();

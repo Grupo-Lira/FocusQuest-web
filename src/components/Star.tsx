@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import clsx from "clsx";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useCallback } from "react";
 import { useStarBehavior } from "@/hooks/useStarBehavior";
 import StarHover from "./StarHover";
 import EyeTrackingPoint from "./EyeTrackingPoint";
@@ -95,7 +95,7 @@ export default function Star({
   return (
     <div
       className={clsx(
-        "absolute transition-all duration-500",
+        "absolute transition-all duration-500 z-10",
         removing ? "rotate-[720deg] opacity-0 scale-0" : "opacity-100",
         hovering ? "ring-4 ring-yellow-400 scale-110" : ""
       )}
@@ -110,7 +110,7 @@ export default function Star({
         alt="Estrela"
         src="/img/star.svg"
         className={clsx(
-          "relative z-10 transition-transform",
+          "relative transition-transform",
           hovering ? "animate-pulse" : ""
         )}
       />
