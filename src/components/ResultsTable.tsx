@@ -1,20 +1,26 @@
+import { feedbackMessages } from "@/constants/feedbackMessages";
 import { useGameContext } from "@/context/GameContext";
 
 export default function ResultsTable() {
-  const {
-      hits,
-      timeLeft,
-      errors,
-    } = useGameContext();
-    
-    const accuracy = ((hits / (hits + errors)) * 100).toFixed(2);
-    const time = 60 - timeLeft;
-    const minutes = Math.floor(time / 60);
-    const seconds = time % 60;
-    const formattedTime = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
-      2,
-      "0"
-    )}`;
+  const { hits, timeLeft, errors } = useGameContext();
+
+  const accuracy = ((hits / (hits + errors)) * 100).toFixed(2);
+  const time = 60 - timeLeft;
+  const minutes = Math.floor(time / 60);
+  const seconds = time % 60;
+  const formattedTime = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
+    2,
+    "0"
+  )}`;
+
+  const getFeedbackMessage = (ac: number) => {
+    return (
+      feedbackMessages.find((msg) => ac >= msg.min && ac <= msg.max) ??
+      feedbackMessages[2] 
+    );
+  };
+
+  const feedback = getFeedbackMessage(Number(accuracy));
 
   return (
     <div className="flex flex-col items-center gap-8 pb-4">
@@ -59,19 +65,16 @@ export default function ResultsTable() {
               💡 Precisão
             </td>
             <td className="text-[var(--text)] w-[250px] text-left pl-3 py-2.5">
-                {isNaN(Number(accuracy)) ? "0" : accuracy}%
+              {isNaN(Number(accuracy)) ? "0" : accuracy}%
             </td>
           </tr>
         </tbody>
       </table>
       <div className="max-w-[25.5rem]">
         <p className="text-xl text-[var(--primary)] text-center font-semibold">
-          🙂 Boa! Mas há espaço para melhorias.
+          {feedback.title}
         </p>
-        <p className="text-[var(--text)] text-center">
-          Continue praticando para atingir a precisão de um verdadeiro explorador
-          espacial!
-        </p>
+        <p className="text-[var(--text)] text-center">{feedback.description}</p>
       </div>
     </div>
   );
