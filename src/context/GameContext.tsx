@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { GameContextProps } from "@/interface/GameInterface";
+import { GameContextProps, RankingItem } from "@/interface/GameInterface";
 
 const GameContext = createContext<GameContextProps | undefined>(undefined);
 
@@ -12,6 +12,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [timeLeft, setTimeLeft] = useState(60);
   const [isGameActive, setIsGameActive] = useState(false);
   const [audioGameStarted, setAudioGameStarted] = useState(false);
+  const [ranking, setRanking] = useState<RankingItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!isGameActive || isPaused || timeLeft <= 0) return;
@@ -38,6 +40,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsGameActive,
         audioGameStarted,
         setAudioGameStarted,
+        ranking,
+        setRanking,
+        loading,
+        setLoading,
       }}
     >
       {children}

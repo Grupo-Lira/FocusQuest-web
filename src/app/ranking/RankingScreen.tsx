@@ -2,22 +2,44 @@ import { Card } from "@/components/Card";
 import RankingTable from "./RankingTable";
 import { Search } from "lucide-react";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { useGameContext } from "@/context/GameContext";
 
 export default function RankingScreen() {
-  const results = [
-    { id: 1, rank: "🥇 1º", name: "AstroLiderX", forecast: "99%", time: "00:10" },
-    { id: 2, rank: "🥈 2º", name: "CometHunter", forecast: "97%", time: "00:15" },
-    {
-      id: 3,
-      rank: "🥉 3º",
-      name: "Patrulheiro Espacial",
-      forecast: "95%",
-      time: "00:17",
-    },
-    { id: 4, rank: "🏆 4º", name: "LunaNova", forecast: "92%", time: "00:25" },
-    { id: 5, rank: "🏆 5º", name: "AmandaCode", forecast: "90%", time: "00:28" },
-    { id: 6, rank: "🏆 6º", name: "HeyAstro", forecast: "89%", time: "00:34" },
-  ];
+  const { ranking, setRanking,setLoading } = useGameContext();
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
+  
+  const fetchRanking = async () => {
+    setLoading(true);
+    setIsRefreshing(true);
+    try{
+      const response = await axios.get("http://localhost:4000/");
+      console.log(response.data.rankings);
+      setRanking(response.data.rankings);
+      setLastUpdated(new Date());
+    }catch (error) {
+      console.error("Erro ao buscar ranking:", error);
+    } finally{
+      setLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRanking();
+  }, []);
+
+  useEffect(() => {
+    if (!lastUpdated) return;
+    const interval = setInterval(() => {
+      setElapsed(Math.floor((new Date().getTime() - lastUpdated.getTime()) / 1000));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [lastUpdated]);
 
   return (
     <Card title={"Ranking Global"}>
@@ -35,12 +57,21 @@ export default function RankingScreen() {
             <Search color="white" strokeWidth={3} />
           </button>
         </div>
-        <RankingTable results={results} />
+        <RankingTable results={ranking} />
         <div className="flex items-center gap-2">
-          <Image src="/img/icon/reload.svg" alt="Refresh" width={20} height={20} />
+          <Image
+            src="/img/icon/reload.svg"
+            alt="Refresh"
+            width={20}
+            height={20}
+            className={`cursor-pointer transition-transform ${
+              isRefreshing ? "animate-spin" : "hover:rotate-45"
+            }`}
+            onClick={fetchRanking}
+          />
           <p className="text-sm text-[var(--text)]">
             Atualizado há:{" "}
-            <span className="text-[var(--primary)] font-semibold">10s</span>
+            <span className="text-[var(--primary)] font-semibold">{elapsed}s</span>
           </p>
         </div>
       </div>

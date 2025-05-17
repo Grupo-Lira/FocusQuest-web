@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 export interface IrisPosition {
   x: number;
@@ -23,10 +23,10 @@ export function startEyeTracking(
 
     try {
       const res = await fetch(`${API_URL}/eyetracking`, {
-        mode: 'cors',
+        mode: "cors",
         headers: {
-          'Content-Type': 'application/json',
-        }
+          "Content-Type": "application/json",
+        },
       });
 
       if (!res.ok) {
@@ -36,7 +36,7 @@ export function startEyeTracking(
       const data = await res.json();
       callback(data.iris_position || null);
     } catch (error) {
-      console.error('Erro na requisição:', error);
+      console.error("Erro na requisição:", error);
       callback(null);
     }
   };
