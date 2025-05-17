@@ -15,12 +15,8 @@ export default function SuccessScreen() {
           {resultsOpen ? (
             <div className="flex gap-4">
               <Button
-                text="Próximo Nível"
-                onClick={() => (window.location.href = "/fase/2")}
-              />
-              <Button
-                text="Menu Ínicial"
-                onClick={() => (window.location.href = "/menu")}
+                text="Ver ranking geral"
+                onClick={() => (window.location.href = "/ranking")}
               />
             </div>
           ) : (
