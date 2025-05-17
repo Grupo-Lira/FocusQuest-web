@@ -14,6 +14,9 @@ import { animatedElements } from "@/config/gameConfig";
 import { useGameAudio } from "@/hooks/useGameAudio";
 import TimeOut from "@/components/TimeOut";
 import SuccessScreen from "@/components/SuccessScreen";
+import { Input } from "@/components/Input";
+import { Card } from "@/components/Card";
+import axios from "axios";
 
 export default function GameScreen() {
   const { stars, level, handleHit, handleError } = useGameLogic();
@@ -28,10 +31,47 @@ export default function GameScreen() {
     isGameActive,
     hits,
     timeLeft,
+    errors,
+    setName, 
+    gameData,
   } = useGameContext();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const { startAudio, pauseAudio } = useGameAudio();
+
+  const handleGameEnd = async () => {
+    setIsPaused(true);
+    setIsGameActive(false);
+    setAudioGameStarted(false);
+    
+    const accuracy = ((hits / (hits + errors)) * 100).toFixed(2);
+    const time = 60 - timeLeft;
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    const formattedTime = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
+      2,
+      "0"
+    )}`;
+
+    const finalData = {
+      ...gameData,
+      hits,
+      errorsCount: errors,
+      accuracy: Number(accuracy),
+      time: formattedTime,
+    };
+
+    console.log(finalData);
+
+    try{
+      const response = await axios.post("http://localhost:4000/ranking", finalData);
+      if (response.status === 201) {
+        console.log("Dados enviados com sucesso:", response.data);
+      }
+    } catch (error) {
+      console.error("Erro ao finalizar o jogo:", error);
+    }
+  };
 
   const handleStartGame = () => {
     setIsGameActive(true);
@@ -49,14 +89,17 @@ export default function GameScreen() {
       setIsTimeUpModalOpen(true);
       setIsPaused(true);
       pauseAudio();
+      handleGameEnd();
     }
   }, [timeLeft]);
 
   useEffect(() => {
     if (hits === 15) {
+      
       setShowSuccessModal(true);
       setIsPaused(true);
       pauseAudio();
+      handleGameEnd();
     }
   }, [hits]);
 
@@ -74,7 +117,15 @@ export default function GameScreen() {
 
           {!audioGameStarted && (
             <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
-              <Button text="Clique para iniciar o jogo" onClick={handleStartGame} />
+              <Card title="Digite seu nome">
+                <Input
+                  type="input"
+                  placeholder="Nome"
+                  name="name"
+                  onChange={(e) => setName(e.target.value)}
+                />
+                <Button text="Clique para iniciar o jogo" onClick={handleStartGame} />
+              </Card>
             </div>
           )}
 

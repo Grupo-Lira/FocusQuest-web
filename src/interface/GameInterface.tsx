@@ -1,4 +1,10 @@
-
+export interface GameData {
+  name: string;
+  time: string;
+  hits: number;
+  errorsCount: number;
+  accuracy: number;
+}
 export interface RankingItem {
   _id: string;
   name: string;
@@ -16,12 +22,16 @@ export interface GameContextProps {
   audioGameStarted: boolean;
   ranking: RankingItem[];
   loading: boolean;
-  setHits: (value: number) => void;
-  setErrors: (value: number) => void;
-  setTimeLeft: (value: number) => void;
-  setIsPaused: (value: boolean) => void;
-  setIsGameActive: (value: boolean) => void;
-  setAudioGameStarted: (value: boolean) => void;
-  setRanking: (value: RankingItem[]) => void;
-  setLoading: (value: boolean) => void;
+  gameData: Partial<GameData>;
+  setName: (name: string) => void;
+  resetGameData: () => void;
+  setHits: React.Dispatch<React.SetStateAction<number>>;
+  setErrors: React.Dispatch<React.SetStateAction<number>>;
+  setTimeLeft: React.Dispatch<React.SetStateAction<number>>;
+  setIsPaused: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsGameActive: React.Dispatch<React.SetStateAction<boolean>>;
+  setAudioGameStarted: React.Dispatch<React.SetStateAction<boolean>>;
+  setRanking: React.Dispatch<React.SetStateAction<RankingItem[]>>;
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  setGameData: React.Dispatch<React.SetStateAction<Partial<GameData>>>;
 }
