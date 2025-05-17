@@ -7,13 +7,6 @@ import ResultsTable from "./ResultsTable";
 export default function SuccessScreen() {
   const [resultsOpen, setResultsOpen] = useState(false);
 
-  const results = [
-    { id: 1, name: "⏱️ Tempo total", score: "00:32" },
-    { id: 2, name: "🎯 Acertos", score: "4 de 5 alvos" },
-    { id: 3, name: "❌ Erros", score: "2 distrações" },
-    { id: 4, name: "💡 Precisão", score: "66%" },
-  ];
-
   return (
     <Card
       title={resultsOpen ? "Resultados" : "Missão Cumprida!"}
@@ -39,7 +32,7 @@ export default function SuccessScreen() {
       <div className="flex flex-col gap-4">
         <div className="flex flex-col items-center">
           {resultsOpen ? (
-            <ResultsTable results={results} />
+            <ResultsTable />
           ) : (
             <Image
               src="/img/viva.png"

@@ -33,7 +33,7 @@ export function useStarBehavior(onRemove: () => void, onError: () => void) {
     }
 
     const timeHovered = Date.now() - enterTimeRef.current;
-    if (timeHovered >= 500 && timeHovered < 1000) {
+    if (timeHovered >= 100 && timeHovered < 500) {
       onError();
     }
 
