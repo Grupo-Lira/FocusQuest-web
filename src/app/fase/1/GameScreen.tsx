@@ -42,7 +42,6 @@ export default function GameScreen() {
   const handleGameEnd = async () => {
     setIsPaused(true);
     setIsGameActive(false);
-    setAudioGameStarted(false);
     
     const accuracy = ((hits / (hits + errors)) * 100).toFixed(2);
     const time = 60 - timeLeft;
