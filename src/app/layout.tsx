@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Orbitron, Poppins } from "next/font/google";
 import "./globals.css";
 import { GameProvider } from "@/context/GameContext";
+import Script from "next/script";
+import { EyeTrackingProvider } from "@/context/EyeTrackingContext";
 
 const orbitron = Orbitron({
   subsets: ["latin"],
@@ -26,8 +28,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-br">
+      <head>
+        <Script
+          src="https://webgazer.cs.brown.edu/webgazer.js"
+          strategy="beforeInteractive"
+        />
+      </head>
       <body className={`${orbitron.variable} ${poppins.variable} antialiased`}>
-        <GameProvider>{children}</GameProvider>
+        <EyeTrackingProvider>
+          <GameProvider>{children}</GameProvider>
+        </EyeTrackingProvider>
       </body>
     </html>
   );
