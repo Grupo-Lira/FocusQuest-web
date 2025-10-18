@@ -1,3 +1,4 @@
+import Image from "next/image";
 import "../AnimatedElements/AnimatedElements.css";
 
 interface AnimatedElementProps {
@@ -22,7 +23,7 @@ export const AnimatedElement = ({
   isPaused,
 }: AnimatedElementProps) => {
   return (
-    <img
+    <Image
       src={src}
       alt="elemento animado"
       className={`animated-element ${animationMap[id]} ${isPaused ? "paused" : ""}`}

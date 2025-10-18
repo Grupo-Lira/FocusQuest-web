@@ -11,10 +11,10 @@ interface IrisPosition {
 }
 
 interface StarCalibrationProps {
-  top: number;
-  left: number;
-  onHit: () => void;
-  onError?: () => void;
+  readonly top: number;
+  readonly left: number;
+  readonly onHit: () => void;
+  readonly onError?: () => void;
 }
 
 // Configurações do rastreamento ocular

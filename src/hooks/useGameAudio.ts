@@ -1,6 +1,6 @@
 let gameAudio: HTMLAudioElement | null = null;
 
-if (typeof window !== "undefined") {
+if (globalThis.window !== undefined) {
   gameAudio = new Audio("/audio/fase1.mp3");
   gameAudio.loop = true;
 }

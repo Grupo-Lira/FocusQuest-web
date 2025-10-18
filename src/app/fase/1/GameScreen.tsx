@@ -41,7 +41,11 @@ export default function GameScreen() {
 
   useEffect(() => {
     if (!audioGameStarted) return;
-    void (isPaused ? pauseAudio() : startAudio());
+    if (isPaused) {
+      pauseAudio();
+    } else {
+      startAudio();
+    }
   }, [isPaused, audioGameStarted]);
 
   useEffect(() => {
@@ -62,7 +66,18 @@ export default function GameScreen() {
 
   return (
     <>
-      {!isModalOpen ? (
+      {isModalOpen ? (
+        <div className="flex items-center justify-center min-h-screen">
+          <SettingsModal
+            isStoppedGame={true}
+            onClick={() => {
+              setIsModalOpen(false);
+              setIsPaused(false);
+              startAudio();
+            }}
+          />
+        </div>
+      ) : (
         <div className="fase1 relative w-full h-screen overflow-hidden">
           <div className="flex justify-center mt-6 z-20">
             <NavbarGame />
@@ -90,7 +105,9 @@ export default function GameScreen() {
             </div>
           )}
 
-          <div
+          <button
+            type="button"
+            aria-label="Open settings"
             className="bg-[var(--primary)] z-20 w-11 h-11 rounded-full absolute flex items-center justify-center button-glow transition-all duration-300 top-9 right-9"
             onClick={() => {
               setIsModalOpen(true);
@@ -99,7 +116,7 @@ export default function GameScreen() {
             }}
           >
             <Bolt color="white" />
-          </div>
+          </button>
 
           <div className="h-[70%] w-screen ml-32 relative">
             {stars.map((star) => (
@@ -126,19 +143,6 @@ export default function GameScreen() {
               ))}
           </div>
         </div>
-      ) : (
-        isModalOpen && (
-          <div className="flex items-center justify-center min-h-screen">
-            <SettingsModal
-              isStoppedGame={true}
-              onClick={() => {
-                setIsModalOpen(false);
-                setIsPaused(false);
-                startAudio();
-              }}
-            />
-          </div>
-        )
       )}
     </>
   );

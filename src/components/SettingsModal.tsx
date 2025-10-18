@@ -4,9 +4,9 @@ import { Button } from "./Button";
 import { Card } from "./Card";
 
 interface SettingPageProps {
-  isInitialGame?: boolean;
-  isStoppedGame?: boolean;
-  onClick?: () => void;
+  readonly isInitialGame?: boolean;
+  readonly isStoppedGame?: boolean;
+  readonly onClick?: () => void;
 }
 
 export default function SettingsModal({
@@ -26,7 +26,7 @@ export default function SettingsModal({
           {isStoppedGame && (
             <div className="flex gap-4">
               <Button text="Voltar ao jogo" onClick={onClick} className="px-1.5 py-2.5" />
-              <Button text="Sair" onClick={() => (window.location.href = "/menu")} />
+              <Button text="Sair" onClick={() => (globalThis.location.href = "/menu")} />
             </div>
           )}
         </>

@@ -37,7 +37,7 @@ export default function SignInPage() {
             </p>
           </div>
         </div>
-        <Button text="Cadastrar" onClick={() => (window.location.href = "/")} />
+        <Button text="Cadastrar" onClick={() => (globalThis.location.href = "/")} />
         <div className="flex items-center justify-center w-full">
           <hr className="flex-grow border-t border-gray-300" />
           <span className="mx-5">ou</span>

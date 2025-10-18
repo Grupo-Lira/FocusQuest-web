@@ -23,11 +23,11 @@ export default function SuccessScreen() {
             <div className="flex gap-4">
               <Button
                 text="Próximo Nível"
-                onClick={() => (window.location.href = "/fase/2")}
+                onClick={() => (globalThis.location.href = "/fase/2")}
               />
               <Button
                 text="Menu Ínicial"
-                onClick={() => (window.location.href = "/menu")}
+                onClick={() => (globalThis.location.href = "/menu")}
               />
             </div>
           ) : (

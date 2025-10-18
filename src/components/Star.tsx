@@ -12,6 +12,13 @@ interface IrisPosition {
   timestamp?: string;
 }
 
+interface StarProps {
+  readonly top: number;
+  readonly left: number;
+  readonly onRemove: () => void;
+  readonly onError: () => void;
+}
+
 // Constants
 const GAZE_TOLERANCE = 5; // % margin of error
 const SCREEN_WIDTH = 1560; // Should match API's WIDTH
@@ -45,17 +52,7 @@ function startEyeTracking(
   };
 }
 
-export default function Star({
-  top,
-  left,
-  onRemove,
-  onError,
-}: {
-  top: number;
-  left: number;
-  onRemove: () => void;
-  onError: () => void;
-}) {
+export default function Star({ top, left, onRemove, onError }: StarProps) {
   const { hovering, removing, handleMouseEnter, handleMouseLeave } = useStarBehavior(
     onRemove,
     onError
@@ -73,7 +70,7 @@ export default function Star({
 
       setIsBeingLookedAt(
         Math.abs(gazeXPercent - left) < GAZE_TOLERANCE &&
-        Math.abs(gazeYPercent - top) < GAZE_TOLERANCE
+          Math.abs(gazeYPercent - top) < GAZE_TOLERANCE
       );
     },
     [top, left]
@@ -95,7 +92,8 @@ export default function Star({
   }, [isBeingLookedAt, handleMouseEnter, handleMouseLeave]);
 
   return (
-    <div
+    <button
+      type="button"
       className={clsx(
         "absolute transition-all duration-500",
         removing ? "rotate-[720deg] opacity-0 scale-0" : "opacity-100",
@@ -104,6 +102,10 @@ export default function Star({
       style={{ top: `${top}%`, left: `${left}%` }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onFocus={handleMouseEnter}
+      onBlur={handleMouseLeave}
+      onTouchStart={handleMouseEnter}
+      onTouchEnd={handleMouseLeave}
     >
       {hovering && <StarHover />}
       <Image
@@ -116,6 +118,6 @@ export default function Star({
           isBeingLookedAt ? "animate-pulse" : ""
         )}
       />
-    </div>
+    </button>
   );
 }

@@ -3,7 +3,7 @@ import { steps } from "@/constants/steps";
 import { useState } from "react";
 import Image from "next/image";
 
-export default function OverlayInstruction({ onComplete }: { onComplete: () => void }) {
+export default function OverlayInstruction({ onComplete }: Readonly<{ onComplete: () => void }>) {
   const [currentStep, setCurrentStep] = useState(steps[0]);
 
   if (!currentStep) return null;

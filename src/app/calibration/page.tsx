@@ -34,7 +34,16 @@ export default function CalibrationPage() {
 
   return (
     <>
-      {!isModalVisible ? (
+      {isModalVisible ? (
+        <div className="flex items-center justify-center min-h-screen">
+            <SettingsModal
+            isStoppedGame={true}
+            onClick={() => {
+                setIsModalVisible(false);
+            }}
+            />
+        </div>
+      ): (
         <div className="min-h-screen flex flex-col text-white">
             {/* Tela de instruções antes da calibração */}
             {showInstructions && <OverlayInstruction onComplete={handleStartCalibration} />}
@@ -59,15 +68,6 @@ export default function CalibrationPage() {
             {successModalVisible && (
                 <SuccessScreen onRestart={handleRestart} />
             )}
-        </div>
-      ): (
-        <div className="flex items-center justify-center min-h-screen">
-            <SettingsModal
-            isStoppedGame={true}
-            onClick={() => {
-                setIsModalVisible(false);
-            }}
-            />
         </div>
         )
     }

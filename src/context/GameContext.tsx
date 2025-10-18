@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
 import { GameContextProps } from "@/interface/GameInterface";
 
 const GameContext = createContext<GameContextProps | undefined>(undefined);
@@ -23,23 +23,26 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => clearInterval(interval);
   }, [isGameActive, isPaused, timeLeft]);
 
+  const value = useMemo(
+    () => ({
+      hits,
+      errors,
+      timeLeft,
+      setHits,
+      setErrors,
+      setTimeLeft,
+      setIsPaused,
+      isPaused,
+      isGameActive,
+      setIsGameActive,
+      audioGameStarted,
+      setAudioGameStarted,
+    }),
+    [hits, errors, timeLeft, isPaused, isGameActive, audioGameStarted, setHits, setErrors, setTimeLeft, setIsPaused, setIsGameActive, setAudioGameStarted]
+  );
+
   return (
-    <GameContext.Provider
-      value={{
-        hits,
-        errors,
-        timeLeft,
-        setHits,
-        setErrors,
-        setTimeLeft,
-        setIsPaused,
-        isPaused,
-        isGameActive,
-        setIsGameActive,
-        audioGameStarted,
-        setAudioGameStarted,
-      }}
-    >
+    <GameContext.Provider value={value}>
       {children}
     </GameContext.Provider>
   );
