@@ -6,7 +6,6 @@ import { useEffect, useRef, useState } from "react";
 import { useGameContext } from "@/context/GameContext";
 import { AnimatedElement } from "@/components/AnimatedElements/AnimatedElement";
 import { animatedElementsFase2 } from "@/config/gameConfig";
-import { useGameAudio } from "@/hooks/useGameAudio";
 import { stars } from "@/constants/fase2Stars";
 import { AnimatePresence } from "framer-motion";
 import SettingsButton from "@/components/SettingsButton";
@@ -15,6 +14,7 @@ import GameOverlay from "@/components/fase2/GameOverlay";
 import { usePlanets } from "@/hooks/usePlanets";
 import PlanetsAnimation from "@/components/fase2/PlanetsAnimations";
 import StarsField from "@/components/fase2/StarsField";
+import { useAudio } from "@/context/AudioContext";
 
 export default function GameScreen() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -36,7 +36,7 @@ export default function GameScreen() {
 
   const [currentRound, setCurrentRound] = useState(1);
 
-  const { startAudio } = useGameAudio({ fase: 2 });
+  const { startAudio } = useAudio();
   const { activePlanets, startGame, resetPlanets } = usePlanets();
 
   const handleStartGame = () => {
@@ -55,10 +55,6 @@ export default function GameScreen() {
     resetPlanets();
     startGame();
   };
-
-  useEffect(() => {
-    if (!audioGameStarted) return;
-  }, [isPaused, audioGameStarted]);
 
   const lastIndexRef = useRef<number | null>(null);
 

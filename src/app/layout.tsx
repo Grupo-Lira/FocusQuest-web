@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Orbitron, Poppins } from "next/font/google";
 import "./globals.css";
 import { GameProvider } from "@/context/GameContext";
+import { AudioProvider } from "@/context/AudioContext";
 
 const orbitron = Orbitron({
   subsets: ["latin"],
@@ -27,7 +28,11 @@ export default function RootLayout({
   return (
     <html lang="pt-br">
       <body className={`${orbitron.variable} ${poppins.variable} antialiased`}>
-        <GameProvider>{children}</GameProvider>
+        <GameProvider>
+          <AudioProvider>
+            {children}
+          </AudioProvider>
+        </GameProvider>
       </body>
     </html>
   );

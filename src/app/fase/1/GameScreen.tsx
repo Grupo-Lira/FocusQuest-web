@@ -11,9 +11,9 @@ import { AnimatedElement } from "@/components/AnimatedElements/AnimatedElement";
 import { Button } from "@/components/Button";
 import { useGameLogic } from "./useGameLogic";
 import { animatedElements } from "@/config/gameConfig";
-import { useGameAudio } from "@/hooks/useGameAudio";
 import TimeOut from "@/components/TimeOut";
 import SuccessScreen from "@/components/SuccessScreen";
+import { useAudio } from "@/context/AudioContext";
 
 export default function GameScreen() {
   const { stars, level, handleHit, handleError } = useGameLogic();
@@ -31,7 +31,7 @@ export default function GameScreen() {
   } = useGameContext();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  const { startAudio, pauseAudio } = useGameAudio({fase: 1});
+  const { startAudio } = useAudio();
 
   const handleStartGame = () => {
     setIsGameActive(true);
@@ -40,19 +40,9 @@ export default function GameScreen() {
   };
 
   useEffect(() => {
-    if (!audioGameStarted) return;
-    if (isPaused) {
-      pauseAudio();
-    } else {
-      startAudio();
-    }
-  }, [isPaused, audioGameStarted]);
-
-  useEffect(() => {
     if (timeLeft === 0) {
       setIsTimeUpModalOpen(true);
       setIsPaused(true);
-      pauseAudio();
     }
   }, [timeLeft]);
 
@@ -60,7 +50,6 @@ export default function GameScreen() {
     if (hits === 5) {
       setShowSuccessModal(true);
       setIsPaused(true);
-      pauseAudio();
     }
   }, [hits]);
 
@@ -112,7 +101,6 @@ export default function GameScreen() {
             onClick={() => {
               setIsModalOpen(true);
               setIsPaused(true);
-              pauseAudio();
             }}
           >
             <Bolt color="white" />
