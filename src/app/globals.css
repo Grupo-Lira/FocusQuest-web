@@ -49,11 +49,19 @@ body {
 }
 
 .fase1 {
-  background-image: url("/img/planet1.png");
+  background-image: url("/img/planetas/planet1.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   min-height: 100vh;
+}
+
+.fase2{
+  background-image: url("/img/planetas/planet2.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 10vh;
 }
 
 .thermometer-img {

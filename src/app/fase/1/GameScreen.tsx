@@ -31,7 +31,7 @@ export default function GameScreen() {
   } = useGameContext();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  const { startAudio, pauseAudio } = useGameAudio();
+  const { startAudio, pauseAudio } = useGameAudio({fase: 1});
 
   const handleStartGame = () => {
     setIsGameActive(true);
@@ -80,7 +80,7 @@ export default function GameScreen() {
       ) : (
         <div className="fase1 relative w-full h-screen overflow-hidden">
           <div className="flex justify-center mt-6 z-20">
-            <NavbarGame />
+            <NavbarGame label="ENCONTRE E FIXE OS OLHOS NOS 5 ALVOS DURANTE 5 SEGUNDOS" />
           </div>
 
           <div className="absolute top-44 ml-6 z-20">

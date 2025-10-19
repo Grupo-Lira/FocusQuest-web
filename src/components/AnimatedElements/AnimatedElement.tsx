@@ -1,4 +1,4 @@
-import Image from "next/image";
+/* eslint-disable @next/next/no-img-element */
 import "../AnimatedElements/AnimatedElements.css";
 
 interface AnimatedElementProps {
@@ -23,7 +23,7 @@ export const AnimatedElement = ({
   isPaused,
 }: AnimatedElementProps) => {
   return (
-    <Image
+    <img
       src={src}
       alt="elemento animado"
       className={`animated-element ${animationMap[id]} ${isPaused ? "paused" : ""}`}
