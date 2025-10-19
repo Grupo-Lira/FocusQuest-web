@@ -34,3 +34,18 @@ export const fase1Steps: StepProps[] = [
     isFinal: true,
   },
 ];
+
+export const fase2Steps: StepProps[] = [
+  { id: 1, description: "Ótimo trabalho no primeiro desafio!" },
+  { id: 2, description: "Agora, vamos aumentar a dificuldade." },
+  { id: 3, description: "Desta vez, as estrelas brilharão aleatoriamente." },
+  { id: 4, description: "Seu objetivo é focar na estrela que estiver brilhando." },
+  { id: 5, description: "Você terá 3 rodadas para completar a missão." },
+  { id: 6, description: "Cada rodada terá 10 segundos para focar na estrela." },
+  { id: 7, description: "Evite olhar para as distrações — elas tiram seus pontos!" },
+  {
+    id: 8,
+    description: "Prepare-se para o desafio, astronauta. Mantenha o foco!",
+    isFinal: true,
+  },
+];

@@ -1,6 +1,7 @@
-import { Button } from "@/components/Button";
 import SuccessScreen from "@/components/SuccessScreen";
 import FormModal from "./FormModal";
+import OverlayInstruction from "../Calibration/OverlayInstruction";
+import { fase2Steps } from "@/constants/steps";
 
 interface GameOverlayProps {
   readonly audioGameStarted: boolean;
@@ -13,11 +14,7 @@ interface GameOverlayProps {
 export default function GameOverlay({ audioGameStarted, showSuccessModal, showFormModal, onStart, onCloseForm }: GameOverlayProps) {
 
   if (!audioGameStarted) {
-    return (
-      <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
-        <Button text="Clique para iniciar o jogo" onClick={onStart} />
-      </div>
-    );
+    return <OverlayInstruction onComplete={onStart} steps={fase2Steps} />;
   }
 
   if (showSuccessModal) {
