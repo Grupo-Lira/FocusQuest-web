@@ -26,8 +26,7 @@ export function usePlanets() {
     // se já apareceram 3, não mostra mais
     if (planetCountRef.current >= 3) return;
 
-    // chance de 40% de aparecer
-    if (Math.random() > 0.9) return;
+    if (Math.random() > 1) return;
 
     // pega um planeta que ainda não apareceu
     const remainingPlanets = planets.filter(

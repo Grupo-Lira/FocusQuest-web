@@ -25,19 +25,33 @@ export default function GameScreen() {
     audioGameStarted,
     setAudioGameStarted,
     isGameActive,
+    setTimeLeft,
     timeLeft,
     setPhase,
   } = useGameContext();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showFormModal, setShowFormModal] = useState(false);
   const [shiningStar, setShiningStar] = useState<string | null>(null);
 
+  const [currentRound, setCurrentRound] = useState(1);
+
   const { startAudio, pauseAudio } = useGameAudio({ fase: 2 });
-  const { activePlanet, triggerPlanet } = usePlanets();
+  const { activePlanet, triggerPlanet, resetPlanets } = usePlanets();
 
   const handleStartGame = () => {
     setIsGameActive(true);
     setAudioGameStarted(true);
     startAudio();
+  };
+
+  const handleCloseForm = () => {
+    setShowFormModal(false);
+    setCurrentRound((prev) => prev + 1); // avança para a próxima rodada
+    setTimeLeft(10); // reseta o tempo para 10 segundos
+    setIsPaused(false);
+    setIsGameActive(true);
+    startAudio();
+    resetPlanets();
   };
 
   useEffect(() => {
@@ -67,7 +81,7 @@ export default function GameScreen() {
 
       triggerPlanet(randomStar.left);
 
-      setTimeout(() => setShiningStar(null), 8000);
+      setTimeout(() => setShiningStar(null), 10000);
     };
 
     // brilha imediatamente ao começar
@@ -83,10 +97,16 @@ export default function GameScreen() {
 
   useEffect(() => {
     if (timeLeft === 0) {
-      setShowSuccessModal(true);
       setIsPaused(true);
       setIsGameActive(false);
       pauseAudio();
+
+      if (currentRound < 3) {
+        setShowFormModal(true);
+      } else {
+        // Se for a última, mostra tela de sucesso
+        setShowSuccessModal(true);
+      }
     }
   }, [timeLeft]);
 
@@ -111,7 +131,13 @@ export default function GameScreen() {
             <NavbarGame label="ENCONTRE E FIXE OS OLHOS NO ALVO BRILHANDO" />
           </div>
 
-          <GameOverlay audioGameStarted={audioGameStarted} showSuccessModal={showSuccessModal} onStart={handleStartGame} />
+          <GameOverlay
+            audioGameStarted={audioGameStarted}
+            showSuccessModal={showSuccessModal}
+            showFormModal={showFormModal}
+            onStart={handleStartGame}
+            onCloseForm={handleCloseForm}
+          />
 
           <SettingsButton
             onClick={() => {
