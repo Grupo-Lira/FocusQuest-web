@@ -1,9 +1,15 @@
 import { PlayIcon } from "lucide-react";
-import { steps } from "@/constants/steps";
 import { useState } from "react";
 import Image from "next/image";
+import { StepProps } from "@/constants/steps";
+import { Button } from "../Button";
 
-export default function OverlayInstruction({ onComplete }: Readonly<{ onComplete: () => void }>) {
+interface OverlayInstructionProps {
+  readonly onComplete: () => void;
+  readonly steps: ReadonlyArray<StepProps>;
+}
+
+export default function OverlayInstruction({ onComplete, steps }: OverlayInstructionProps) {
   const [currentStep, setCurrentStep] = useState(steps[0]);
 
   if (!currentStep) return null;
@@ -27,18 +33,23 @@ export default function OverlayInstruction({ onComplete }: Readonly<{ onComplete
             >
               <PlayIcon className="scale-x-[-1]" size={60} />
             </button>
-            <button
-              onClick={() => {
-                const nextIndex = (currentIndex + 1) % steps.length;
-                if (currentStep.isFinal) {
-                  onComplete();
-                } else {
+            {currentStep.isFinal ? (
+              <div className="flex">
+                <Button
+                  onClick={onComplete}
+                  text="Começar"
+                />
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  const nextIndex = (currentIndex + 1) % steps.length;
                   setCurrentStep(steps[nextIndex]);
-                }
-              }}
-            >
-              <PlayIcon size={60} />
-            </button>
+                }}
+              >
+                <PlayIcon size={60} />
+              </button>
+            )}
           </div>
         </div>
       </div>

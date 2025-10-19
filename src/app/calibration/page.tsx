@@ -6,6 +6,7 @@ import { stars } from "@/constants/calibrationStar";
 import StarCalibration from "@/components/Calibration/StarCalibration";
 import SettingsModal from "@/components/SettingsModal";
 import SuccessScreen from "@/components/Calibration/SuccessScreen";
+import { steps } from "@/constants/steps";
 
 export default function CalibrationPage() {
   const [showInstructions, setShowInstructions] = useState(true);
@@ -46,7 +47,7 @@ export default function CalibrationPage() {
       ): (
         <div className="min-h-screen flex flex-col text-white">
             {/* Tela de instruções antes da calibração */}
-            {showInstructions && <OverlayInstruction onComplete={handleStartCalibration} />}
+            {showInstructions && <OverlayInstruction onComplete={handleStartCalibration} steps={steps}/>}
 
             {/* Navbar de controle */}
             <NavbarCalibration setIsModalOpen={() => setIsModalVisible(true)} />

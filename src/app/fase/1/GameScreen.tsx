@@ -8,12 +8,13 @@ import { useEffect, useState } from "react";
 import { Bolt } from "lucide-react";
 import { useGameContext } from "@/context/GameContext";
 import { AnimatedElement } from "@/components/AnimatedElements/AnimatedElement";
-import { Button } from "@/components/Button";
 import { useGameLogic } from "./useGameLogic";
 import { animatedElements } from "@/config/gameConfig";
 import TimeOut from "@/components/TimeOut";
 import SuccessScreen from "@/components/SuccessScreen";
 import { useAudio } from "@/context/AudioContext";
+import OverlayInstruction from "@/components/Calibration/OverlayInstruction";
+import { fase1Steps } from "@/constants/steps";
 
 export default function GameScreen() {
   const { stars, level, handleHit, handleError } = useGameLogic();
@@ -77,9 +78,7 @@ export default function GameScreen() {
           </div>
 
           {!audioGameStarted && (
-            <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
-              <Button text="Clique para iniciar o jogo" onClick={handleStartGame} />
-            </div>
+            <OverlayInstruction onComplete={handleStartGame} steps={fase1Steps} />
           )}
 
           {isTimeUpModalOpen && (
