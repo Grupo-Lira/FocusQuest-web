@@ -35,8 +35,8 @@ export default function GameScreen() {
 
   const [currentRound, setCurrentRound] = useState(1);
 
-  const { startAudio, pauseAudio } = useGameAudio({ fase: 2 });
-  const { activePlanet, triggerPlanet, resetPlanets } = usePlanets();
+  const { startAudio } = useGameAudio({ fase: 2 });
+  const { activePlanets, triggerPlanet, resetPlanets } = usePlanets();
 
   const handleStartGame = () => {
     setIsGameActive(true);
@@ -50,17 +50,11 @@ export default function GameScreen() {
     setTimeLeft(10); // reseta o tempo para 10 segundos
     setIsPaused(false);
     setIsGameActive(true);
-    startAudio();
     resetPlanets();
   };
 
   useEffect(() => {
     if (!audioGameStarted) return;
-    if (isPaused) {
-      pauseAudio();
-    } else {
-      startAudio();
-    }
   }, [isPaused, audioGameStarted]);
 
   const lastIndexRef = useRef<number | null>(null);
@@ -99,7 +93,6 @@ export default function GameScreen() {
     if (timeLeft === 0) {
       setIsPaused(true);
       setIsGameActive(false);
-      pauseAudio();
 
       if (currentRound < 3) {
         setShowFormModal(true);
@@ -119,7 +112,6 @@ export default function GameScreen() {
             onClick={() => {
               setIsModalOpen(false);
               setIsPaused(false);
-              startAudio();
             }}
           />
         </div>
@@ -143,7 +135,6 @@ export default function GameScreen() {
             onClick={() => {
               setIsModalOpen(true);
               setIsPaused(true);
-              pauseAudio();
             }}
           />
 
@@ -172,18 +163,18 @@ export default function GameScreen() {
           </div>
 
           <AnimatePresence>
-            {activePlanet && (
+            {activePlanets.map((planet) => (
               <motion.div
-                key={activePlanet.src}
-                initial={activePlanet.start}
-                animate={activePlanet.end}
+                key={planet.src}
+                initial={planet.start}
+                animate={planet.end}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 2, ease: "easeInOut" }}
                 className="absolute"
               >
-                <Image src={activePlanet.src} alt="Planeta" width={120} height={120} />
+                <Image src={planet.src} alt="Planeta" width={120} height={120} />
               </motion.div>
-            )}
+            ))}
           </AnimatePresence>
         </div>
       )}

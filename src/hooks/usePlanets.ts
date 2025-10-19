@@ -18,9 +18,13 @@ interface PlanetInstance {
 }
 
 export function usePlanets() {
-  const [activePlanet, setActivePlanet] = useState<PlanetInstance | null>(null);
+  const [activePlanets, setActivePlanets] = useState<PlanetInstance[]>([]);
   const appearedPlanetsRef = useRef<string[]>([]);
   const planetCountRef = useRef(0);
+
+  const removeActivePlanetBySrc = (src: string) => {
+    setActivePlanets((prev) => prev.filter((p) => p.src !== src));
+  };
 
   const triggerPlanet = (starLeft: number) => {
     // se já apareceram 3, não mostra mais
@@ -44,20 +48,18 @@ export function usePlanets() {
     const end =
       side === "right" ? { left: "80%", bottom: "100%" } : { left: "50%", bottom: 0 };
 
-    const newPlanet: PlanetInstance = {
-      src: randomPlanet.src,
-      start,
-      end,
-      side,
-    };
+    const newPlanet: PlanetInstance = { src: randomPlanet.src, start, end, side };
 
     // atualiza estados e refs
-    setActivePlanet(newPlanet);
+    
+    setActivePlanets((prev) => [...prev, newPlanet]);
     appearedPlanetsRef.current.push(randomPlanet.id);
     planetCountRef.current += 1;
 
     // remove depois de 4s
-    setTimeout(() => setActivePlanet(null), 2000);
+    setTimeout(() => {
+      removeActivePlanetBySrc(randomPlanet.src);
+    }, 2000);
 
     if (planetCountRef.current === 3) {
       console.log("Planetas que apareceram:", appearedPlanetsRef.current);
@@ -69,5 +71,5 @@ export function usePlanets() {
     planetCountRef.current = 0;
   };
 
-  return { activePlanet, triggerPlanet, resetPlanets };
+  return { activePlanets, triggerPlanet, resetPlanets };
 }
