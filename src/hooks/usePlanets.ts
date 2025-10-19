@@ -26,11 +26,8 @@ export function usePlanets() {
     setActivePlanets((prev) => prev.filter((p) => p.src !== src));
   };
 
-  const triggerPlanet = (starLeft: number) => {
-    // se já apareceram 3, não mostra mais
+  const triggerPlanet = () => {
     if (planetCountRef.current >= 3) return;
-
-    if (Math.random() > 1) return;
 
     // pega um planeta que ainda não apareceu
     const remainingPlanets = planets.filter(
@@ -41,8 +38,8 @@ export function usePlanets() {
     const randomPlanet =
       remainingPlanets[Math.floor(Math.random() * remainingPlanets.length)];
 
-    // define diagonal: esquerda → canto inferior direito, direita → canto inferior esquerdo
-    const side = starLeft < 50 ? "right" : "left";
+    // sorteia o lado e a diagonal
+    const side = Math.random() < 0.5 ? "right" : "left";
     const start =
       side === "right" ? { left: "50%", bottom: 0 } : { left: 0, bottom: "100%" };
     const end =
@@ -50,26 +47,49 @@ export function usePlanets() {
 
     const newPlanet: PlanetInstance = { src: randomPlanet.src, start, end, side };
 
-    // atualiza estados e refs
-    
+    // adiciona planeta ativo e marca como exibido
     setActivePlanets((prev) => [...prev, newPlanet]);
     appearedPlanetsRef.current.push(randomPlanet.id);
     planetCountRef.current += 1;
 
-    // remove depois de 4s
+    // remove após 2s
     setTimeout(() => {
       removeActivePlanetBySrc(randomPlanet.src);
     }, 2000);
 
+    // log final quando completar os 3
     if (planetCountRef.current === 3) {
       console.log("Planetas que apareceram:", appearedPlanetsRef.current);
     }
   };
 
+  // --- 💫 NOVO: controla o tempo das aparições ---
+  const startGame = () => {
+    // limpa tudo
+    setActivePlanets([]);
+    appearedPlanetsRef.current = [];
+    planetCountRef.current = 0;
+
+    // define os segundos em que os planetas aparecem
+    const schedule = [2000, 6000, 8000]; // ms = segundos 2, 6 e 8
+  
+    for (const time of schedule) {
+      setTimeout(() => {
+        triggerPlanet();
+      }, time);
+    }
+
+    // log final após 10s
+    setTimeout(() => {
+      console.log("Fim do jogo. Planetas mostrados:", appearedPlanetsRef.current);
+    }, 10000);
+  };
+
   const resetPlanets = () => {
     appearedPlanetsRef.current = [];
     planetCountRef.current = 0;
+    setActivePlanets([]);
   };
 
-  return { activePlanets, triggerPlanet, resetPlanets };
+  return { activePlanets, triggerPlanet, startGame, resetPlanets };
 }

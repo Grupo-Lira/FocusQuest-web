@@ -29,6 +29,7 @@ export default function GameScreen() {
     timeLeft,
     setPhase,
   } = useGameContext();
+
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showFormModal, setShowFormModal] = useState(false);
   const [shiningStar, setShiningStar] = useState<string | null>(null);
@@ -36,12 +37,13 @@ export default function GameScreen() {
   const [currentRound, setCurrentRound] = useState(1);
 
   const { startAudio } = useGameAudio({ fase: 2 });
-  const { activePlanets, triggerPlanet, resetPlanets } = usePlanets();
+  const { activePlanets, startGame, resetPlanets } = usePlanets();
 
   const handleStartGame = () => {
     setIsGameActive(true);
     setAudioGameStarted(true);
     startAudio();
+    startGame();
   };
 
   const handleCloseForm = () => {
@@ -51,6 +53,7 @@ export default function GameScreen() {
     setIsPaused(false);
     setIsGameActive(true);
     resetPlanets();
+    startGame();
   };
 
   useEffect(() => {
@@ -72,8 +75,6 @@ export default function GameScreen() {
       const randomStar = stars[randomIndex];
       setShiningStar(randomStar.id);
       lastIndexRef.current = randomIndex;
-
-      triggerPlanet(randomStar.left);
 
       setTimeout(() => setShiningStar(null), 10000);
     };
