@@ -101,7 +101,7 @@ export default function GameScreen() {
 
           {showSuccessModal && (
             <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
-              <SuccessScreen />
+              <SuccessScreen fase={2}/>
             </div>
           )}
 
