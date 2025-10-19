@@ -1,4 +1,4 @@
-import { Bolt } from "lucide-react";
+import SettingsButton from "../SettingsButton";
 
 type NavbarCalibrationProps = Readonly<{
   setIsModalOpen: (isOpen: boolean) => void;
@@ -14,16 +14,7 @@ export default function NavbarCalibration({ setIsModalOpen }: NavbarCalibrationP
           </p>
         </div>
       </div>
-      <button
-        type="button"
-        aria-label="Open calibration modal"
-        className="bg-[var(--primary)] z-20 w-11 h-11 rounded-full absolute flex items-center justify-center button-glow transition-all duration-300 top-9 right-9 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary)]"
-        onClick={() => {
-          setIsModalOpen(true);
-        }}
-      >
-        <Bolt color="white" />
-      </button>
+      <SettingsButton onClick={() => setIsModalOpen(true)} />
     </div>
   );
 }

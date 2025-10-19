@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/Button";
+import SettingsButton from "@/components/SettingsButton";
 import SettingsModal from "@/components/SettingsModal";
-import { Bolt } from "lucide-react";
 import { useState } from "react";
 
 export default function ApresentationPage() {
@@ -11,17 +11,7 @@ export default function ApresentationPage() {
     <div className="flex items-center justify-center min-h-screen">
       {!isModalOpen && (
         <div className="bg-[var(--white)] px-[4.5rem] py-12 rounded-4xl flex flex-col gap-4 items-center relative">
-          <button
-            type="button"
-            aria-label="Open settings"
-            className="bg-[var(--primary)] w-11 h-11 rounded-full absolute flex items-center justify-center button-glow transition-all duration-300 top-3 right-3 focus:outline-none"
-            onClick={() => {
-              setIsModalOpen(true);
-              console.log("O modal está aberto");
-            }}
-          >
-            <Bolt color="white" />
-          </button>
+          <SettingsButton onClick={() => setIsModalOpen(true)} />
           <p className="text-4xl text-[var(--primary)] font-orbitron">
             Bem-vindo ao FocusQuest!
           </p>
