@@ -7,14 +7,14 @@ import { useGameContext } from "@/context/GameContext";
 import { AnimatedElement } from "@/components/AnimatedElements/AnimatedElement";
 import { animatedElementsFase2 } from "@/config/gameConfig";
 import { useGameAudio } from "@/hooks/useGameAudio";
-import Image from "next/image";
-import FixedStar from "@/components/FixedStar";
 import { stars } from "@/constants/fase2Stars";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import SettingsButton from "@/components/SettingsButton";
 import Clouds from "@/components/fase2/Clouds";
 import GameOverlay from "@/components/fase2/GameOverlay";
 import { usePlanets } from "@/hooks/usePlanets";
+import PlanetsAnimation from "@/components/fase2/PlanetsAnimations";
+import StarsField from "@/components/fase2/StarsField";
 
 export default function GameScreen() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -138,16 +138,7 @@ export default function GameScreen() {
             }}
           />
 
-          <div className="h-[70%] w-screen ml-32 relative">
-            {stars.map((star) => (
-              <FixedStar
-                key={star.id}
-                top={star.top}
-                left={star.left}
-                isShining={shiningStar === star.id}
-              />
-            ))}
-          </div>
+         <StarsField shiningStar={shiningStar} />
 
           <div className="h-screen w-screen relative">
             {isGameActive &&
@@ -164,16 +155,7 @@ export default function GameScreen() {
 
           <AnimatePresence>
             {activePlanets.map((planet) => (
-              <motion.div
-                key={planet.src}
-                initial={planet.start}
-                animate={planet.end}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 2, ease: "easeInOut" }}
-                className="absolute"
-              >
-                <Image src={planet.src} alt="Planeta" width={120} height={120} />
-              </motion.div>
+              <PlanetsAnimation key={planet.src} activePlanet={planet} />
             ))}
           </AnimatePresence>
         </div>
