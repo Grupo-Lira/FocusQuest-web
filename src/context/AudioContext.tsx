@@ -19,6 +19,8 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       audioRef.current.pause();
     }
 
+    console.log("Mudando áudio para fase", phase);
+
     audioRef.current = new Audio(`/audio/fase${phase}.mp3`);
     audioRef.current.loop = true;
     audioRef.current.volume = volume / 100;

@@ -1,7 +1,6 @@
 "use client";
 
 import NavbarGame from "@/components/NavbarGame";
-import Thermometer from "@/components/Thermometer";
 import Star from "@/components/Star";
 import SettingsModal from "@/components/SettingsModal";
 import { useEffect, useState } from "react";
@@ -14,10 +13,10 @@ import TimeOut from "@/components/TimeOut";
 import SuccessScreen from "@/components/SuccessScreen";
 import { useAudio } from "@/context/AudioContext";
 import OverlayInstruction from "@/components/Calibration/OverlayInstruction";
-import { fase1Steps } from "@/constants/steps";
+import { fase3Steps } from "@/constants/steps";
 
 export default function GameScreen() {
-  const { stars, level, handleHit, handleError } = useGameLogic();
+  const { stars, handleHit, handleError } = useGameLogic();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isTimeUpModalOpen, setIsTimeUpModalOpen] = useState(false);
   const {
@@ -29,8 +28,10 @@ export default function GameScreen() {
     isGameActive,
     hits,
     timeLeft,
+    setPhase,
   } = useGameContext();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isBrilhando, setIsBrilhando] = useState(false);
 
   const { startAudio } = useAudio();
 
@@ -39,6 +40,21 @@ export default function GameScreen() {
     setAudioGameStarted(true);
     startAudio();
   };
+
+  useEffect(() => {
+    if (!isGameActive) return; // só pisca durante o jogo
+
+    const interval = setInterval(() => {
+      setIsBrilhando(true); // acende
+      const timeout = setTimeout(() => {
+        setIsBrilhando(false); // apaga depois de 3s
+      }, 3000);
+
+      return () => clearTimeout(timeout);
+    }, 8000);
+
+    return () => clearInterval(interval);
+  }, [isGameActive]);
 
   useEffect(() => {
     if (timeLeft === 0) {
@@ -54,6 +70,10 @@ export default function GameScreen() {
     }
   }, [hits]);
 
+  useEffect(() => {
+    setPhase(3);
+  }, [setPhase]);
+
   return (
     <>
       {isModalOpen ? (
@@ -68,22 +88,18 @@ export default function GameScreen() {
           />
         </div>
       ) : (
-        <div className="fase3 relative w-full h-screen overflow-hidden">
-          <div className="flex justify-center mt-6 z-20">
-            <NavbarGame label="ENCONTRE E FIXE OS OLHOS NOS 5 ALVOS DURANTE 5 SEGUNDOS" />
+        <div className="fase3-container relative w-full h-screen overflow-hidden">
+          <div className="flex justify-center mt-6 relative z-11">
+            <NavbarGame label="FOQUE OS OLHOS NAS ESTRELAS E QUANDO O SINALIZADOR ACENDER, FOQUE NELE!" />
           </div>
 
           <div>
-            <div className="sinalizador brilhando" />
+            <div className={`sinalizador ${isBrilhando ? "brilhando" : ""}`} />
             <div className="base-sinalizador" />
           </div>
 
-          <div className="absolute top-44 ml-6 z-20">
-            <Thermometer level={level} />
-          </div>
-
           {!audioGameStarted && (
-            <OverlayInstruction onComplete={handleStartGame} steps={fase1Steps} />
+            <OverlayInstruction onComplete={handleStartGame} steps={fase3Steps} />
           )}
 
           {isTimeUpModalOpen && (
@@ -110,7 +126,7 @@ export default function GameScreen() {
             <Bolt color="white" />
           </button>
 
-          <div className="h-[70%] w-screen ml-32 relative">
+          <div className="h-[45%] w-screen z-11 relative">
             {stars.map((star) => (
               <Star
                 key={star.id}
@@ -134,6 +150,8 @@ export default function GameScreen() {
                 />
               ))}
           </div>
+
+          <div className="fase3-overlay absolute inset-0 pointer-events-none"></div>
         </div>
       )}
     </>

@@ -49,3 +49,17 @@ export const fase2Steps: StepProps[] = [
     isFinal: true,
   },
 ];
+
+export const fase3Steps: StepProps[] = [
+  { id: 1, description: "Excelente progresso, astronauta!" },
+  { id: 2, description: "Agora, vamos testar sua atenção alternada." },
+  { id: 3, description: "Foque nas estrelas como antes." },
+  { id: 4, description: "Quando o sinalizador acender, olhe para ele." },
+  { id: 5, description: "Quando o sinalizador apagar, volte a focar nas estrelas." },
+  { id: 6, description: "A rodada terá 30 segundos para focar nas estrelas e no sinalizador." },
+  { id: 7, description: "Evite olhar para as distrações — elas tiram seus pontos!" },
+  {    id: 8,
+    description: "Prepare-se para o desafio final, astronauta. Mantenha o foco!",
+    isFinal: true,
+  },
+];
