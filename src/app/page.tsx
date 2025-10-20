@@ -29,10 +29,10 @@ export default function Home() {
                 Crie uma
               </Link>
             </p>
-            <a className="text-[var(--primary)] font-bold">Esqueci minha senha</a>
+            <button type="button" className="text-[var(--primary)] font-bold">Esqueci minha senha</button>
           </div>
         </div>
-        <Button text="Login" onClick={() => (window.location.href = "/apresentation")} />
+        <Button text="Login" onClick={() => (globalThis.location.href = "/apresentation")} />
         <div className="flex items-center justify-center w-full">
           <hr className="flex-grow border-t border-gray-300" />
           <span className="mx-5">ou</span>

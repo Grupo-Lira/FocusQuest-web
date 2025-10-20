@@ -48,6 +48,7 @@
 
 /* Classes dinâmicas */
 .animated-element {
+  z-index: 1;
   position: absolute;
   will-change: transform;
 }

@@ -8,12 +8,13 @@ import { useEffect, useState } from "react";
 import { Bolt } from "lucide-react";
 import { useGameContext } from "@/context/GameContext";
 import { AnimatedElement } from "@/components/AnimatedElements/AnimatedElement";
-import { Button } from "@/components/Button";
 import { useGameLogic } from "./useGameLogic";
 import { animatedElements } from "@/config/gameConfig";
-import { useGameAudio } from "@/hooks/useGameAudio";
 import TimeOut from "@/components/TimeOut";
 import SuccessScreen from "@/components/SuccessScreen";
+import { useAudio } from "@/context/AudioContext";
+import OverlayInstruction from "@/components/Calibration/OverlayInstruction";
+import { fase1Steps } from "@/constants/steps";
 
 export default function GameScreen() {
   const { stars, level, handleHit, handleError } = useGameLogic();
@@ -31,7 +32,7 @@ export default function GameScreen() {
   } = useGameContext();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  const { startAudio, pauseAudio } = useGameAudio();
+  const { startAudio } = useAudio();
 
   const handleStartGame = () => {
     setIsGameActive(true);
@@ -40,15 +41,9 @@ export default function GameScreen() {
   };
 
   useEffect(() => {
-    if (!audioGameStarted) return;
-    void (isPaused ? pauseAudio() : startAudio());
-  }, [isPaused, audioGameStarted]);
-
-  useEffect(() => {
     if (timeLeft === 0) {
       setIsTimeUpModalOpen(true);
       setIsPaused(true);
-      pauseAudio();
     }
   }, [timeLeft]);
 
@@ -56,16 +51,26 @@ export default function GameScreen() {
     if (hits === 5) {
       setShowSuccessModal(true);
       setIsPaused(true);
-      pauseAudio();
     }
   }, [hits]);
 
   return (
     <>
-      {!isModalOpen ? (
+      {isModalOpen ? (
+        <div className="flex items-center justify-center min-h-screen">
+          <SettingsModal
+            isStoppedGame={true}
+            onClick={() => {
+              setIsModalOpen(false);
+              setIsPaused(false);
+              startAudio();
+            }}
+          />
+        </div>
+      ) : (
         <div className="fase1 relative w-full h-screen overflow-hidden">
           <div className="flex justify-center mt-6 z-20">
-            <NavbarGame />
+            <NavbarGame label="ENCONTRE E FIXE OS OLHOS NOS 5 ALVOS DURANTE 5 SEGUNDOS" />
           </div>
 
           <div className="absolute top-44 ml-6 z-20">
@@ -73,9 +78,7 @@ export default function GameScreen() {
           </div>
 
           {!audioGameStarted && (
-            <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
-              <Button text="Clique para iniciar o jogo" onClick={handleStartGame} />
-            </div>
+            <OverlayInstruction onComplete={handleStartGame} steps={fase1Steps} />
           )}
 
           {isTimeUpModalOpen && (
@@ -86,20 +89,21 @@ export default function GameScreen() {
 
           {showSuccessModal && (
             <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
-              <SuccessScreen />
+              <SuccessScreen fase={2}/>
             </div>
           )}
 
-          <div
+          <button
+            type="button"
+            aria-label="Open settings"
             className="bg-[var(--primary)] z-20 w-11 h-11 rounded-full absolute flex items-center justify-center button-glow transition-all duration-300 top-9 right-9"
             onClick={() => {
               setIsModalOpen(true);
               setIsPaused(true);
-              pauseAudio();
             }}
           >
             <Bolt color="white" />
-          </div>
+          </button>
 
           <div className="h-[70%] w-screen ml-32 relative">
             {stars.map((star) => (
@@ -126,19 +130,6 @@ export default function GameScreen() {
               ))}
           </div>
         </div>
-      ) : (
-        isModalOpen && (
-          <div className="flex items-center justify-center min-h-screen">
-            <SettingsModal
-              isStoppedGame={true}
-              onClick={() => {
-                setIsModalOpen(false);
-                setIsPaused(false);
-                startAudio();
-              }}
-            />
-          </div>
-        )
       )}
     </>
   );

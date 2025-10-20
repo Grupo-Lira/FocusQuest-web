@@ -1,0 +1,162 @@
+"use client";
+
+import NavbarGame from "@/components/NavbarGame";
+import SettingsModal from "@/components/SettingsModal";
+import { useEffect, useRef, useState } from "react";
+import { useGameContext } from "@/context/GameContext";
+import { AnimatedElement } from "@/components/AnimatedElements/AnimatedElement";
+import { animatedElementsFase2 } from "@/config/gameConfig";
+import { stars } from "@/constants/fase2Stars";
+import { AnimatePresence } from "framer-motion";
+import SettingsButton from "@/components/SettingsButton";
+import Clouds from "@/components/fase2/Clouds";
+import GameOverlay from "@/components/fase2/GameOverlay";
+import { usePlanets } from "@/hooks/usePlanets";
+import PlanetsAnimation from "@/components/fase2/PlanetsAnimations";
+import StarsField from "@/components/fase2/StarsField";
+import { useAudio } from "@/context/AudioContext";
+
+export default function GameScreen() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const {
+    isPaused,
+    setIsPaused,
+    setIsGameActive,
+    audioGameStarted,
+    setAudioGameStarted,
+    isGameActive,
+    setTimeLeft,
+    timeLeft,
+    setPhase,
+  } = useGameContext();
+
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showFormModal, setShowFormModal] = useState(false);
+  const [shiningStar, setShiningStar] = useState<string | null>(null);
+
+  const [currentRound, setCurrentRound] = useState(1);
+
+  const { startAudio } = useAudio();
+  const { activePlanets, startGame, resetPlanets } = usePlanets();
+
+  const handleStartGame = () => {
+    setIsGameActive(true);
+    setAudioGameStarted(true);
+    startAudio();
+    startGame();
+  };
+
+  const handleCloseForm = () => {
+    setShowFormModal(false);
+    setCurrentRound((prev) => prev + 1); // avança para a próxima rodada
+    setTimeLeft(10); // reseta o tempo para 10 segundos
+    setIsPaused(false);
+    setIsGameActive(true);
+    resetPlanets();
+    startGame();
+  };
+
+  const lastIndexRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!isGameActive) return;
+
+    const pickStar = () => {
+      let randomIndex: number;
+
+      do {
+        randomIndex = Math.floor(Math.random() * stars.length);
+      } while (randomIndex === lastIndexRef.current);
+
+      const randomStar = stars[randomIndex];
+      setShiningStar(randomStar.id);
+      lastIndexRef.current = randomIndex;
+
+      setTimeout(() => setShiningStar(null), 10000);
+    };
+
+    // brilha imediatamente ao começar
+    pickStar();
+
+    const interval = setInterval(pickStar, 2000);
+    return () => clearInterval(interval);
+  }, [isGameActive]);
+
+  useEffect(() => {
+    setPhase(2);
+  }, []);
+
+  useEffect(() => {
+    if (timeLeft === 0) {
+      setIsPaused(true);
+      setIsGameActive(false);
+
+      if (currentRound < 3) {
+        setShowFormModal(true);
+      } else {
+        // Se for a última, mostra tela de sucesso
+        setShowSuccessModal(true);
+      }
+    }
+  }, [timeLeft]);
+
+  return (
+    <>
+      {isModalOpen ? (
+        <div className="flex items-center justify-center min-h-screen">
+          <SettingsModal
+            isStoppedGame={true}
+            onClick={() => {
+              setIsModalOpen(false);
+              setIsPaused(false);
+            }}
+          />
+        </div>
+      ) : (
+        <div className="fase2 relative w-full h-screen overflow-hidden">
+          <Clouds />
+
+          <div className="flex justify-center mt-6 z-20">
+            <NavbarGame label="ENCONTRE E FIXE OS OLHOS NO ALVO BRILHANDO" />
+          </div>
+
+          <GameOverlay
+            audioGameStarted={audioGameStarted}
+            showSuccessModal={showSuccessModal}
+            showFormModal={showFormModal}
+            onStart={handleStartGame}
+            onCloseForm={handleCloseForm}
+          />
+
+          <SettingsButton
+            onClick={() => {
+              setIsModalOpen(true);
+              setIsPaused(true);
+            }}
+          />
+
+         <StarsField shiningStar={shiningStar} />
+
+          <div className="h-screen w-screen relative">
+            {isGameActive &&
+              animatedElementsFase2.map((item) => (
+                <AnimatedElement
+                  key={item.id}
+                  id={item.id}
+                  src={item.src}
+                  duration={item.duration}
+                  isPaused={isPaused}
+                />
+              ))}
+          </div>
+
+          <AnimatePresence>
+            {activePlanets.map((planet) => (
+              <PlanetsAnimation key={planet.src} activePlanet={planet} />
+            ))}
+          </AnimatePresence>
+        </div>
+      )}
+    </>
+  );
+}

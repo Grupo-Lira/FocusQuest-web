@@ -6,6 +6,7 @@ import { stars } from "@/constants/calibrationStar";
 import StarCalibration from "@/components/Calibration/StarCalibration";
 import SettingsModal from "@/components/SettingsModal";
 import SuccessScreen from "@/components/Calibration/SuccessScreen";
+import { steps } from "@/constants/steps";
 import { useEyeTracking } from "@/context/EyeTrackingContext";
 
 interface ClickData {
@@ -152,13 +153,20 @@ export default function CalibrationPage() {
 
   return (
     <>
-      {!isModalVisible ? (
+      {isModalVisible ? (
+        <div className="flex items-center justify-center min-h-screen">
+            <SettingsModal
+            isStoppedGame={true}
+            onClick={() => {
+                setIsModalVisible(false);
+            }}
+            />
+        </div>
+      ): (
         <div className="min-h-screen flex flex-col text-white">
           <div className="min-h-screen flex flex-col text-white">
             {/* Tela de instruções antes da calibração */}
-            {showInstructions && (
-              <OverlayInstruction onComplete={handleStartCalibration} />
-            )}
+            {showInstructions && <OverlayInstruction onComplete={handleStartCalibration} steps={steps}/>}
 
             {/* Navbar de controle */}
             <NavbarCalibration setIsModalOpen={() => setIsModalVisible(true)} />
@@ -184,16 +192,8 @@ export default function CalibrationPage() {
             {successModalVisible && <SuccessScreen onRestart={handleRestart} />}
           </div>
         </div>
-      ) : (
-        <div className="flex items-center justify-center min-h-screen">
-          <SettingsModal
-            isStoppedGame={true}
-            onClick={() => {
-              setIsModalVisible(false);
-            }}
-          />
-        </div>
-      )}
+        )
+    }
     </>
   );
 }

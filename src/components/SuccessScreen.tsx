@@ -4,7 +4,11 @@ import { Card } from "./Card";
 import { useState } from "react";
 import ResultsTable from "./ResultsTable";
 
-export default function SuccessScreen() {
+interface SuccessScreenProps {
+  readonly fase?: number;
+}
+
+export default function SuccessScreen({fase}: SuccessScreenProps) {
   const [resultsOpen, setResultsOpen] = useState(false);
 
   const results = [
@@ -13,6 +17,17 @@ export default function SuccessScreen() {
     { id: 3, name: "❌ Erros", score: "2 distrações" },
     { id: 4, name: "💡 Precisão", score: "66%" },
   ];
+
+  const resultsFase2 = [{ id: 1, name: "🎯 Planetas vistos", score: "7 de 9" }];
+
+  const handleFaseResults = () => {
+    if (fase === 2) {
+      return results;
+    } else if (fase === 3) {
+      return resultsFase2;
+    }
+    return results;
+  };
 
   return (
     <Card
@@ -23,11 +38,11 @@ export default function SuccessScreen() {
             <div className="flex gap-4">
               <Button
                 text="Próximo Nível"
-                onClick={() => (window.location.href = "/fase/2")}
+                onClick={() => (globalThis.location.href = `/fase/${fase}`)}
               />
               <Button
                 text="Menu Ínicial"
-                onClick={() => (window.location.href = "/menu")}
+                onClick={() => (globalThis.location.href = "/menu")}
               />
             </div>
           ) : (
@@ -39,7 +54,7 @@ export default function SuccessScreen() {
       <div className="flex flex-col gap-4">
         <div className="flex flex-col items-center">
           {resultsOpen ? (
-            <ResultsTable results={results} />
+            <ResultsTable results={handleFaseResults()} />
           ) : (
             <Image
               src="/img/viva.png"

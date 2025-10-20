@@ -6,7 +6,7 @@ type SuccessScreenProps = {
   onRestart: () => void;
 };
 
-export default function SuccessScreen({onRestart}: SuccessScreenProps) {
+export default function SuccessScreen({ onRestart }: Readonly<SuccessScreenProps>) {
   return (
     <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
         <Card
@@ -14,7 +14,7 @@ export default function SuccessScreen({onRestart}: SuccessScreenProps) {
         buttons={
             <div className="flex gap-4">
             <Button text="Reiniciar" onClick={onRestart} />
-            <Button text="Finalizar" onClick={() => (window.location.href = "/menu")} />
+            <Button text="Finalizar" onClick={() => (globalThis.location.href = "/menu")} />
             </div>
         }
         >

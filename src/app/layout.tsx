@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Orbitron, Poppins } from "next/font/google";
 import "./globals.css";
 import { GameProvider } from "@/context/GameContext";
+import { AudioProvider } from "@/context/AudioContext";
 import Script from "next/script";
 import { EyeTrackingProvider } from "@/context/EyeTrackingContext";
 
@@ -36,7 +37,11 @@ export default function RootLayout({
       </head>
       <body className={`${orbitron.variable} ${poppins.variable} antialiased`}>
         <EyeTrackingProvider>
-          <GameProvider>{children}</GameProvider>
+          <GameProvider>
+            <AudioProvider>
+              {children}
+            </AudioProvider>
+          </GameProvider>
         </EyeTrackingProvider>
       </body>
     </html>

@@ -4,14 +4,18 @@ import Image from "next/image";
 import { useGameContext } from "@/context/GameContext";
 import { formatTime } from "@/utils/formatTime";
 
-export default function NavbarGame() {
+interface NavbarGameProps {
+  readonly label: string;
+}
+
+;export default function NavbarGame({ label } : NavbarGameProps) {
   const { timeLeft, setIsPaused, isPaused } = useGameContext();
 
   return (
     <div className="bg-[var(--white)] px-6 py-3 flex w-fit rounded-full gap-40">
       <div className="flex gap-5 items-center">
         <p className="font-semibold font-orbitron text-[var(--primary)]">
-          ENCONTRE E FIXE O OLHO NAS 5 ESTRELAS DURANTE 5 SEGUNDOS
+          {label}
         </p>
       </div>
       <div className="flex items-center gap-1.5 pl-4 pb-2 rounded-full font-semibold bg-[var(--white)] text-[var(--primary)] inner-shadow">

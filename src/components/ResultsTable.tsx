@@ -8,7 +8,7 @@ interface ResultsTableProps {
   results: Result[];
 }
 
-export default function ResultsTable({ results }: ResultsTableProps) {
+export default function ResultsTable({ results }: Readonly<ResultsTableProps>) {
   return (
     <div className="flex flex-col items-center gap-8 pb-4">
       <table className="results-table">
