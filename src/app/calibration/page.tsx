@@ -27,11 +27,8 @@ export default function CalibrationPage() {
   const [clickLog, setClickLog] = useState<ClickData[]>([]);
   const {
     isWebGazerLoaded,
-    isTracking,
     startTracking,
     stopTracking,
-    fullStopTracking,
-    error,
     lastGazeData,
   } = useEyeTracking();
 
@@ -69,14 +66,17 @@ export default function CalibrationPage() {
       console.log("Elemento:", element);
       console.log("Coordenadas do clique:", { x: clickX, y: clickY });
       console.log("Coordenadas do WebGazer:", { x: gazeX, y: gazeY });
-      if (distance !== undefined) {
-        console.log("Distância:", distance.toFixed(2), "pixels");
-        console.log(
-          "Precisão:",
-          distance < 50 ? "Boa" : distance < 100 ? "Média" : "Baixa"
-        );
-      } else {
+      if (distance === undefined) {
         console.log("WebGazer não forneceu dados de gaze");
+      } else {
+        console.log("Distância:", distance.toFixed(2), "pixels");
+        let precision = "Baixa";
+        if (distance < 50) {
+          precision = "Boa";
+        } else if (distance < 100) {
+          precision = "Média";
+        }
+        console.log("Precisão:", precision);
       }
       console.log("=================");
 
@@ -142,10 +142,13 @@ export default function CalibrationPage() {
         console.log("Distância média:", avgDistance.toFixed(2), "pixels");
         console.log("Menor distância:", minDistance.toFixed(2), "pixels");
         console.log("Maior distância:", maxDistance.toFixed(2), "pixels");
-        console.log(
-          "Precisão geral:",
-          avgDistance < 50 ? "Excelente" : avgDistance < 100 ? "Boa" : "Precisa melhorar"
-        );
+        let precision = "Precisa melhorar";
+        if (avgDistance < 50) {
+          precision = "Excelente";
+        } else if (avgDistance < 100) {
+          precision = "Boa";
+        }
+        console.log("Precisão geral:", precision);
       }
       console.log("========================================");
     }
