@@ -64,6 +64,42 @@ body {
   min-height: 10vh;
 }
 
+.fase3{
+  background-image: url("/img/planetas/planet3.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+}
+
+.sinalizador {
+  z-index: 10;
+  position: absolute;
+  bottom: 28%; /* porcentagem baseada na altura da imagem */
+  left: 14%;   /* porcentagem baseada na largura da imagem */
+  width: 1.8%;
+  height: 12%;
+  background: red;
+  border-radius: 3px;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0);
+  transition: all 0.3s ease;
+}
+
+.sinalizador.brilhando {
+  background: #ff0000;
+  box-shadow: 0 0 55px 50px rgba(255, 0, 0, 0.6);
+}
+
+.base-sinalizador{
+  position: absolute;
+  bottom: 18%; /* porcentagem baseada na altura da imagem */
+  left: 14.3%;   /* porcentagem baseada na largura da imagem */
+  width: 1.1%;
+  height: 12%;
+  background: #14779F;
+  border-radius: 3px;
+}
+
 .thermometer-img {
   background-image: url("/img/thermometer.svg");
   background-position: center;
