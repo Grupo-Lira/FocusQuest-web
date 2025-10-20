@@ -15,6 +15,7 @@ interface StarCalibrationProps {
   left: number;
   onHit: () => void;
   onError?: () => void;
+  onClick: (event: React.MouseEvent) => void;
 }
 
 // Configurações do rastreamento ocular
@@ -52,6 +53,7 @@ export default function StarCalibration({
   left,
   onHit,
   onError,
+  onClick,
 }: StarCalibrationProps) {
   const [isBeingLookedAt, setIsBeingLookedAt] = useState(false);
   const [hasBeenHit, setHasBeenHit] = useState(false);
@@ -83,10 +85,10 @@ export default function StarCalibration({
   );
 
   // Inicia o rastreamento ocular
-  useEffect(() => {
-    const stopTracking = startEyeTracking(checkGazePosition, 300);
-    return stopTracking;
-  }, [checkGazePosition]);
+  // useEffect(() => {
+  //   const stopTracking = startEyeTracking(checkGazePosition, 300);
+  //   return stopTracking;
+  // }, [checkGazePosition]);
 
   // Se der erro no carregamento, dispara callback
   useEffect(() => {
@@ -97,6 +99,11 @@ export default function StarCalibration({
 
   if (!visible) return null;
 
+  const handleClick = (event: React.MouseEvent) => {
+    onHit();
+    onClick(event);
+  };
+
   return (
     <div
       className={clsx(
@@ -106,6 +113,7 @@ export default function StarCalibration({
           : "scale-100 opacity-90"
       )}
       style={{ top: `${top}%`, left: `${left}%`, transform: "translate(-50%, -50%)" }}
+      onClick={handleClick}
     >
       <Image
         width={50}
