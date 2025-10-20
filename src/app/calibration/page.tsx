@@ -18,9 +18,9 @@ interface ClickData {
   distance?: number; // Distância entre clique e gaze em pixels
 }
 
-export default function CalibrationPage() {
+export default function CalibrationPage() {  
   const [showInstructions, setShowInstructions] = useState(true);
-  const [successModalVisible, setSuccessModalVisible] = useState(true);
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [hits, setHits] = useState(0);
   const [clickLog, setClickLog] = useState<ClickData[]>([]);
@@ -34,12 +34,6 @@ export default function CalibrationPage() {
     lastGazeData,
   } = useEyeTracking();
 
-  // Inicia o processo de calibração
-  const handleStartCalibration = () => {
-    setShowInstructions(false);
-  };
-
-  // Função para calcular distância entre dois pontos
   const calculateDistance = (x1: number, y1: number, x2: number, y2: number): number => {
     return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
   };
@@ -91,24 +85,49 @@ export default function CalibrationPage() {
     [lastGazeData]
   );
 
-  // Handler para cliques na área principal (fora das estrelas)
-  const handleAreaClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    // Só registra se não estiver clicando em uma estrela ou outros elementos interativos
-    if ((event.target as HTMLElement).className === "flex-1 relative overflow-hidden") {
-      logClick(event, "background");
+  // Handler modificado para as estrelas
+  const handleStarClick = (event: React.MouseEvent, starId: string) => {
+    logClick(event, `star-${starId}`);
+
+    setHits((prev) => {
+      const newHits = prev + 1;
+      return newHits;
+    });
+
+    const starIndex = stars.findIndex((star) => star.id === starId);
+    if (starIndex !== -1) {
+      stars[starIndex].totalHits += 1;
     }
   };
 
-  // Handler modificado para as estrelas
-  const handleStarClick = (event: React.MouseEvent, starId: number) => {
-    logClick(event, `star-${starId}`);
+  const handleStartCalibration = async () => {
+    setShowInstructions(false);
+    
+    // Pequeno delay para garantir que o estado foi atualizado
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    if (isWebGazerLoaded) {
+      console.log("Iniciando rastreamento ocular...");
+      await startTracking();
+    } else {
+      console.warn("WebGazer não está carregado ainda");
+    }
+  };
+
+  const handleRestart = () => {
+    setSuccessModalVisible(false);
+    setShowInstructions(true);
+    setHits(0);
+    setClickLog([]);
   };
 
   // Verifica quando o usuário completa a calibração
   useEffect(() => {
-    if (hits === 5) {
+    if (hits >= 40 && !successModalVisible) {
+      console.log("Calibração concluída com", hits, "hits");
+      stopTracking();
       setSuccessModalVisible(true);
-      // Log final com estatísticas
+
       console.log("=== ESTATÍSTICAS FINAIS DA CALIBRAÇÃO ===");
       const validLogs = clickLog.filter((log) => log.distance !== undefined);
       if (validLogs.length > 0) {
@@ -129,29 +148,12 @@ export default function CalibrationPage() {
       }
       console.log("========================================");
     }
-  }, [hits, clickLog, lastGazeData]);
-
-  useEffect(() => {
-    if (isWebGazerLoaded && !isTracking && !isModalVisible && !showInstructions) {
-      startTracking();
-    }
-  }, [isWebGazerLoaded, isTracking, isModalVisible, showInstructions, startTracking]);
-
-  // Reinicia calibração quando fechar o modal de sucesso
-  const handleRestart = () => {
-    setHits(0);
-    setClickLog([]);
-    setSuccessModalVisible(false);
-    setShowInstructions(true);
-  };
+  }, [hits, successModalVisible, clickLog]);      
 
   return (
     <>
       {!isModalVisible ? (
-        <div
-          className="min-h-screen flex flex-col text-white"
-          onClick={handleAreaClick} // Captura cliques na área principal
-        >
+        <div className="min-h-screen flex flex-col text-white">
           <div className="min-h-screen flex flex-col text-white">
             {/* Tela de instruções antes da calibração */}
             {showInstructions && (
@@ -163,29 +165,19 @@ export default function CalibrationPage() {
 
             {/* Área principal da calibração */}
             <div className="flex-1 relative overflow-hidden">
-              {stars.map((star) => (
-                <StarCalibration
-                  key={star.id}
-                  top={star.top}
-                  left={star.left}
-                  onHit={() => setHits((prev) => prev + 1)}
-                  onError={() => console.error("Erro com estrela", star.id)}
-                  onClick={(e: React.MouseEvent) => handleStarClick(e, star.id)}
-                />
-              ))}
-              <p
-                style={{
-                  position: "absolute",
-                  top: "50px",
-                  left: "200px",
-                  color: "white",
-                  zIndex: 1000,
-                }}
-              >
-                {lastGazeData
-                  ? `X: ${lastGazeData.x.toFixed(2)}, Y: ${lastGazeData.y.toFixed(2)}`
-                  : "Aguardando dados..."}
-              </p>
+              {stars.map(
+                (star) =>
+                  star.totalHits < 5 && (
+                    <StarCalibration
+                      key={star.id}
+                      top={star.top}
+                      left={star.left}
+                      onHit={() => {}}
+                      onError={() => console.error("Erro com estrela", star.id)}
+                      onClick={(e: React.MouseEvent) => handleStarClick(e, star.id)}
+                    />
+                  )
+              )}
             </div>
 
             {/* Modal de sucesso */}

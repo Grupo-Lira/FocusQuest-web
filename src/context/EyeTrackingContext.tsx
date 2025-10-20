@@ -13,7 +13,18 @@ interface GazeData {
   timestamp: number;
 }
 
-const EyeTrackingContext = createContext({});
+interface EyeTrackingContextType {
+  isWebGazerLoaded: boolean;
+  isTracking: boolean;
+  isPaused: boolean;
+  error: string | null;
+  startTracking: () => Promise<void>;
+  stopTracking: () => void;
+  fullStopTracking: () => void;
+  lastGazeData: GazeData | null;
+}
+
+const EyeTrackingContext = createContext<EyeTrackingContextType>({} as EyeTrackingContextType);
 
 export function EyeTrackingProvider({ children }: { children: React.ReactNode }) {
   const [isWebGazerLoaded, setIsWebGazerLoaded] = useState<boolean>(false);
@@ -36,73 +47,70 @@ export function EyeTrackingProvider({ children }: { children: React.ReactNode })
   useEffect(() => {
     if (window.webgazer) {
       setIsWebGazerLoaded(true);
-      window.webgazer.params.showVideoPreview = false;
-      window.webgazer.params.showPredictionPoints = true;
     }
   }, []);
 
-  const startTracking = async () => {
+  const startTracking = useCallback(async () => {
     if (!isWebGazerLoaded) {
       setError("WebGazer not loaded yet.");
       return;
-    } else {
-      navigator.mediaDevices
-        .getUserMedia({ video: true })
-        .then(() => setHasPermission(true))
-        .catch(() => {
-          setHasPermission(false);
-          setError("Permissão negada.");
-        });
     }
 
-    try {
-      if (isPaused) {
-        window.webgazer.resume();
-        setIsPaused(false);
-      } else {
-        await window.webgazer
-          .setRegression("ridge")
-          .setTracker("TFFacemesh")
-          .saveDataAcrossSessions(false) //Em prod podemos deixar true para salvar a calibração no navegador para próximos usos
-          .setGazeListener((data: any, elapsedTime: number) => {
-            updateGazeData(data); // Atualiza as coordenadas do gaze
-            if (data) {
-              console.log(`X: ${data.x}, Y: ${data.y}`);
-            }
-          })
-          .begin();
-
-        window.webgazer
-          .showVideo(true)
-          .showPredictionPoints(true)
-          .showFaceFeedbackBox(true)
-          .applyKalmanFilter(true);
+    if (!hasPermission) {
+      try {
+        await navigator.mediaDevices.getUserMedia({ video: true });
+        setHasPermission(true);
+      } catch (err) {
+        setHasPermission(false);
+        setError("Permissão de câmera negada.");
+        return;
       }
-
-      setIsTracking(true);
-    } catch (err: unknown) {
-      console.error("Erro ao iniciar/retomar rastreamento:", err);
-      setError((err as Error).message);
     }
-  };
 
-  const stopTracking = () => {
-    if (window.webgazer && isTracking) {
-      window.webgazer.pause();
+    if (isPaused) {
+      window.webgazer.resume();
+      setIsPaused(false);
+    } else {
+      window.webgazer
+        .setRegression("ridge")
+        .setTracker("TFFacemesh")
+        .saveDataAcrossSessions(true) //Em prod podemos deixar true para salvar a calibração no navegador para próximos usos
+        .showVideo(false) // Ocultar vídeo
+        .showFaceOverlay(false) // Ocultar overlay da face
+        .showFaceFeedbackBox(false) // Ocultar caixa de feedback
+        .applyKalmanFilter(true)
+        .setGazeListener((data: any, elapsedTime: number) => {
+          updateGazeData(data);       
+        });
+
+      await window.webgazer.begin();
+    }
+
+    setIsTracking(true);
+  }, [isWebGazerLoaded, isPaused, hasPermission, updateGazeData]);
+
+  const stopTracking = useCallback(async() => {
+    if (isTracking) {  
+      console.log("Parando o rastreamento ocular...");    
+      await window.webgazer.pause();    
+      window.webgazer.clearGazeListener();
+
       setIsTracking(false);
-      setIsPaused(true);
+      setIsPaused(true);      
+      setLastGazeData(null);
     }
-  };
+  }, [isTracking]);
 
-  const fullStopTracking = () => {
+  const fullStopTracking = useCallback(() => {
     if (window.webgazer) {
       window.webgazer.end();
       setIsTracking(false);
       setIsPaused(false);
+      setLastGazeData(null);
     }
-  };
+  }, []);
 
-  const value = {
+  const value : EyeTrackingContextType = {
     isWebGazerLoaded,
     isTracking,
     isPaused,
