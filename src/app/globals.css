@@ -76,7 +76,7 @@ body {
 .sinalizador {
   z-index: 11;
   position: absolute;
-  bottom: 28%; /* porcentagem baseada na altura da imagem */
+  bottom: 26%; /* porcentagem baseada na altura da imagem */
   left: 14%;   /* porcentagem baseada na largura da imagem */
   width: 1.8%;
   height: 12%;
@@ -94,7 +94,7 @@ body {
 .base-sinalizador{
   z-index: 10;
   position: absolute;
-  bottom: 18%; /* porcentagem baseada na altura da imagem */
+  bottom: 16%; /* porcentagem baseada na altura da imagem */
   left: 14.3%;   /* porcentagem baseada na largura da imagem */
   width: 1.1%;
   height: 12%;

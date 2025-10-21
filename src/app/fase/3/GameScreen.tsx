@@ -1,24 +1,20 @@
 "use client";
 
 import NavbarGame from "@/components/NavbarGame";
-import Star from "@/components/Star";
 import SettingsModal from "@/components/SettingsModal";
 import { useEffect, useState } from "react";
 import { Bolt } from "lucide-react";
 import { useGameContext } from "@/context/GameContext";
 import { AnimatedElement } from "@/components/AnimatedElements/AnimatedElement";
-import { useGameLogic } from "./useGameLogic";
 import { animatedElements } from "@/config/gameConfig";
-import TimeOut from "@/components/TimeOut";
 import SuccessScreen from "@/components/SuccessScreen";
 import { useAudio } from "@/context/AudioContext";
 import OverlayInstruction from "@/components/Calibration/OverlayInstruction";
 import { fase3Steps } from "@/constants/steps";
+import FixedStar from "@/components/FixedStar";
 
 export default function GameScreen() {
-  const { stars, handleHit, handleError } = useGameLogic();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isTimeUpModalOpen, setIsTimeUpModalOpen] = useState(false);
   const {
     isPaused,
     setIsPaused,
@@ -26,7 +22,6 @@ export default function GameScreen() {
     audioGameStarted,
     setAudioGameStarted,
     isGameActive,
-    hits,
     timeLeft,
     setPhase,
   } = useGameContext();
@@ -58,17 +53,10 @@ export default function GameScreen() {
 
   useEffect(() => {
     if (timeLeft === 0) {
-      setIsTimeUpModalOpen(true);
-      setIsPaused(true);
-    }
-  }, [timeLeft]);
-
-  useEffect(() => {
-    if (hits === 5) {
       setShowSuccessModal(true);
       setIsPaused(true);
     }
-  }, [hits]);
+  }, [timeLeft]);
 
   useEffect(() => {
     setPhase(3);
@@ -102,12 +90,6 @@ export default function GameScreen() {
             <OverlayInstruction onComplete={handleStartGame} steps={fase3Steps} />
           )}
 
-          {isTimeUpModalOpen && (
-            <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
-              <TimeOut />
-            </div>
-          )}
-
           {showSuccessModal && (
             <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
               <SuccessScreen fase={2} />
@@ -127,15 +109,10 @@ export default function GameScreen() {
           </button>
 
           <div className="h-[45%] w-screen z-11 relative">
-            {stars.map((star) => (
-              <Star
-                key={star.id}
-                top={star.top}
-                left={star.left}
-                onRemove={() => handleHit(star.id)}
-                onError={handleError}
+              <FixedStar
+                top={45}
+                left={60}
               />
-            ))}
           </div>
 
           <div className="h-screen w-screen relative">
