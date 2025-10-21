@@ -6,7 +6,7 @@ import { GameContextProps } from "@/interface/GameInterface";
 // Tempo por fase — edite aqui para mudar os tempos por fase
 const PHASE_TIMES: Record<number, number> = {
   1: 60, // fase 1 = 60s
-  2: 10, // fase 2 = 10s
+  2: 15, // fase 2 = 15s
   3: 30, // fase 3 = 30s
 };
 

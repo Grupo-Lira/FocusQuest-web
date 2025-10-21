@@ -49,7 +49,7 @@ export default function GameScreen() {
   const handleCloseForm = () => {
     setShowFormModal(false);
     setCurrentRound((prev) => prev + 1); // avança para a próxima rodada
-    setTimeLeft(10); // reseta o tempo para 10 segundos
+    setTimeLeft(15); // reseta o tempo para 15 segundos
     setIsPaused(false);
     setIsGameActive(true);
     resetPlanets();
@@ -91,7 +91,7 @@ export default function GameScreen() {
       setIsPaused(true);
       setIsGameActive(false);
 
-      if (currentRound < 3) {
+      if (currentRound < 2) {
         setShowFormModal(true);
       } else {
         // Se for a última, mostra tela de sucesso
