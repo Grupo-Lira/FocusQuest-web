@@ -35,9 +35,9 @@ function startEyeTracking(
     if (!isActive) return;
 
     try {
-      const res = await fetch("http://localhost:4000/eyetracking");
-      const data = await res.json();
-      callback(data.iris_position || null);
+      // const res = await fetch("http://localhost:4000/eyetracking");
+      // const data = await res.json();
+      //callback(data.iris_position || null);
     } catch (error) {
       console.error("Eye Tracking Error:", error);
       callback(null);

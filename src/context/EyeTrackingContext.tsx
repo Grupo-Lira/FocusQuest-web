@@ -7,7 +7,7 @@ declare global {
   }
 }
 
-interface GazeData {
+export interface GazeData {
   x: number;
   y: number;
   timestamp: number;
@@ -19,6 +19,7 @@ interface EyeTrackingContextType {
   isPaused: boolean;
   error: string | null;
   startTracking: () => Promise<void>;
+  startTrackingWithoutMouse: () => Promise<void>;
   stopTracking: () => void;
   fullStopTracking: () => void;
   lastGazeData: GazeData | null;
@@ -44,6 +45,7 @@ export function EyeTrackingProvider({ children }: EyeTrackingProviderProps) {
 
   const updateGazeData = useCallback((data: dataType) => {
     if (data && data.x !== null && data.y !== null) {
+      
       setLastGazeData({
         x: data.x,
         y: data.y,
@@ -98,6 +100,47 @@ export function EyeTrackingProvider({ children }: EyeTrackingProviderProps) {
     setIsTracking(true);
   }, [isWebGazerLoaded, isPaused, hasPermission, updateGazeData]);
 
+  const startTrackingWithoutMouse = useCallback(async () => {
+    if (!isWebGazerLoaded) {
+      setError("WebGazer not loaded yet.");
+      return;
+    }
+
+    if (!hasPermission) {
+      try {
+        await navigator.mediaDevices.getUserMedia({ video: true });
+        setHasPermission(true);
+      } catch (e) {
+        setHasPermission(false);
+        setError("Permissão de câmera negada.");
+        console.error(e);
+        return;
+      }
+    }
+
+    if (isPaused) {
+      globalThis.webgazer.resume();
+      setIsPaused(false);
+    } else {
+      globalThis.webgazer
+        .setRegression("ridge")
+        .setTracker("TFFacemesh")
+        .saveDataAcrossSessions(true)
+        .showVideo(false)
+        .showFaceOverlay(false)
+        .showFaceFeedbackBox(false)
+        .applyKalmanFilter(true)
+        .removeMouseEventListeners() //O webgazer não vai seguir o mouse
+        .setGazeListener((data: any) => {
+          updateGazeData(data);
+        });
+
+      await globalThis.webgazer.begin();
+    }
+
+    setIsTracking(true);
+  }, [isWebGazerLoaded, isPaused, hasPermission, updateGazeData]);
+
   const stopTracking = useCallback(async () => {
     if (isTracking) {
       console.log("Parando o rastreamento ocular...");
@@ -125,6 +168,7 @@ export function EyeTrackingProvider({ children }: EyeTrackingProviderProps) {
     isPaused,
     error,
     startTracking,
+    startTrackingWithoutMouse,
     stopTracking,
     fullStopTracking,
     lastGazeData,

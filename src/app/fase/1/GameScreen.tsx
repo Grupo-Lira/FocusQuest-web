@@ -4,7 +4,7 @@ import NavbarGame from "@/components/NavbarGame";
 import Thermometer from "@/components/Thermometer";
 import Star from "@/components/Star";
 import SettingsModal from "@/components/SettingsModal";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Bolt } from "lucide-react";
 import { useGameContext } from "@/context/GameContext";
 import { AnimatedElement } from "@/components/AnimatedElements/AnimatedElement";
@@ -15,8 +15,11 @@ import SuccessScreen from "@/components/SuccessScreen";
 import { useAudio } from "@/context/AudioContext";
 import OverlayInstruction from "@/components/Calibration/OverlayInstruction";
 import { fase1Steps } from "@/constants/steps";
+import { GazeData, useEyeTracking } from "@/context/EyeTrackingContext";
+import { useSocketIO } from "@/hooks/useWebSocket";
 
 export default function GameScreen() {
+  const starsContainerRef = useRef<HTMLDivElement>(null);
   const { stars, level, handleHit, handleError } = useGameLogic();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isTimeUpModalOpen, setIsTimeUpModalOpen] = useState(false);
@@ -31,17 +34,76 @@ export default function GameScreen() {
     timeLeft,
   } = useGameContext();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-
+  const {
+    stopTracking,
+    isWebGazerLoaded,
+    startTrackingWithoutMouse,
+    lastGazeData,
+    isTracking,
+  } = useEyeTracking();
   const { startAudio } = useAudio();
+  const { socket, isConnected } = useSocketIO();
 
-  const handleStartGame = () => {
+  const lastGazeRef = useRef<GazeData | null>(null);
+
+  const handleStartGame = async () => {
+    if (isWebGazerLoaded) {
+      console.log("Iniciando rastreamento ocular...");
+      await startTrackingWithoutMouse();
+    } else {
+      console.warn("Web gazer ainda não está carregado!");
+    }
+
+    if (isConnected && socket && stars.length > 0) {
+      console.log("Enviando configuração dos alvos para o servidor...");
+      const configAlvos = stars
+        .map((star) => {
+          return getRelativeCoordinates(star.left, star.top);
+        })
+        .filter(Boolean);
+
+      console.log(configAlvos.length);
+      if (configAlvos.length > 0) {
+        console.log(
+          "🚀 EMITINDO evento: fase_1_alvos_configuracao, {}",
+          configAlvos.length > 0
+        );
+        socket.emit("gaze_data", configAlvos);
+      }
+    }
+
     setIsGameActive(true);
     setAudioGameStarted(true);
     startAudio();
   };
 
+  const getRelativeCoordinates = (relativeLeft: number, relativeTop: number) => {
+    if (!starsContainerRef.current) return null;
+
+    const container = starsContainerRef.current;
+    const rect = container.getBoundingClientRect();
+
+    const centerX = rect.left + (rect.width * relativeLeft) / 100;
+    const centerY = rect.top + (rect.height * relativeTop) / 100;
+
+    const normalizedX = centerX / window.innerWidth;
+    const normalizedY = centerY / window.innerHeight;
+
+    //Aumentar área aceitavel de fixação
+    const toleranceX = 0.05;
+    const toleranceY = 0.05 * (window.innerWidth / window.innerHeight);
+
+    return {
+      x_min: Math.max(0, normalizedX - toleranceX),
+      x_max: Math.min(1, normalizedX + toleranceX),
+      y_min: Math.max(0, normalizedY - toleranceY),
+      y_max: Math.min(1, normalizedY + toleranceY),
+    };
+  };
+
   useEffect(() => {
     if (timeLeft === 0) {
+      stopTracking();
       setIsTimeUpModalOpen(true);
       setIsPaused(true);
     }
@@ -53,6 +115,66 @@ export default function GameScreen() {
       setIsPaused(true);
     }
   }, [hits]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("fase_iniciada", (data) => {
+      console.log("Fase iniciada:", data);
+    });
+
+    socket.on("gaze_status", (data) => {
+      console.log("Status do gaze:", data);
+    });
+
+    socket.on("fase_atual_finalizada", (data) => {
+      console.log("Fase finalizada:", data);
+    });
+
+    socket.on("experimento_concluido", (data) => {
+      console.log("Experimento concluído:", data);
+    });
+
+    return () => {
+      socket.off("fase_iniciada");
+      socket.off("gaze_status");
+      socket.off("fase_atual_finalizada");
+      socket.off("experimento_concluido");
+    };
+  }, [socket]);
+
+  useEffect(() => {
+    lastGazeRef.current = lastGazeData;
+  }, [lastGazeData]);
+
+  useEffect(() => {
+    if (!isConnected || !socket || !isTracking) return;
+
+    const interval = setInterval(() => {
+      const gaze = lastGazeRef.current;
+      if (gaze && socket.connected) {
+        try {
+          const normalizedX = Math.max(0, Math.min(1, gaze.x / window.innerWidth));
+          const normalizedY = Math.max(0, Math.min(1, gaze.y / window.innerHeight));
+          
+          socket.emit("eye_tracking_data", {
+            x: normalizedX,
+            y: normalizedY,
+            rawX: gaze.x,
+            rawY: gaze.y,
+            timestamp: gaze.timestamp,
+          });
+        } catch (error) {
+          console.error("Erro ao emitir gaze data:", error);
+        }
+      }
+    }, 1000);
+
+    return () => {
+      console.log("Parando emissão de gaze data...");
+      clearInterval(interval);
+    };
+  }, [isConnected, socket, isTracking]);
 
   return (
     <>
@@ -89,7 +211,7 @@ export default function GameScreen() {
 
           {showSuccessModal && (
             <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
-              <SuccessScreen fase={2}/>
+              <SuccessScreen fase={2} />
             </div>
           )}
 
@@ -105,7 +227,7 @@ export default function GameScreen() {
             <Bolt color="white" />
           </button>
 
-          <div className="h-[70%] w-screen ml-32 relative">
+          <div className="h-[70%] w-screen ml-32 relative" ref={starsContainerRef}>
             {stars.map((star) => (
               <Star
                 key={star.id}
