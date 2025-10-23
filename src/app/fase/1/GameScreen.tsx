@@ -41,6 +41,7 @@ export default function GameScreen() {
     lastGazeData,
     isTracking,
   } = useEyeTracking();
+  const lastSentGazeRef = useRef<GazeData | null>(null); //Vamos guardar a coordenada do olho anterior a coordenada atual
   const { startAudio } = useAudio();
   const { socket, isConnected } = useSocketIO();
 
@@ -65,10 +66,10 @@ export default function GameScreen() {
       console.log(configAlvos.length);
       if (configAlvos.length > 0) {
         console.log(
-          "🚀 EMITINDO evento: fase_1_alvos_configuracao, {}",
+          "EMITINDO evento: fase_1_alvos_configuracao, {}",
           configAlvos.length > 0
         );
-        socket.emit("gaze_data", configAlvos);
+        socket.emit("iniciar_experimento_com_config", configAlvos);
       }
     }
 
@@ -156,14 +157,28 @@ export default function GameScreen() {
         try {
           const normalizedX = Math.max(0, Math.min(1, gaze.x / window.innerWidth));
           const normalizedY = Math.max(0, Math.min(1, gaze.y / window.innerHeight));
-          
-          socket.emit("eye_tracking_data", {
-            x: normalizedX,
-            y: normalizedY,
-            rawX: gaze.x,
-            rawY: gaze.y,
-            timestamp: gaze.timestamp,
-          });
+          console.log("x: ", gaze.x, "x last: ", lastSentGazeRef.current?.x);
+          console.log("y: ", gaze.y, "y last: ", lastSentGazeRef.current?.y);
+          console.log("gaze.x !== last.x: ", gaze.x !== lastSentGazeRef.current?.x);
+          console.log("gaze.y !== last.y: ", gaze.y !== lastSentGazeRef.current?.y);
+          const isNewData =
+            !gaze ||
+            gaze.x !== lastSentGazeRef.current?.x ||
+            gaze.y !== lastSentGazeRef.current?.y ||
+            gaze.timestamp !== lastSentGazeRef.current?.timestamp;
+
+          if (isNewData) {
+            socket.emit("gaze_data", {
+              x: normalizedX,
+              y: normalizedY,
+              rawX: gaze.x,
+              rawY: gaze.y,
+              timestamp: gaze.timestamp,
+            });
+            lastSentGazeRef.current = { ...gaze };
+          } else {
+            console.log("Bbbbbbbbbbbbbb");
+          }
         } catch (error) {
           console.error("Erro ao emitir gaze data:", error);
         }
