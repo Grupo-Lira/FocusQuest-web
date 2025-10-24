@@ -27,5 +27,5 @@ export function useGameLogic() {
     setLevel((l) => Math.max(l - 15, 0));
   };
 
-  return { stars, level, handleHit, handleError };
+  return { stars, level, handleHit, handleError, handleRemove };
 }

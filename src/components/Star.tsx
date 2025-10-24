@@ -17,6 +17,7 @@ interface StarProps {
   readonly left: number;
   readonly onRemove: () => void;
   readonly onError: () => void;
+  isBrilhante: boolean;
 }
 
 // Constants
@@ -52,7 +53,7 @@ function startEyeTracking(
   };
 }
 
-export default function Star({ top, left, onRemove, onError }: StarProps) {
+export default function Star({ top, left, onRemove, onError, isBrilhante }: StarProps) {
   const { hovering, removing, handleMouseEnter, handleMouseLeave } = useStarBehavior(
     onRemove,
     onError
@@ -115,7 +116,8 @@ export default function Star({ top, left, onRemove, onError }: StarProps) {
         src="/img/star.svg"
         className={clsx(
           "relative z-10 transition-transform",
-          isBeingLookedAt ? "animate-pulse" : ""
+          isBeingLookedAt ? "animate-pulse" : "",
+          isBrilhante ? "animate-pulse" : ""
         )}
       />
     </button>

@@ -20,7 +20,7 @@ import { useSocketIO } from "@/hooks/useWebSocket";
 
 export default function GameScreen() {
   const starsContainerRef = useRef<HTMLDivElement>(null);
-  const { stars, level, handleHit, handleError } = useGameLogic();
+  const { stars, level, handleHit, handleError, handleRemove } = useGameLogic();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isTimeUpModalOpen, setIsTimeUpModalOpen] = useState(false);
   const {
@@ -46,6 +46,7 @@ export default function GameScreen() {
   const { socket, isConnected } = useSocketIO();
 
   const lastGazeRef = useRef<GazeData | null>(null);
+  const [estrelasBrilhantes, setEstrelasBrilhantes] = useState<number[]>([]);
 
   const handleStartGame = async () => {
     if (isWebGazerLoaded) {
@@ -59,7 +60,11 @@ export default function GameScreen() {
       console.log("Enviando configuração dos alvos para o servidor...");
       const configAlvos = stars
         .map((star) => {
-          return getRelativeCoordinates(star.left, star.top);
+          const relativeCoords = getRelativeCoordinates(star.left, star.top);
+          return {
+            id: star.id,
+            ...relativeCoords,
+          };
         })
         .filter(Boolean);
 
@@ -102,6 +107,34 @@ export default function GameScreen() {
     };
   };
 
+  //LOGICA DE BRILHAR ALVO ATUAL
+  function brilharEstrela(alvo: {
+    id: number;
+    x_max: string;
+    x_min: string;
+    y_max: string;
+    y_min: string;
+  }) {
+    // Adiciona o ID ao array de estrelas brilhantes
+    setEstrelasBrilhantes((prev) => {
+      if (!prev.includes(alvo.id)) {
+        return [...prev, alvo.id];
+      }
+      return prev;
+    });
+  }
+
+  //LOGICA DE APAGAR ALVO ATUAL
+  function apagarEstrela(alvo: {
+    id: number;
+    x_max: string;
+    x_min: string;
+    y_max: string;
+    y_min: string;
+  }) {
+    handleRemove(alvo.id);
+  }
+
   useEffect(() => {
     if (timeLeft === 0) {
       stopTracking();
@@ -122,6 +155,8 @@ export default function GameScreen() {
 
     socket.on("fase_iniciada", (data) => {
       console.log("Fase iniciada:", data);
+
+      brilharEstrela(data.alvo);
     });
 
     socket.on("gaze_status", (data) => {
@@ -130,6 +165,7 @@ export default function GameScreen() {
 
     socket.on("fase_atual_finalizada", (data) => {
       console.log("Fase finalizada:", data);
+      apagarEstrela(data.alvo);
     });
 
     socket.on("experimento_concluido", (data) => {
@@ -176,8 +212,6 @@ export default function GameScreen() {
               timestamp: gaze.timestamp,
             });
             lastSentGazeRef.current = { ...gaze };
-          } else {
-            console.log("Bbbbbbbbbbbbbb");
           }
         } catch (error) {
           console.error("Erro ao emitir gaze data:", error);
@@ -250,6 +284,7 @@ export default function GameScreen() {
                 left={star.left}
                 onRemove={() => handleHit(star.id)}
                 onError={handleError}
+                isBrilhante={estrelasBrilhantes.includes(star.id)}
               />
             ))}
           </div>
