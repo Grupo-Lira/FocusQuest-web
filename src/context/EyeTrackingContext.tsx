@@ -45,7 +45,6 @@ export function EyeTrackingProvider({ children }: EyeTrackingProviderProps) {
 
   const updateGazeData = useCallback((data: dataType) => {
     if (data && data.x !== null && data.y !== null) {
-      
       setLastGazeData({
         x: data.x,
         y: data.y,
@@ -82,6 +81,8 @@ export function EyeTrackingProvider({ children }: EyeTrackingProviderProps) {
       globalThis.webgazer.resume();
       setIsPaused(false);
     } else {
+      globalThis.webgazer.clearData();
+
       globalThis.webgazer
         .setRegression("ridge")
         .setTracker("TFFacemesh")
