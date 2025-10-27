@@ -48,13 +48,18 @@ export default function GameScreen() {
 
   const handleCloseForm = () => {
     setShowFormModal(false);
-    const nextRound = currentRound + 1;
-    setCurrentRound(nextRound); // avança para a próxima rodada
-    setTimeLeft(15); // reseta o tempo para 15 segundos
-    setIsPaused(false);
-    setIsGameActive(true);
-    resetPlanets();
-    startGame(nextRound);
+
+    if (currentRound == 1) {
+      const nextRound = currentRound + 1;
+      setCurrentRound(nextRound); // avança para a próxima rodada
+      setTimeLeft(15); // reseta o tempo para 15 segundos
+      setIsPaused(false);
+      setIsGameActive(true);
+      resetPlanets();
+      startGame(nextRound);
+    } else {
+      setShowSuccessModal(true);
+    }
   };
 
   const lastIndexRef = useRef<number | null>(null);
@@ -92,12 +97,7 @@ export default function GameScreen() {
       setIsPaused(true);
       setIsGameActive(false);
 
-      if (currentRound < 2) {
-        setShowFormModal(true);
-      } else {
-        // Se for a última, mostra tela de sucesso
-        setShowSuccessModal(true);
-      }
+      setShowFormModal(true);
     }
   }, [timeLeft]);
 

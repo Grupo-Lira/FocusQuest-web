@@ -79,14 +79,14 @@ export function usePlanets() {
 
     const schedule = [4000, 8000, 12000]; // ms = segundos 4, 8 e 12 // Agenda cada planeta específico do round
 
-    schedule.forEach((time, index) => {
+    for (const [index, time] of schedule.entries()) {
       const planetIdToShow = planetsForThisRound[index];
       if (planetIdToShow) {
         setTimeout(() => {
           triggerSpecificPlanet(planetIdToShow);
         }, time);
       }
-    }); // log final após 10s
+    } // log final após 10s
 
     setTimeout(() => {
       console.log(
