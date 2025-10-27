@@ -17,12 +17,14 @@ import OverlayInstruction from "@/components/Calibration/OverlayInstruction";
 import { fase1Steps } from "@/constants/steps";
 import { GazeData, useEyeTracking } from "@/context/EyeTrackingContext";
 import { useSocketIO } from "@/hooks/useWebSocket";
+import { Metricas } from "@/components/SuccessScreen";
 
 export default function GameScreen() {
   const starsContainerRef = useRef<HTMLDivElement>(null);
   const { stars, level, handleHit, handleError, handleRemove } = useGameLogic();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isTimeUpModalOpen, setIsTimeUpModalOpen] = useState(false);
+  const [successModalData, setSuccessModalData] = useState<Metricas | null>(null);
   const {
     isPaused,
     setIsPaused,
@@ -30,17 +32,16 @@ export default function GameScreen() {
     audioGameStarted,
     setAudioGameStarted,
     isGameActive,
-    hits,
     timeLeft,
   } = useGameContext();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const {
     stopTracking,
     isWebGazerLoaded,
-    startTrackingWithoutMouse,
+    startTracking,
     lastGazeData,
     isTracking,
-  } = useEyeTracking();
+  } = useEyeTracking ();
   const lastSentGazeRef = useRef<GazeData | null>(null); //Vamos guardar a coordenada do olho anterior a coordenada atual
   const { startAudio } = useAudio();
   const { socket, isConnected } = useSocketIO();
@@ -51,7 +52,9 @@ export default function GameScreen() {
   const handleStartGame = async () => {
     if (isWebGazerLoaded) {
       console.log("Iniciando rastreamento ocular...");
-      await startTrackingWithoutMouse();
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      await startTracking(false, false); //Iniciar sem mouse
     } else {
       console.warn("Web gazer ainda não está carregado!");
     }
@@ -74,7 +77,7 @@ export default function GameScreen() {
           "EMITINDO evento: fase_1_alvos_configuracao, {}",
           configAlvos.length > 0
         );
-        socket.emit("iniciar_experimento_com_config", configAlvos);
+        socket.emit("iniciar_experimento_com_config", { fase1: configAlvos });
       }
     }
 
@@ -95,9 +98,9 @@ export default function GameScreen() {
     const normalizedX = centerX / window.innerWidth;
     const normalizedY = centerY / window.innerHeight;
 
-    //Aumentar área aceitavel de fixação
-    const toleranceX = 0.05;
-    const toleranceY = 0.05 * (window.innerWidth / window.innerHeight);
+    //Aumentar área aceitavel de fixação    
+    const toleranceX = 0.15;
+    const toleranceY = 0.15;
 
     return {
       x_min: Math.max(0, normalizedX - toleranceX),
@@ -137,18 +140,13 @@ export default function GameScreen() {
 
   useEffect(() => {
     if (timeLeft === 0) {
+      socket?.emit("fase_1_tempo_excedido");
       stopTracking();
       setIsTimeUpModalOpen(true);
       setIsPaused(true);
     }
   }, [timeLeft]);
-
-  useEffect(() => {
-    if (hits === 5) {
-      setShowSuccessModal(true);
-      setIsPaused(true);
-    }
-  }, [hits]);
+  
 
   useEffect(() => {
     if (!socket) return;
@@ -163,8 +161,8 @@ export default function GameScreen() {
       console.log("Status do gaze:", data);
     });
 
-    socket.on("fase_atual_finalizada", (data) => {
-      console.log("Fase finalizada:", data);
+    socket.on("alvo_fase1_concluido", (data) => {
+      console.log("Alvo finalizado, apagando..:", data);
       apagarEstrela(data.alvo);
     });
 
@@ -172,11 +170,21 @@ export default function GameScreen() {
       console.log("Experimento concluído:", data);
     });
 
+    socket.on("fase_concluida", async (data) => {
+      console.log("Fase concluída:", data);
+      setIsPaused(true);      
+      await stopTracking();
+      setSuccessModalData(data?.metricas || null);
+      setShowSuccessModal(true);
+    });
+
     return () => {
       socket.off("fase_iniciada");
       socket.off("gaze_status");
       socket.off("fase_atual_finalizada");
       socket.off("experimento_concluido");
+      socket.off("alvo_fase1_concluido");
+      socket.off("fase_concluida");
     };
   }, [socket]);
 
@@ -185,7 +193,7 @@ export default function GameScreen() {
   }, [lastGazeData]);
 
   useEffect(() => {
-    if (!isConnected || !socket || !isTracking) return;
+    if (!isConnected || !socket || !isTracking || isPaused) return;
 
     const interval = setInterval(() => {
       const gaze = lastGazeRef.current;
@@ -231,9 +239,10 @@ export default function GameScreen() {
         <div className="flex items-center justify-center min-h-screen">
           <SettingsModal
             isStoppedGame={true}
-            onClick={() => {
+            onClick={async () => {
               setIsModalOpen(false);
               setIsPaused(false);
+              await startTracking(false, false);
               startAudio();
             }}
           />
@@ -254,13 +263,13 @@ export default function GameScreen() {
 
           {isTimeUpModalOpen && (
             <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
-              <TimeOut />
+              <TimeOut data={successModalData} />
             </div>
           )}
 
           {showSuccessModal && (
             <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
-              <SuccessScreen fase={2} />
+              <SuccessScreen fase={2} data={successModalData} />
             </div>
           )}
 
@@ -268,15 +277,16 @@ export default function GameScreen() {
             type="button"
             aria-label="Open settings"
             className="bg-[var(--primary)] z-20 w-11 h-11 rounded-full absolute flex items-center justify-center button-glow transition-all duration-300 top-9 right-9"
-            onClick={() => {
+            onClick={async () => {
               setIsModalOpen(true);
               setIsPaused(true);
+              await stopTracking();
             }}
           >
             <Bolt color="white" />
           </button>
 
-          <div className="h-[70%] w-screen ml-32 relative" ref={starsContainerRef}>
+          <div className="h-[70%] w-[100%] ml-32 relative" ref={starsContainerRef}>
             {stars.map((star) => (
               <Star
                 key={star.id}

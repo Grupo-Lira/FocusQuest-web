@@ -3,12 +3,13 @@ import { Button } from "./Button";
 import { Card } from "./Card";
 import { useState } from "react";
 import ResultsTable from "./ResultsTable";
+import { Metricas } from "./SuccessScreen";
 
-export default function TimeOut() {
+export default function TimeOut({data}: {data: Metricas | null}) {
   const [resultsOpen, setResultsOpen] = useState(false);
 
   const results = [
-    { id: 1, name: "⏱️ Tempo total", score: "00:32" },
+    { id: 1, name: "⏱️ Tempo total", score: data?.tempo_total_focado_ms + " ms" },
     { id: 2, name: "🎯 Acertos", score: "4 de 5 alvos" },
     { id: 3, name: "❌ Erros", score: "2 distrações" },
     { id: 4, name: "💡 Precisão", score: "66%" },

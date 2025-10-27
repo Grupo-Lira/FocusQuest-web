@@ -18,7 +18,7 @@ interface EyeTrackingContextType {
   isTracking: boolean;
   isPaused: boolean;
   error: string | null;
-  startTracking: () => Promise<void>;
+  startTracking: (trackWithMouse: boolean, isTutorial: boolean) => Promise<void>;
   startTrackingWithoutMouse: () => Promise<void>;
   stopTracking: () => void;
   fullStopTracking: () => void;
@@ -59,47 +59,61 @@ export function EyeTrackingProvider({ children }: EyeTrackingProviderProps) {
     }
   }, []);
 
-  const startTracking = useCallback(async () => {
-    if (!isWebGazerLoaded) {
-      setError("WebGazer not loaded yet.");
-      return;
-    }
-
-    if (!hasPermission) {
-      try {
-        await navigator.mediaDevices.getUserMedia({ video: true });
-        setHasPermission(true);
-      } catch (e) {
-        setHasPermission(false);
-        setError("Permissão de câmera negada.");
-        console.error(e);
+  const startTracking = useCallback(
+    async (trackWithMouse: boolean, isTutorial: boolean) => {
+      if (!isWebGazerLoaded) {
+        setError("WebGazer not loaded yet.");
         return;
       }
-    }
 
-    if (isPaused) {
-      globalThis.webgazer.resume();
-      setIsPaused(false);
-    } else {
-      globalThis.webgazer.clearData();
+      if (!hasPermission) {
+        try {
+          await navigator.mediaDevices.getUserMedia({ video: true });
+          setHasPermission(true);
+        } catch (e) {
+          setHasPermission(false);
+          setError("Permissão de câmera negada.");
+          console.error(e);
+          return;
+        }
+      }
 
-      globalThis.webgazer
-        .setRegression("ridge")
-        .setTracker("TFFacemesh")
-        .saveDataAcrossSessions(true) //Em prod podemos deixar true para salvar a calibração no navegador para próximos usos
-        .showVideo(false) // Ocultar vídeo
-        .showFaceOverlay(false) // Ocultar overlay da face
-        .showFaceFeedbackBox(false) // Ocultar caixa de feedback
-        .applyKalmanFilter(true)
-        .setGazeListener((data: any) => {
-          updateGazeData(data);
-        });
+      if (isPaused) {
+        await globalThis.webgazer.resume();
+        if (!trackWithMouse) {
+          await globalThis.webgazer.removeMouseEventListeners();
+        }
+        if (isTutorial) await globalThis.webgazer.clearData();
+        setIsPaused(false);
+      } else {
+        if (isTutorial) {
+          await globalThis.webgazer.clearData();
+        }
 
-      await globalThis.webgazer.begin();
-    }
+        await globalThis.webgazer
+          .setRegression("weightedRidge")
+          .setTracker("TFFacemesh")
+          .saveDataAcrossSessions(true) //Em prod podemos deixar true para salvar a calibração no navegador para próximos usos
+          .showVideo(false) // Ocultar vídeo
+          .showFaceOverlay(false) // Ocultar overlay da face
+          .showFaceFeedbackBox(false) // Ocultar caixa de feedback
+          .applyKalmanFilter(true)
+          .setGazeListener((data: any) => {
+            updateGazeData(data);
+          });
 
-    setIsTracking(true);
-  }, [isWebGazerLoaded, isPaused, hasPermission, updateGazeData]);
+        await globalThis.webgazer.showPredictionPoints(true);
+        await globalThis.webgazer.begin();
+
+        if (!trackWithMouse) {
+          await globalThis.webgazer.removeMouseEventListeners();
+        }
+      }
+
+      setIsTracking(true);
+    },
+    [isWebGazerLoaded, isPaused, hasPermission, updateGazeData]
+  );
 
   const startTrackingWithoutMouse = useCallback(async () => {
     if (!isWebGazerLoaded) {
@@ -120,23 +134,27 @@ export function EyeTrackingProvider({ children }: EyeTrackingProviderProps) {
     }
 
     if (isPaused) {
-      globalThis.webgazer.resume();
+      await globalThis.webgazer.resume();
+      await globalThis.webgazer.removeMouseEventListeners();
+
       setIsPaused(false);
     } else {
-      globalThis.webgazer
-        .setRegression("ridge")
+      await globalThis.webgazer
+        .setRegression("weightedRidge")
         .setTracker("TFFacemesh")
         .saveDataAcrossSessions(true)
         .showVideo(false)
         .showFaceOverlay(false)
         .showFaceFeedbackBox(false)
         .applyKalmanFilter(true)
-        .removeMouseEventListeners() //O webgazer não vai seguir o mouse
+        .showPredictionPoints(true)
         .setGazeListener((data: any) => {
           updateGazeData(data);
         });
 
       await globalThis.webgazer.begin();
+
+      await globalThis.webgazer.removeMouseEventListeners();
     }
 
     setIsTracking(true);
@@ -146,7 +164,6 @@ export function EyeTrackingProvider({ children }: EyeTrackingProviderProps) {
     if (isTracking) {
       console.log("Parando o rastreamento ocular...");
       await globalThis.webgazer.pause();
-      globalThis.webgazer.clearGazeListener();
 
       setIsTracking(false);
       setIsPaused(true);

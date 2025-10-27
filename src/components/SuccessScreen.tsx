@@ -4,15 +4,28 @@ import { Card } from "./Card";
 import { useState } from "react";
 import ResultsTable from "./ResultsTable";
 
-interface SuccessScreenProps {
-  readonly fase?: number;
+export interface Metricas {
+  alvo_indice: number;
+  motivo_servidor: string;
+  resultado: string;
+  concluiu_duracao_minima: boolean;
+  tempo_reacao_ms: number;
+  foco_maximo_ms: number;
+  desvio_maximo_ms: number;
+  tempo_total_focado_ms: number;
+  duracao_total_alvo_ms: number;
 }
 
-export default function SuccessScreen({fase}: SuccessScreenProps) {
+interface SuccessScreenProps {
+  readonly fase: number;
+  readonly data: Metricas | null; // Adicione data como prop opcional
+}
+
+export default function SuccessScreen({ fase, data }: SuccessScreenProps) {
   const [resultsOpen, setResultsOpen] = useState(false);
 
   const results = [
-    { id: 1, name: "⏱️ Tempo total", score: "00:32" },
+    { id: 1, name: "⏱️ Tempo total", score: data?.tempo_total_focado_ms + " ms" },
     { id: 2, name: "🎯 Acertos", score: "4 de 5 alvos" },
     { id: 3, name: "❌ Erros", score: "2 distrações" },
     { id: 4, name: "💡 Precisão", score: "66%" },

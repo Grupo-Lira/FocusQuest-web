@@ -101,12 +101,6 @@ export default function Star({ top, left, onRemove, onError, isBrilhante }: Star
         isBeingLookedAt ? "ring-4 ring-yellow-400 scale-110" : ""
       )}
       style={{ top: `${top}%`, left: `${left}%` }}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onFocus={handleMouseEnter}
-      onBlur={handleMouseLeave}
-      onTouchStart={handleMouseEnter}
-      onTouchEnd={handleMouseLeave}
     >
       {hovering && <StarHover />}
       <Image

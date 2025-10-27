@@ -19,18 +19,14 @@ interface ClickData {
   distance?: number; // Distância entre clique e gaze em pixels
 }
 
-export default function CalibrationPage() {  
+export default function CalibrationPage() {
   const [showInstructions, setShowInstructions] = useState(true);
   const [successModalVisible, setSuccessModalVisible] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [hits, setHits] = useState(0);
   const [clickLog, setClickLog] = useState<ClickData[]>([]);
-  const {
-    isWebGazerLoaded,
-    startTracking,
-    stopTracking,
-    lastGazeData,
-  } = useEyeTracking();
+  const { isWebGazerLoaded, startTracking, stopTracking, lastGazeData } =
+    useEyeTracking();
 
   const calculateDistance = (x1: number, y1: number, x2: number, y2: number): number => {
     return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
@@ -103,13 +99,13 @@ export default function CalibrationPage() {
 
   const handleStartCalibration = async () => {
     setShowInstructions(false);
-    
+
     // Pequeno delay para garantir que o estado foi atualizado
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
     if (isWebGazerLoaded) {
       console.log("Iniciando rastreamento ocular...");
-      await startTracking();
+      await startTracking(true, true); // Iniciar com mouse
     } else {
       console.warn("WebGazer não está carregado ainda");
     }
@@ -124,52 +120,60 @@ export default function CalibrationPage() {
 
   // Verifica quando o usuário completa a calibração
   useEffect(() => {
-    if (hits >= 40 && !successModalVisible) {
-      console.log("Calibração concluída com", hits, "hits");
-      stopTracking();
-      setSuccessModalVisible(true);
+    const completeCalibration = async () => {
+      if (hits >= 45 && !successModalVisible) {
+        console.log("Calibração concluída com", hits, "hits");
+        stopTracking();
+        setSuccessModalVisible(true);
 
-      console.log("=== ESTATÍSTICAS FINAIS DA CALIBRAÇÃO ===");
-      const validLogs = clickLog.filter((log) => log.distance !== undefined);
-      if (validLogs.length > 0) {
-        const avgDistance =
-          validLogs.reduce((sum, log) => sum + (log.distance || 0), 0) / validLogs.length;
-        const minDistance = Math.min(...validLogs.map((log) => log.distance || Infinity));
-        const maxDistance = Math.max(...validLogs.map((log) => log.distance || 0));
+        console.log("=== ESTATÍSTICAS FINAIS DA CALIBRAÇÃO ===");
+        const validLogs = clickLog.filter((log) => log.distance !== undefined);
+        if (validLogs.length > 0) {
+          const avgDistance =
+            validLogs.reduce((sum, log) => sum + (log.distance || 0), 0) /
+            validLogs.length;
+          const minDistance = Math.min(
+            ...validLogs.map((log) => log.distance || Infinity)
+          );
+          const maxDistance = Math.max(...validLogs.map((log) => log.distance || 0));
 
-        console.log("Total de cliques registrados:", clickLog.length);
-        console.log("Cliques com dados de gaze:", validLogs.length);
-        console.log("Distância média:", avgDistance.toFixed(2), "pixels");
-        console.log("Menor distância:", minDistance.toFixed(2), "pixels");
-        console.log("Maior distância:", maxDistance.toFixed(2), "pixels");
-        let precision = "Precisa melhorar";
-        if (avgDistance < 50) {
-          precision = "Excelente";
-        } else if (avgDistance < 100) {
-          precision = "Boa";
+          console.log("Total de cliques registrados:", clickLog.length);
+          console.log("Cliques com dados de gaze:", validLogs.length);
+          console.log("Distância média:", avgDistance.toFixed(2), "pixels");
+          console.log("Menor distância:", minDistance.toFixed(2), "pixels");
+          console.log("Maior distância:", maxDistance.toFixed(2), "pixels");
+          let precision = "Precisa melhorar";
+          if (avgDistance < 50) {
+            precision = "Excelente";
+          } else if (avgDistance < 100) {
+            precision = "Boa";
+          }
+          console.log("Precisão geral:", precision);
         }
-        console.log("Precisão geral:", precision);
+        console.log("========================================");
       }
-      console.log("========================================");
-    }
-  }, [hits, successModalVisible, clickLog]);      
+    };
+    completeCalibration();
+  }, [hits, successModalVisible, clickLog]);
 
   return (
     <>
       {isModalVisible ? (
         <div className="flex items-center justify-center min-h-screen">
-            <SettingsModal
+          <SettingsModal
             isStoppedGame={true}
             onClick={() => {
-                setIsModalVisible(false);
+              setIsModalVisible(false);
             }}
-            />
+          />
         </div>
-      ): (
+      ) : (
         <div className="min-h-screen flex flex-col text-white">
           <div className="min-h-screen flex flex-col text-white">
             {/* Tela de instruções antes da calibração */}
-            {showInstructions && <OverlayInstruction onComplete={handleStartCalibration} steps={steps}/>}
+            {showInstructions && (
+              <OverlayInstruction onComplete={handleStartCalibration} steps={steps} />
+            )}
 
             {/* Navbar de controle */}
             <NavbarCalibration setIsModalOpen={() => setIsModalVisible(true)} />
@@ -195,8 +199,7 @@ export default function CalibrationPage() {
             {successModalVisible && <SuccessScreen onRestart={handleRestart} />}
           </div>
         </div>
-        )
-    }
+      )}
     </>
   );
 }
