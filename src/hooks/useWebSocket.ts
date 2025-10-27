@@ -6,13 +6,12 @@ export const useSocketIO = (options = {}) => {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {    
-    const socketInstance = io("http://localhost:4000", {
+    const socketUrl = process.env.SOCKET_URL || "http://localhost:4000";
+    const socketInstance = io(socketUrl, {
       auth: {
         id: "ID DO USUARIO", //Acho que dá para pegarmos do contexto do login de usuario
         email: "EMAIL"
-      },      
-      ...options
-    });
+      },          });
 
     setSocket(socketInstance);
     

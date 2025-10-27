@@ -27,7 +27,8 @@ export default function CalibrationPage() {
   const [clickLog, setClickLog] = useState<ClickData[]>([]);
   const { isWebGazerLoaded, startTracking, stopTracking, lastGazeData } =
     useEyeTracking();
-
+  const maxHistPerStarNeeded = 5;
+  const maxTotalHitsNeeded = stars.length * maxHistPerStarNeeded;
   const calculateDistance = (x1: number, y1: number, x2: number, y2: number): number => {
     return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
   };
@@ -121,7 +122,7 @@ export default function CalibrationPage() {
   // Verifica quando o usuário completa a calibração
   useEffect(() => {
     const completeCalibration = async () => {
-      if (hits >= 45 && !successModalVisible) {
+      if (hits >= maxTotalHitsNeeded && !successModalVisible) {
         console.log("Calibração concluída com", hits, "hits");
         stopTracking();
         setSuccessModalVisible(true);

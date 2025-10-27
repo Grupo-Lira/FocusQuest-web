@@ -9,9 +9,11 @@ export default function TimeOut({data}: {data: Metricas | null}) {
   const [resultsOpen, setResultsOpen] = useState(false);
 
   const results = [
-    { id: 1, name: "⏱️ Tempo total", score: data?.tempo_total_focado_ms + " ms" },
-    { id: 2, name: "🎯 Acertos", score: "4 de 5 alvos" },
-    { id: 3, name: "❌ Erros", score: "2 distrações" },
+    { id: 1, name: "⏱️ Tempo total", score: data?.tempo_reacao_medio_ms || "0" + " ms" },
+    { id: 1, name: "⏱️ Tempo total", score: data?.tempo_reacao_medio_ms || "0" + " ms" },
+    { id: 2, name: "🎯 Acertos", score: data?.total_acertos || 0 + " de 5 alvos" },
+    { id: 3, name: "❌ Erros", score: data?.total_omissao || 0 + " distrações do tipo omissão" },
+    { id: 3, name: "❌ Erros", score: data?.total_comissao || 0 + " distrações do tipo comissão" },
     { id: 4, name: "💡 Precisão", score: "66%" },
   ];
 

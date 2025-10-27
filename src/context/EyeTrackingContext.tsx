@@ -18,8 +18,7 @@ interface EyeTrackingContextType {
   isTracking: boolean;
   isPaused: boolean;
   error: string | null;
-  startTracking: (trackWithMouse: boolean, isTutorial: boolean) => Promise<void>;
-  startTrackingWithoutMouse: () => Promise<void>;
+  startTracking: (trackWithMouse: boolean, isTutorial: boolean) => Promise<void>;  
   stopTracking: () => void;
   fullStopTracking: () => void;
   lastGazeData: GazeData | null;
@@ -114,52 +113,7 @@ export function EyeTrackingProvider({ children }: EyeTrackingProviderProps) {
     },
     [isWebGazerLoaded, isPaused, hasPermission, updateGazeData]
   );
-
-  const startTrackingWithoutMouse = useCallback(async () => {
-    if (!isWebGazerLoaded) {
-      setError("WebGazer not loaded yet.");
-      return;
-    }
-
-    if (!hasPermission) {
-      try {
-        await navigator.mediaDevices.getUserMedia({ video: true });
-        setHasPermission(true);
-      } catch (e) {
-        setHasPermission(false);
-        setError("Permissão de câmera negada.");
-        console.error(e);
-        return;
-      }
-    }
-
-    if (isPaused) {
-      await globalThis.webgazer.resume();
-      await globalThis.webgazer.removeMouseEventListeners();
-
-      setIsPaused(false);
-    } else {
-      await globalThis.webgazer
-        .setRegression("weightedRidge")
-        .setTracker("TFFacemesh")
-        .saveDataAcrossSessions(true)
-        .showVideo(false)
-        .showFaceOverlay(false)
-        .showFaceFeedbackBox(false)
-        .applyKalmanFilter(true)
-        .showPredictionPoints(true)
-        .setGazeListener((data: any) => {
-          updateGazeData(data);
-        });
-
-      await globalThis.webgazer.begin();
-
-      await globalThis.webgazer.removeMouseEventListeners();
-    }
-
-    setIsTracking(true);
-  }, [isWebGazerLoaded, isPaused, hasPermission, updateGazeData]);
-
+ 
   const stopTracking = useCallback(async () => {
     if (isTracking) {
       console.log("Parando o rastreamento ocular...");
@@ -185,8 +139,7 @@ export function EyeTrackingProvider({ children }: EyeTrackingProviderProps) {
     isTracking,
     isPaused,
     error,
-    startTracking,
-    startTrackingWithoutMouse,
+    startTracking,    
     stopTracking,
     fullStopTracking,
     lastGazeData,
