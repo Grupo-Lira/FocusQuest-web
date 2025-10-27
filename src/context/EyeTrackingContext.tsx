@@ -7,7 +7,7 @@ declare global {
   }
 }
 
-interface GazeData {
+export interface GazeData {
   x: number;
   y: number;
   timestamp: number;
@@ -18,7 +18,7 @@ interface EyeTrackingContextType {
   isTracking: boolean;
   isPaused: boolean;
   error: string | null;
-  startTracking: () => Promise<void>;
+  startTracking: (trackWithMouse: boolean, isTutorial: boolean) => Promise<void>;  
   stopTracking: () => void;
   fullStopTracking: () => void;
   lastGazeData: GazeData | null;
@@ -58,51 +58,66 @@ export function EyeTrackingProvider({ children }: EyeTrackingProviderProps) {
     }
   }, []);
 
-  const startTracking = useCallback(async () => {
-    if (!isWebGazerLoaded) {
-      setError("WebGazer not loaded yet.");
-      return;
-    }
-
-    if (!hasPermission) {
-      try {
-        await navigator.mediaDevices.getUserMedia({ video: true });
-        setHasPermission(true);
-      } catch (e) {
-        setHasPermission(false);
-        setError("Permissão de câmera negada.");
-        console.error(e);
+  const startTracking = useCallback(
+    async (trackWithMouse: boolean, isTutorial: boolean) => {
+      if (!isWebGazerLoaded) {
+        setError("WebGazer not loaded yet.");
         return;
       }
-    }
 
-    if (isPaused) {
-      globalThis.webgazer.resume();
-      setIsPaused(false);
-    } else {
-      globalThis.webgazer
-        .setRegression("ridge")
-        .setTracker("TFFacemesh")
-        .saveDataAcrossSessions(true) //Em prod podemos deixar true para salvar a calibração no navegador para próximos usos
-        .showVideo(false) // Ocultar vídeo
-        .showFaceOverlay(false) // Ocultar overlay da face
-        .showFaceFeedbackBox(false) // Ocultar caixa de feedback
-        .applyKalmanFilter(true)
-        .setGazeListener((data: any) => {
-          updateGazeData(data);
-        });
+      if (!hasPermission) {
+        try {
+          await navigator.mediaDevices.getUserMedia({ video: true });
+          setHasPermission(true);
+        } catch (e) {
+          setHasPermission(false);
+          setError("Permissão de câmera negada.");
+          console.error(e);
+          return;
+        }
+      }
 
-      await globalThis.webgazer.begin();
-    }
+      if (isPaused) {
+        await globalThis.webgazer.resume();
+        if (!trackWithMouse) {
+          await globalThis.webgazer.removeMouseEventListeners();
+        }
+        if (isTutorial) await globalThis.webgazer.clearData();
+        setIsPaused(false);
+      } else {
+        if (isTutorial) {
+          await globalThis.webgazer.clearData();
+        }
 
-    setIsTracking(true);
-  }, [isWebGazerLoaded, isPaused, hasPermission, updateGazeData]);
+        await globalThis.webgazer
+          .setRegression("weightedRidge")
+          .setTracker("TFFacemesh")
+          .saveDataAcrossSessions(true) //Em prod podemos deixar true para salvar a calibração no navegador para próximos usos
+          .showVideo(false) // Ocultar vídeo
+          .showFaceOverlay(false) // Ocultar overlay da face
+          .showFaceFeedbackBox(false) // Ocultar caixa de feedback
+          .applyKalmanFilter(true)
+          .setGazeListener((data: any) => {
+            updateGazeData(data);
+          });
 
+        await globalThis.webgazer.showPredictionPoints(true);
+        await globalThis.webgazer.begin();
+
+        if (!trackWithMouse) {
+          await globalThis.webgazer.removeMouseEventListeners();
+        }
+      }
+
+      setIsTracking(true);
+    },
+    [isWebGazerLoaded, isPaused, hasPermission, updateGazeData]
+  );
+ 
   const stopTracking = useCallback(async () => {
     if (isTracking) {
       console.log("Parando o rastreamento ocular...");
       await globalThis.webgazer.pause();
-      globalThis.webgazer.clearGazeListener();
 
       setIsTracking(false);
       setIsPaused(true);
@@ -124,7 +139,7 @@ export function EyeTrackingProvider({ children }: EyeTrackingProviderProps) {
     isTracking,
     isPaused,
     error,
-    startTracking,
+    startTracking,    
     stopTracking,
     fullStopTracking,
     lastGazeData,

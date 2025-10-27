@@ -4,27 +4,62 @@ import { Card } from "./Card";
 import { useState } from "react";
 import ResultsTable from "./ResultsTable";
 
-interface SuccessScreenProps {
-  readonly fase?: number;
+export interface Metricas {
+  tempo_reacao_medio_ms: number;
+  total_acertos: number;
+  total_comissao: number;
+  total_omissao: number;
 }
 
-export default function SuccessScreen({fase}: SuccessScreenProps) {
+interface SuccessScreenProps {
+  readonly fase: number;
+  readonly data?: Metricas;
+}
+
+export default function SuccessScreen({ fase, data }: SuccessScreenProps) {
   const [resultsOpen, setResultsOpen] = useState(false);
 
   const results = [
-    { id: 1, name: "⏱️ Tempo total", score: "00:32" },
-    { id: 2, name: "🎯 Acertos", score: "4 de 5 alvos" },
-    { id: 3, name: "❌ Erros", score: "2 distrações" },
-    { id: 4, name: "💡 Precisão", score: "66%" },
+    {
+      id: 3,
+      name: "🎯 Acertos",
+      score: `${data?.total_acertos ?? 0} de 5 alvos`,
+    },
+    {
+      id: 4,
+      name: "❌ Demorou para focar",
+      score: `${data?.total_comissao ?? 0} vezes`,
+    },
+    {
+      id: 5,
+      name: "❌ Distrações",
+      score: `${data?.total_omissao ?? 0} distrações`,
+    },
   ];
 
   const resultsFase2 = [{ id: 1, name: "🎯 Planetas vistos", score: "7 de 9" }];
+  
+  const resultsFase3 = [
+    { id: 6, name: "💡 Precisão", score: "66%" },
+    {
+      id: 4,
+      name: "❌ Demorou para focar",
+      score: `${data?.total_comissao ?? 0} vezes`,
+    },
+    {
+      id: 5,
+      name: "❌ Distrações",
+      score: `${data?.total_omissao ?? 0} distrações`,
+    },
+  ];
 
   const handleFaseResults = () => {
     if (fase === 2) {
       return results;
     } else if (fase === 3) {
       return resultsFase2;
+    } else if (fase === 4) {
+      return resultsFase3;
     }
     return results;
   };

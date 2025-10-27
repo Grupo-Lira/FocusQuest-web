@@ -4,22 +4,26 @@ import NavbarGame from "@/components/NavbarGame";
 import Thermometer from "@/components/Thermometer";
 import Star from "@/components/Star";
 import SettingsModal from "@/components/SettingsModal";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Bolt } from "lucide-react";
 import { useGameContext } from "@/context/GameContext";
 import { AnimatedElement } from "@/components/AnimatedElements/AnimatedElement";
 import { useGameLogic } from "./useGameLogic";
 import { animatedElements } from "@/config/gameConfig";
 import TimeOut from "@/components/TimeOut";
-import SuccessScreen from "@/components/SuccessScreen";
 import { useAudio } from "@/context/AudioContext";
 import OverlayInstruction from "@/components/Calibration/OverlayInstruction";
 import { fase1Steps } from "@/constants/steps";
+import { GazeData, useEyeTracking } from "@/context/EyeTrackingContext";
+import { useSocketIO } from "@/hooks/useWebSocket";
+import SuccessScreen, { Metricas } from "@/components/SuccessScreen";
 
 export default function GameScreen() {
-  const { stars, level, handleHit, handleError } = useGameLogic();
+  const starsContainerRef = useRef<HTMLDivElement>(null);
+  const { stars, level, handleHit, handleError, handleRemove } = useGameLogic();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isTimeUpModalOpen, setIsTimeUpModalOpen] = useState(false);
+  const [successModalData, setSuccessModalData] = useState<Metricas | null>(null);
   const {
     isPaused,
     setIsPaused,
@@ -27,32 +31,202 @@ export default function GameScreen() {
     audioGameStarted,
     setAudioGameStarted,
     isGameActive,
-    hits,
     timeLeft,
   } = useGameContext();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-
+  const { stopTracking, isWebGazerLoaded, startTracking, lastGazeData, isTracking } =
+    useEyeTracking();
+  const lastSentGazeRef = useRef<GazeData | null>(null); //Vamos guardar a coordenada do olho anterior a coordenada atual
   const { startAudio } = useAudio();
+  const { socket, isConnected } = useSocketIO();
 
-  const handleStartGame = () => {
+  const lastGazeRef = useRef<GazeData | null>(null);
+  const [estrelasBrilhantes, setEstrelasBrilhantes] = useState<number[]>([]);
+
+  const getRelativeCoordinates = (relativeLeft: number, relativeTop: number) => {
+    if (!starsContainerRef.current) return null;
+
+    const container = starsContainerRef.current;
+    const rect = container.getBoundingClientRect();
+
+    const centerX = rect.left + (rect.width * relativeLeft) / 100;
+    const centerY = rect.top + (rect.height * relativeTop) / 100;
+
+    const normalizedX = centerX / window.innerWidth;
+    const normalizedY = centerY / window.innerHeight;
+
+    //Aumentar área aceitavel de fixação
+    const toleranceX = 0.15;
+    const toleranceY = 0.15;
+
+    return {
+      x_min: Math.max(0, normalizedX - toleranceX),
+      x_max: Math.min(1, normalizedX + toleranceX),
+      y_min: Math.max(0, normalizedY - toleranceY),
+      y_max: Math.min(1, normalizedY + toleranceY),
+    };
+  };
+
+  const handleStartGame = async () => {
+    if (isWebGazerLoaded) {
+      console.debug("Iniciando rastreamento ocular...");
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      await startTracking(false, false); //Iniciar sem mouse
+    } else {
+      console.warn("Web gazer ainda não está carregado!");
+    }
+
+    if (isConnected && socket && stars.length > 0) {
+      console.debug("Enviando configuração dos alvos para o servidor...");
+      const configAlvos = stars
+        .map((star) => {
+          const relativeCoords = getRelativeCoordinates(star.left, star.top);
+          return {
+            id: star.id,
+            ...relativeCoords,
+          };
+        })
+        .filter(Boolean);
+
+      console.debug(configAlvos.length);
+      if (configAlvos.length > 0) {
+        console.debug(
+          "EMITINDO evento: fase_1_alvos_configuracao, {}",
+          configAlvos.length > 0
+        );
+        socket.emit("iniciar_experimento_com_config", { fase1: configAlvos });
+      }
+    }
+
     setIsGameActive(true);
     setAudioGameStarted(true);
     startAudio();
   };
 
+  //LOGICA DE BRILHAR ALVO ATUAL
+  function brilharEstrela(alvo: {
+    id: number;
+    x_max: string;
+    x_min: string;
+    y_max: string;
+    y_min: string;
+  }) {
+    // Adiciona o ID ao array de estrelas brilhantes
+    setEstrelasBrilhantes((prev) => {
+      if (!prev.includes(alvo.id)) {
+        return [...prev, alvo.id];
+      }
+      return prev;
+    });
+  }
+
+  //LOGICA DE APAGAR ALVO ATUAL
+  function apagarEstrela(alvo: {
+    id: number;
+    x_max: string;
+    x_min: string;
+    y_max: string;
+    y_min: string;
+  }) {
+    handleRemove(alvo.id);
+  }
+
   useEffect(() => {
     if (timeLeft === 0) {
+      socket?.emit("fase_1_tempo_excedido");
+      stopTracking();
       setIsTimeUpModalOpen(true);
       setIsPaused(true);
     }
   }, [timeLeft]);
 
   useEffect(() => {
-    if (hits === 5) {
-      setShowSuccessModal(true);
+    if (!socket) return;
+
+    socket.on("fase_iniciada", (data) => {
+      console.debug("Fase iniciada:", data);
+
+      brilharEstrela(data.alvo);
+    });
+
+    socket.on("gaze_status", (data) => {
+      console.debug("Status do gaze:", data);
+    });
+
+    socket.on("alvo_fase1_concluido", (data) => {
+      console.debug("Alvo finalizado, apagando..:", data);
+      apagarEstrela(data.alvo);
+    });
+
+    socket.on("experimento_concluido", (data) => {
+      console.debug("Experimento concluído:", data);
+    });
+
+    socket.on("fase_concluida", async (data) => {
+      console.debug("Fase concluída:", data);
       setIsPaused(true);
-    }
-  }, [hits]);
+      stopTracking();
+
+      setSuccessModalData(data?.metricas);
+      if (timeLeft !== 0 && data?.motivo !== "TEMPO_FASE_EXCEDIDO") {
+        setShowSuccessModal(true);
+      }
+    });
+
+    return () => {
+      socket.off("fase_iniciada");
+      socket.off("gaze_status");
+      socket.off("fase_atual_finalizada");
+      socket.off("experimento_concluido");
+      socket.off("alvo_fase1_concluido");
+      socket.off("fase_concluida");
+    };
+  }, [socket]);
+
+  useEffect(() => {
+    lastGazeRef.current = lastGazeData;
+  }, [lastGazeData]);
+
+  useEffect(() => {
+    if (!isConnected || !socket || !isTracking || isPaused) return;
+
+    const interval = setInterval(() => {
+      const gaze = lastGazeRef.current;
+      if (gaze && socket.connected) {
+        try {
+          const normalizedX = Math.max(0, Math.min(1, gaze.x / window.innerWidth));
+          const normalizedY = Math.max(0, Math.min(1, gaze.y / window.innerHeight));
+          console.debug("x: ", gaze.x, "x last: ", lastSentGazeRef.current?.x);
+          console.debug("y: ", gaze.y, "y last: ", lastSentGazeRef.current?.y);
+          console.debug("gaze.x !== last.x: ", gaze.x !== lastSentGazeRef.current?.x);
+          console.debug("gaze.y !== last.y: ", gaze.y !== lastSentGazeRef.current?.y);
+          const isNewData =
+            gaze.x !== lastSentGazeRef.current?.x ||
+            gaze.y !== lastSentGazeRef.current?.y ||
+            gaze.timestamp !== lastSentGazeRef.current?.timestamp;
+
+          if (isNewData) {
+            socket.emit("gaze_data", {
+              x: normalizedX,
+              y: normalizedY,
+              rawX: gaze.x,
+              rawY: gaze.y,
+              timestamp: gaze.timestamp,
+            });
+            lastSentGazeRef.current = { ...gaze };
+          }
+        } catch (error) {
+          console.error("Erro ao emitir gaze data:", error);
+        }
+      }
+    }, 1000);
+
+    return () => {
+      console.debug("Parando emissão de gaze data...");
+      clearInterval(interval);
+    };
+  }, [isConnected, socket, isTracking]);
 
   return (
     <>
@@ -60,9 +234,10 @@ export default function GameScreen() {
         <div className="flex items-center justify-center min-h-screen">
           <SettingsModal
             isStoppedGame={true}
-            onClick={() => {
+            onClick={async () => {
               setIsModalOpen(false);
               setIsPaused(false);
+              await startTracking(false, false);
               startAudio();
             }}
           />
@@ -83,13 +258,13 @@ export default function GameScreen() {
 
           {isTimeUpModalOpen && (
             <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
-              <TimeOut />
+              <TimeOut data={successModalData || undefined} />
             </div>
           )}
 
           {showSuccessModal && (
             <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
-              <SuccessScreen fase={2}/>
+              <SuccessScreen fase={2} data={successModalData || undefined} />
             </div>
           )}
 
@@ -100,12 +275,13 @@ export default function GameScreen() {
             onClick={() => {
               setIsModalOpen(true);
               setIsPaused(true);
+              stopTracking();
             }}
           >
             <Bolt color="white" />
           </button>
 
-          <div className="h-[70%] w-screen ml-32 relative">
+          <div className="h-[70%] w-[100%] ml-32 relative" ref={starsContainerRef}>
             {stars.map((star) => (
               <Star
                 key={star.id}
@@ -113,6 +289,7 @@ export default function GameScreen() {
                 left={star.left}
                 onRemove={() => handleHit(star.id)}
                 onError={handleError}
+                isBrilhante={estrelasBrilhantes.includes(star.id)}
               />
             ))}
           </div>

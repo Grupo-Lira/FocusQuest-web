@@ -17,6 +17,7 @@ interface StarProps {
   readonly left: number;
   readonly onRemove: () => void;
   readonly onError: () => void;
+  isBrilhante: boolean;
 }
 
 // Constants
@@ -35,9 +36,9 @@ function startEyeTracking(
     if (!isActive) return;
 
     try {
-      const res = await fetch("http://localhost:4000/eyetracking");
-      const data = await res.json();
-      callback(data.iris_position || null);
+      // const res = await fetch("http://localhost:4000/eyetracking");
+      // const data = await res.json();
+      //callback(data.iris_position || null);
     } catch (error) {
       console.error("Eye Tracking Error:", error);
       callback(null);
@@ -52,7 +53,7 @@ function startEyeTracking(
   };
 }
 
-export default function Star({ top, left, onRemove, onError }: StarProps) {
+export default function Star({ top, left, onRemove, onError, isBrilhante }: StarProps) {
   const { hovering, removing, handleMouseEnter, handleMouseLeave } = useStarBehavior(
     onRemove,
     onError
@@ -100,12 +101,6 @@ export default function Star({ top, left, onRemove, onError }: StarProps) {
         isBeingLookedAt ? "ring-4 ring-yellow-400 scale-110" : ""
       )}
       style={{ top: `${top}%`, left: `${left}%` }}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onFocus={handleMouseEnter}
-      onBlur={handleMouseLeave}
-      onTouchStart={handleMouseEnter}
-      onTouchEnd={handleMouseLeave}
     >
       {hovering && <StarHover />}
       <Image
@@ -115,7 +110,8 @@ export default function Star({ top, left, onRemove, onError }: StarProps) {
         src="/img/star.svg"
         className={clsx(
           "relative z-10 transition-transform",
-          isBeingLookedAt ? "animate-pulse" : ""
+          isBeingLookedAt ? "animate-pulse" : "",
+          isBrilhante ? "animate-pulse" : ""
         )}
       />
     </button>
