@@ -289,7 +289,7 @@ export default function GameScreen() {
                 left={star.left}
                 onRemove={() => handleHit(star.id)}
                 onError={handleError}
-                isBrilhante={estrelasBrilhantes.includes(star.id)}
+                isShining={estrelasBrilhantes.includes(star.id)}
               />
             ))}
           </div>

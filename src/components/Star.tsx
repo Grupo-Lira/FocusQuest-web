@@ -1,10 +1,8 @@
 "use client";
 
-import Image from "next/image";
-import clsx from "clsx";
 import { useEffect, useState, useCallback } from "react";
 import { useStarBehavior } from "@/hooks/useStarBehavior";
-import StarHover from "./StarHover";
+import FixedStar from "./FixedStar";
 
 interface IrisPosition {
   x: number;
@@ -17,7 +15,7 @@ interface StarProps {
   readonly left: number;
   readonly onRemove: () => void;
   readonly onError: () => void;
-  isBrilhante: boolean;
+  readonly isShining: boolean;
 }
 
 // Constants
@@ -53,8 +51,8 @@ function startEyeTracking(
   };
 }
 
-export default function Star({ top, left, onRemove, onError, isBrilhante }: StarProps) {
-  const { hovering, removing, handleMouseEnter, handleMouseLeave } = useStarBehavior(
+export default function Star({ top, left, onRemove, onError, isShining }: StarProps) {
+  const { handleMouseEnter, handleMouseLeave } = useStarBehavior(
     onRemove,
     onError
   );
@@ -93,27 +91,6 @@ export default function Star({ top, left, onRemove, onError, isBrilhante }: Star
   }, [isBeingLookedAt, handleMouseEnter, handleMouseLeave]);
 
   return (
-    <button
-      type="button"
-      className={clsx(
-        "absolute transition-all duration-500",
-        removing ? "rotate-[720deg] opacity-0 scale-0" : "opacity-100",
-        isBeingLookedAt ? "ring-4 ring-yellow-400 scale-110" : ""
-      )}
-      style={{ top: `${top}%`, left: `${left}%` }}
-    >
-      {hovering && <StarHover />}
-      <Image
-        width={40}
-        height={38}
-        alt="Estrela"
-        src="/img/star.svg"
-        className={clsx(
-          "relative z-10 transition-transform",
-          isBeingLookedAt ? "animate-pulse" : "",
-          isBrilhante ? "animate-pulse" : ""
-        )}
-      />
-    </button>
+    <FixedStar top={top} left={left} isShining={isShining || isBeingLookedAt} />
   );
 }
