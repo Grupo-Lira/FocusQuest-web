@@ -11,13 +11,12 @@ import { AnimatedElement } from "@/components/AnimatedElements/AnimatedElement";
 import { useGameLogic } from "./useGameLogic";
 import { animatedElements } from "@/config/gameConfig";
 import TimeOut from "@/components/TimeOut";
-import SuccessScreen from "@/components/SuccessScreen";
 import { useAudio } from "@/context/AudioContext";
 import OverlayInstruction from "@/components/Calibration/OverlayInstruction";
 import { fase1Steps } from "@/constants/steps";
 import { GazeData, useEyeTracking } from "@/context/EyeTrackingContext";
 import { useSocketIO } from "@/hooks/useWebSocket";
-import { Metricas } from "@/components/SuccessScreen";
+import SuccessScreen, { Metricas } from "@/components/SuccessScreen";
 
 export default function GameScreen() {
   const starsContainerRef = useRef<HTMLDivElement>(null);
@@ -43,6 +42,30 @@ export default function GameScreen() {
 
   const lastGazeRef = useRef<GazeData | null>(null);
   const [estrelasBrilhantes, setEstrelasBrilhantes] = useState<number[]>([]);
+
+  const getRelativeCoordinates = (relativeLeft: number, relativeTop: number) => {
+    if (!starsContainerRef.current) return null;
+
+    const container = starsContainerRef.current;
+    const rect = container.getBoundingClientRect();
+
+    const centerX = rect.left + (rect.width * relativeLeft) / 100;
+    const centerY = rect.top + (rect.height * relativeTop) / 100;
+
+    const normalizedX = centerX / window.innerWidth;
+    const normalizedY = centerY / window.innerHeight;
+
+    //Aumentar área aceitavel de fixação
+    const toleranceX = 0.15;
+    const toleranceY = 0.15;
+
+    return {
+      x_min: Math.max(0, normalizedX - toleranceX),
+      x_max: Math.min(1, normalizedX + toleranceX),
+      y_min: Math.max(0, normalizedY - toleranceY),
+      y_max: Math.min(1, normalizedY + toleranceY),
+    };
+  };
 
   const handleStartGame = async () => {
     if (isWebGazerLoaded) {
@@ -79,30 +102,6 @@ export default function GameScreen() {
     setIsGameActive(true);
     setAudioGameStarted(true);
     startAudio();
-  };
-
-  const getRelativeCoordinates = (relativeLeft: number, relativeTop: number) => {
-    if (!starsContainerRef.current) return null;
-
-    const container = starsContainerRef.current;
-    const rect = container.getBoundingClientRect();
-
-    const centerX = rect.left + (rect.width * relativeLeft) / 100;
-    const centerY = rect.top + (rect.height * relativeTop) / 100;
-
-    const normalizedX = centerX / window.innerWidth;
-    const normalizedY = centerY / window.innerHeight;
-
-    //Aumentar área aceitavel de fixação
-    const toleranceX = 0.15;
-    const toleranceY = 0.15;
-
-    return {
-      x_min: Math.max(0, normalizedX - toleranceX),
-      x_max: Math.min(1, normalizedX + toleranceX),
-      y_min: Math.max(0, normalizedY - toleranceY),
-      y_max: Math.min(1, normalizedY + toleranceY),
-    };
   };
 
   //LOGICA DE BRILHAR ALVO ATUAL
@@ -169,7 +168,7 @@ export default function GameScreen() {
       setIsPaused(true);
       stopTracking();
 
-      setSuccessModalData(data?.metricas || null);
+      setSuccessModalData(data?.metricas);
       if (timeLeft !== 0 && data?.motivo !== "TEMPO_FASE_EXCEDIDO") {
         setShowSuccessModal(true);
       }
@@ -259,13 +258,13 @@ export default function GameScreen() {
 
           {isTimeUpModalOpen && (
             <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
-              <TimeOut data={successModalData} />
+              <TimeOut data={successModalData || undefined} />
             </div>
           )}
 
           {showSuccessModal && (
             <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
-              <SuccessScreen fase={2} data={successModalData} />
+              <SuccessScreen fase={2} data={successModalData || undefined} />
             </div>
           )}
 
@@ -273,10 +272,10 @@ export default function GameScreen() {
             type="button"
             aria-label="Open settings"
             className="bg-[var(--primary)] z-20 w-11 h-11 rounded-full absolute flex items-center justify-center button-glow transition-all duration-300 top-9 right-9"
-            onClick={async () => {
+            onClick={() => {
               setIsModalOpen(true);
               setIsPaused(true);
-              await stopTracking();
+              stopTracking();
             }}
           >
             <Bolt color="white" />

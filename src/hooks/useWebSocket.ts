@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { useEffect, useState } from "react";
+import { io, Socket } from "socket.io-client";
 
-export const useSocketIO = (options = {}) => {
+export const useSocketIO = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
@@ -15,13 +15,13 @@ export const useSocketIO = (options = {}) => {
 
     setSocket(socketInstance);
     
-    socketInstance.on('connect', () => {
-      console.log('Conectado ao servidor Socket.io');          
+    socketInstance.on("connect", () => {
+      console.log("Conectado ao servidor Socket.io");          
       setIsConnected(true);
     });
 
-    socketInstance.on('disconnect', () => {
-      console.log('Desconectado do servidor Socket.io');
+    socketInstance.on("disconnect", () => {
+      console.log("Desconectado do servidor Socket.io");
       setIsConnected(false);
     });
     
