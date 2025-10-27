@@ -43,17 +43,18 @@ export default function GameScreen() {
     setIsGameActive(true);
     setAudioGameStarted(true);
     startAudio();
-    startGame();
+    startGame(currentRound);
   };
 
   const handleCloseForm = () => {
     setShowFormModal(false);
-    setCurrentRound((prev) => prev + 1); // avança para a próxima rodada
+    const nextRound = currentRound + 1;
+    setCurrentRound(nextRound); // avança para a próxima rodada
     setTimeLeft(15); // reseta o tempo para 15 segundos
     setIsPaused(false);
     setIsGameActive(true);
     resetPlanets();
-    startGame();
+    startGame(nextRound);
   };
 
   const lastIndexRef = useRef<number | null>(null);
