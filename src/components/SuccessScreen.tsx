@@ -1,15 +1,18 @@
 import Image from "next/image";
 import { Button } from "./Button";
 import { Card } from "./Card";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ResultsTable from "./ResultsTable";
 
 export interface Metricas {
   tempo_reacao_medio_ms: number;
   total_acertos: number;
+  acertos: number;
   total_comissao: number;
   total_omissao: number;
 }
+
+
 
 interface SuccessScreenProps {
   readonly fase: number;
@@ -37,7 +40,7 @@ export default function SuccessScreen({ fase, data }: SuccessScreenProps) {
     },
   ];
 
-  const resultsFase2 = [{ id: 1, name: "🎯 Planetas vistos", score: "7 de 9" }];
+  const resultsFase2 = [{ id: 1, name: "🎯 Planetas vistos", score: `${data?.acertos} de 6 planetas`}];
   
   const resultsFase3 = [
     { id: 6, name: "💡 Precisão", score: "66%" },
@@ -63,6 +66,10 @@ export default function SuccessScreen({ fase, data }: SuccessScreenProps) {
     }
     return results;
   };
+  
+  useEffect(() => {
+    console.debug("Métricas recebidas no SuccessScreen:", data);
+  }, [data]);
 
   return (
     <Card
