@@ -10,6 +10,11 @@ const planets = [
   { id: "purple", src: "/img/focos-fase-2/purple.png" },
 ];
 
+const roundConfig: { [key: number]: string[] } = {
+  1: ["blue-green", "pink", "purple"], 
+  2: ["gray", "blue", "green"],
+};
+
 interface PlanetInstance {
   src: string;
   start: { left: string | number; bottom: number | string };
@@ -26,62 +31,68 @@ export function usePlanets() {
     setActivePlanets((prev) => prev.filter((p) => p.src !== src));
   };
 
-  const triggerPlanet = () => {
-    if (planetCountRef.current >= 3) return;
+  const triggerSpecificPlanet = (planetId: string) => {
+    const planetToShow = planets.find((p) => p.id === planetId);
+    if (!planetToShow) {
+      console.error(`Planeta com ID "${planetId}" não encontrado.`);
+      return;
+    } // sorteia o lado e a diagonal (mantém essa parte aleatória)
 
-    // pega um planeta que ainda não apareceu
-    const remainingPlanets = planets.filter(
-      (p) => !appearedPlanetsRef.current.includes(p.id)
-    );
-    if (remainingPlanets.length === 0) return;
-
-    const randomPlanet =
-      remainingPlanets[Math.floor(Math.random() * remainingPlanets.length)];
-
-    // sorteia o lado e a diagonal
     const side = Math.random() < 0.5 ? "right" : "left";
     const start =
       side === "right" ? { left: "50%", bottom: 0 } : { left: 0, bottom: "100%" };
     const end =
       side === "right" ? { left: "80%", bottom: "100%" } : { left: "50%", bottom: 0 };
 
-    const newPlanet: PlanetInstance = { src: randomPlanet.src, start, end, side };
+    const newPlanet: PlanetInstance = {
+      src: planetToShow.src,
+      start,
+      end,
+      side,
+    }; // adiciona planeta ativo e marca como exibido
 
-    // adiciona planeta ativo e marca como exibido
     setActivePlanets((prev) => [...prev, newPlanet]);
-    appearedPlanetsRef.current.push(randomPlanet.id);
-    planetCountRef.current += 1;
+    appearedPlanetsRef.current.push(planetToShow.id);
+    planetCountRef.current += 1; // remove após 2s
 
-    // remove após 2s
     setTimeout(() => {
-      removeActivePlanetBySrc(randomPlanet.src);
-    }, 2000);
+      removeActivePlanetBySrc(planetToShow.src);
+    }, 2000); // log final quando completar os 3
 
-    // log final quando completar os 3
     if (planetCountRef.current === 3) {
       console.log("Planetas que apareceram:", appearedPlanetsRef.current);
     }
   };
 
   // --- 💫 NOVO: controla o tempo das aparições ---
-  const startGame = () => {
+  const startGame = (currentRound: number) => {
     // limpa tudo
     setActivePlanets([]);
     appearedPlanetsRef.current = [];
-    planetCountRef.current = 0;
+    planetCountRef.current = 0; // Pega os planetas definidos para o round atual
 
-    // define os segundos em que os planetas aparecem
-    const schedule = [2000, 6000, 8000]; // ms = segundos 2, 6 e 8
-  
-    for (const time of schedule) {
-      setTimeout(() => {
-        triggerPlanet();
-      }, time);
-    }
+    const planetsForThisRound = roundConfig[currentRound];
+    if (!planetsForThisRound) {
+      console.error(`Configuração não encontrada para o round: ${currentRound}`);
+      return;
+    } // define os segundos em que os planetas aparecem
 
-    // log final após 10s
+    const schedule = [4000, 8000, 12000]; // ms = segundos 4, 8 e 12 // Agenda cada planeta específico do round
+
+    for (const [index, time] of schedule.entries()) {
+      const planetIdToShow = planetsForThisRound[index];
+      if (planetIdToShow) {
+        setTimeout(() => {
+          triggerSpecificPlanet(planetIdToShow);
+        }, time);
+      }
+    } // log final após 10s
+
     setTimeout(() => {
-      console.log("Fim do jogo. Planetas mostrados:", appearedPlanetsRef.current);
+      console.log(
+        `Fim do round ${currentRound}. Planetas mostrados:`,
+        appearedPlanetsRef.current
+      );
     }, 10000);
   };
 
@@ -89,7 +100,7 @@ export function usePlanets() {
     appearedPlanetsRef.current = [];
     planetCountRef.current = 0;
     setActivePlanets([]);
-  };
+  }; // Remove triggerPlanet do retorno, pois não é mais usado externamente
 
-  return { activePlanets, triggerPlanet, startGame, resetPlanets };
+  return { activePlanets, startGame, resetPlanets };
 }

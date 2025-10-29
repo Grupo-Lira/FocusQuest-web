@@ -15,6 +15,13 @@ import { usePlanets } from "@/hooks/usePlanets";
 import PlanetsAnimation from "@/components/fase2/PlanetsAnimations";
 import StarsField from "@/components/fase2/StarsField";
 import { useAudio } from "@/context/AudioContext";
+import { useSocketIO } from "@/hooks/useWebSocket";
+import { Metricas } from "@/components/SuccessScreen";
+
+export type PlanetaResposta = {
+  planeta: number;
+  correto: boolean;
+};
 
 export default function GameScreen() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -33,27 +40,38 @@ export default function GameScreen() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showFormModal, setShowFormModal] = useState(false);
   const [shiningStar, setShiningStar] = useState<string | null>(null);
+  const [data, setData] = useState<Metricas | undefined>(undefined);
+
+  const [planetasSelecionados, setPlanetasSelecionados] = useState<PlanetaResposta[]>([]);
 
   const [currentRound, setCurrentRound] = useState(1);
 
   const { startAudio } = useAudio();
   const { activePlanets, startGame, resetPlanets } = usePlanets();
+  const { socket, isConnected } = useSocketIO();
 
   const handleStartGame = () => {
     setIsGameActive(true);
     setAudioGameStarted(true);
     startAudio();
-    startGame();
+    startGame(currentRound);
   };
 
   const handleCloseForm = () => {
     setShowFormModal(false);
-    setCurrentRound((prev) => prev + 1); // avança para a próxima rodada
-    setTimeLeft(15); // reseta o tempo para 15 segundos
-    setIsPaused(false);
-    setIsGameActive(true);
-    resetPlanets();
-    startGame();
+    setPlanetasSelecionados([]);
+
+    if (currentRound == 1) {
+      const nextRound = currentRound + 1;
+      setCurrentRound(nextRound); // avança para a próxima rodada
+      setTimeLeft(15); // reseta o tempo para 15 segundos
+      setIsPaused(false);
+      setIsGameActive(true);
+      resetPlanets();
+      startGame(nextRound);
+    } else {
+      setShowSuccessModal(true);
+    }
   };
 
   const lastIndexRef = useRef<number | null>(null);
@@ -90,15 +108,41 @@ export default function GameScreen() {
     if (timeLeft === 0) {
       setIsPaused(true);
       setIsGameActive(false);
+      setShowFormModal(true);
 
-      if (currentRound < 2) {
-        setShowFormModal(true);
-      } else {
-        // Se for a última, mostra tela de sucesso
-        setShowSuccessModal(true);
+      // AVISA O BACKEND QUE ESTÁ ESPERANDO A RESPOSTA DO IOT
+      if (socket && isConnected) {
+        console.debug("Tempo esgotado. Emitindo 'aguardando_iot' para o backend.");
+        socket.emit("aguardando_iot");
       }
     }
-  }, [timeLeft]);
+  }, [timeLeft, setIsPaused, setIsGameActive, socket, isConnected]);
+
+  useEffect(() => {
+    // dispara no final do round 2, quando showSuccessModal vira true
+    if (showSuccessModal && socket && isConnected) {
+      console.debug("Mostrando tela de sucesso. Emitindo 'fase_atual_finalizada'.");
+      socket.emit("fase_atual_finalizada");
+    }
+  }, [showSuccessModal, socket, isConnected]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handlePlanetaResponse = (response: PlanetaResposta) => {
+      console.debug("Resposta do planeta recebida:", response);
+      setPlanetasSelecionados((prev) => [...prev, response]);
+    };
+
+    const handleFaseConcluida = (response: Metricas) => {
+      console.debug("Fase concluída. Métricas recebidas:", response);
+      setData(response);
+    };
+
+    socket.on("resposta_planeta", handlePlanetaResponse);
+    socket.on("fase_atual_finalizada", handleFaseConcluida);
+
+  }, [socket]); 
 
   return (
     <>
@@ -123,6 +167,8 @@ export default function GameScreen() {
           <GameOverlay
             audioGameStarted={audioGameStarted}
             showSuccessModal={showSuccessModal}
+            data={data}
+            planetasSelecionados={planetasSelecionados}
             showFormModal={showFormModal}
             onStart={handleStartGame}
             onCloseForm={handleCloseForm}

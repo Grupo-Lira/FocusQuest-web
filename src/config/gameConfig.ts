@@ -42,13 +42,6 @@ export const animatedElements = [
 
 export const animatedElementsFase2 = [
   {
-    id: "nave",
-    src: "/img/distracoes-fase-2/meteoro.png",
-    initial: { x: "100vw", y: "-100vh" },
-    animate: { x: "0%", y: "0%" },
-    duration: 5,
-  },
-  {
     id: "meteoroet",
     src: "/img/distracoes-fase-2/nave.png",
     initial: { x: "0vw", y: "-150vh" },
@@ -76,9 +69,9 @@ export const animatedElementsFase2 = [
 export const animatedElementsFase3 = [
   {
     id: "nave",
-    src: "/img/distracoes/nave.png",
-    initial: { x: "0%", y: "0%" },
-    animate: { x: "100vw", y: "-100vh" },
+    src: "/img/distracoes-fase-2/meteoro.png",
+    initial: { x: "100vw", y: "-100vh" },
+    animate: { x: "0%", y: "0%" },
     duration: 5,
   },
   {
