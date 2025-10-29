@@ -10,7 +10,7 @@ export function useRandomStars(count: number, minDistance = 10) {
       return starsList.every((star) => {
         const dx = star.left - left;
         const dy = star.top - top;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+        const distance = Math.hypot(dx * dx + dy * dy);
         return distance >= minDistance;
       });
     };

@@ -7,7 +7,7 @@ interface Result {
 }
 
 interface ResultsTableProps {
-  results: Result[];
+  readonly results: ReadonlyArray<Result>;
 }
 
 export default function RankingTable({ results }: ResultsTableProps) {

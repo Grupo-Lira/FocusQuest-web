@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/Button";
+import SettingsButton from "@/components/SettingsButton";
 import SettingsModal from "@/components/SettingsModal";
-import { Bolt } from "lucide-react";
 import { useState } from "react";
 
 export default function ApresentationPage() {
@@ -11,15 +11,7 @@ export default function ApresentationPage() {
     <div className="flex items-center justify-center min-h-screen">
       {!isModalOpen && (
         <div className="bg-[var(--white)] px-[4.5rem] py-12 rounded-4xl flex flex-col gap-4 items-center relative">
-          <div
-            className="bg-[var(--primary)] w-11 h-11 rounded-full absolute flex items-center justify-center button-glow transition-all duration-300 top-3 right-3"
-            onClick={() => {
-              setIsModalOpen(true);
-              console.log("O modal está aberto");
-            }}
-          >
-            <Bolt color="white" />
-          </div>
+          <SettingsButton onClick={() => setIsModalOpen(true)} />
           <p className="text-4xl text-[var(--primary)] font-orbitron">
             Bem-vindo ao FocusQuest!
           </p>
@@ -30,7 +22,12 @@ export default function ApresentationPage() {
             </p>
             <p>
               Explore 3 planetas, cada um com desafios progressivos inspirados no{" "}
-              <a className="text-[var(--primary)]">
+              <a
+                href="https://en.wikipedia.org/wiki/Continuous_performance_test"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[var(--primary)] underline bg-transparent p-0 m-0"
+              >
                 Teste de Desempenho Contínuo Roosevelt.
               </a>
             </p>
@@ -41,7 +38,7 @@ export default function ApresentationPage() {
           </div>
           <Button
             text="Iniciar Jornada"
-            onClick={() => (window.location.href = "/menu")}
+            onClick={() => (globalThis.location.href = "/menu")}
           />
         </div>
       )}

@@ -1,16 +1,24 @@
-import { useEffect, useState } from "react";
-import { useRandomStars } from "@/hooks/useRandomStars";
 import { useGameContext } from "@/context/GameContext";
+import { useState } from "react";
+
+const positions_stars = [
+  { top: 10, left: 20, id: 1 },
+  { top: 30, left: 50, id: 2 },
+  { top: 70, left: 70, id: 3 },
+  { top: 70, left: 10, id: 4 },
+  { top: 20, left: 70, id: 5 },
+];
+
+type StarPosition = {
+  top: number;
+  left: number;
+  id: number;
+};
 
 export function useGameLogic() {
-  const [stars, setStars] = useState<{ top: number; left: number; id: number }[]>([]);
+  const [stars, setStars] = useState<StarPosition[]>(positions_stars);
   const [level, setLevel] = useState(0);
   const { hits, setHits, errors, setErrors } = useGameContext();
-  const { generate } = useRandomStars(5);
-
-  useEffect(() => {
-    setStars(generate());
-  }, []);
 
   const handleRemove = (id: number) => {
     setStars((prev) => prev.filter((s) => s.id !== id));
@@ -27,5 +35,5 @@ export function useGameLogic() {
     setLevel((l) => Math.max(l - 15, 0));
   };
 
-  return { stars, level, handleHit, handleError };
+  return { stars, level, handleHit, handleError, handleRemove };
 }

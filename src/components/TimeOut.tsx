@@ -3,15 +3,31 @@ import { Button } from "./Button";
 import { Card } from "./Card";
 import { useState } from "react";
 import ResultsTable from "./ResultsTable";
+import { Metricas } from "./SuccessScreen";
 
-export default function TimeOut() {
+type Prop = {
+  readonly data?: Metricas;
+};
+
+export default function TimeOut({data}: Prop) {
   const [resultsOpen, setResultsOpen] = useState(false);
 
   const results = [
-    { id: 1, name: "⏱️ Tempo total", score: "00:32" },
-    { id: 2, name: "🎯 Acertos", score: "4 de 5 alvos" },
-    { id: 3, name: "❌ Erros", score: "2 distrações" },
-    { id: 4, name: "💡 Precisão", score: "66%" },
+    {
+      id: 3,
+      name: "🎯 Acertos",
+      score: `${data?.total_acertos ?? 0} de 5 alvos`,
+    },
+    {
+      id: 4,
+      name: "❌ Demorou para focar",
+      score: `${data?.total_comissao ?? 0} vezes`,
+    },
+    {
+      id: 5,
+      name: "❌ Distrações",
+      score: `${data?.total_omissao ?? 0} distrações`,
+    },
   ];
 
   return (
@@ -23,11 +39,11 @@ export default function TimeOut() {
             <div className="flex gap-4">
               <Button
                 text="Próximo Nível"
-                onClick={() => (window.location.href = "/fase/2")}
+                onClick={() => (globalThis.location.href = "/fase/2")}
               />
               <Button
                 text="Menu Ínicial"
-                onClick={() => (window.location.href = "/menu")}
+                onClick={() => (globalThis.location.href = "/menu")}
               />
             </div>
           ) : (
