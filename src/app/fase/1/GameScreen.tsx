@@ -95,7 +95,7 @@ export default function GameScreen() {
           "EMITINDO evento: fase_1_alvos_configuracao, {}",
           configAlvos.length > 0
         );
-        socket.emit("iniciar_experimento_com_config", { fase1: configAlvos });
+        socket.emit("iniciar_fase1", { fase1: configAlvos, usuarioId: "123" }); //TODO: Substituir ID de usuário hardcoded por valor dinâmico
       }
     }
 
@@ -122,14 +122,8 @@ export default function GameScreen() {
   }
 
   //LOGICA DE APAGAR ALVO ATUAL
-  function apagarEstrela(alvo: {
-    id: number;
-    x_max: string;
-    x_min: string;
-    y_max: string;
-    y_min: string;
-  }) {
-    handleRemove(alvo.id);
+  function apagarEstrela(alvo: number) {
+    handleRemove(alvo);
   }
 
   useEffect(() => {
@@ -144,8 +138,14 @@ export default function GameScreen() {
   useEffect(() => {
     if (!socket) return;
 
-    socket.on("fase_iniciada", (data) => {
+    socket.on("fase1_iniciada", (data) => {
       console.debug("Fase iniciada:", data);
+
+      brilharEstrela(data.alvo);
+    });
+
+    socket.on("brilhar_estrela", (data) => {
+      console.debug("Destaque Estrela:", data);
 
       brilharEstrela(data.alvo);
     });
@@ -155,7 +155,6 @@ export default function GameScreen() {
     });
 
     socket.on("alvo_fase1_concluido", (data) => {
-      console.debug("Alvo finalizado, apagando..:", data);
       apagarEstrela(data.alvo);
     });
 
@@ -207,7 +206,7 @@ export default function GameScreen() {
             gaze.timestamp !== lastSentGazeRef.current?.timestamp;
 
           if (isNewData) {
-            socket.emit("gaze_data", {
+            socket.emit("gaze_data_fase1", {
               x: normalizedX,
               y: normalizedY,
               rawX: gaze.x,
