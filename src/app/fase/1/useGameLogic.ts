@@ -22,6 +22,8 @@ export function useGameLogic() {
 
   const handleRemove = (id: number) => {
     setStars((prev) => prev.filter((s) => s.id !== id));
+    console.log("Removendo estrela com id:", id);
+    console.log("Estrelas restantes:", stars.map((s) => s.id).join(", "));
   };
 
   const handleHit = (id: number) => {

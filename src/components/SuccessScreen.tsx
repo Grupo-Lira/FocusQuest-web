@@ -10,9 +10,9 @@ export interface Metricas {
   acertos: number;
   total_comissao: number;
   total_omissao: number;
+  planetas_vistos?: { id: number }[];
+  planetas_ignorados?: { id: number }[];
 }
-
-
 
 interface SuccessScreenProps {
   readonly fase: number;
@@ -40,21 +40,8 @@ export default function SuccessScreen({ fase, data }: SuccessScreenProps) {
     },
   ];
 
-  const resultsFase2 = [{ id: 1, name: "🎯 Planetas vistos", score: `${data?.acertos} de 6 planetas`}];
+  const resultsFase2 = [{ id: 1, name: "🎯 Planetas vistos", score: `${data?.acertos ?? 0} de 6 planetas`}];
   
-  const resultsFase3 = [
-    { id: 6, name: "💡 Precisão", score: "66%" },
-    {
-      id: 4,
-      name: "❌ Demorou para focar",
-      score: `${data?.total_comissao ?? 0} vezes`,
-    },
-    {
-      id: 5,
-      name: "❌ Distrações",
-      score: `${data?.total_omissao ?? 0} distrações`,
-    },
-  ];
 
   const handleFaseResults = () => {
     if (fase === 2) {
@@ -62,9 +49,17 @@ export default function SuccessScreen({ fase, data }: SuccessScreenProps) {
     } else if (fase === 3) {
       return resultsFase2;
     } else if (fase === 4) {
-      return resultsFase3;
+      return results;
     }
     return results;
+  };
+
+  const handleOnClick = () => {
+    if (fase === 4) {
+      globalThis.location.href = "/menu";
+    } else {
+      globalThis.location.href = `/fase/${fase}`;
+    }
   };
   
   useEffect(() => {
@@ -79,8 +74,8 @@ export default function SuccessScreen({ fase, data }: SuccessScreenProps) {
           {resultsOpen ? (
             <div className="flex gap-4">
               <Button
-                text="Próximo Nível"
-                onClick={() => (globalThis.location.href = `/fase/${fase}`)}
+                text={fase === 4 ? "Continuar" : "Próximo Nível"}
+                onClick={handleOnClick}
               />
               <Button
                 text="Menu Ínicial"
@@ -96,7 +91,7 @@ export default function SuccessScreen({ fase, data }: SuccessScreenProps) {
       <div className="flex flex-col gap-4">
         <div className="flex flex-col items-center">
           {resultsOpen ? (
-            <ResultsTable results={handleFaseResults()} />
+            <ResultsTable results={handleFaseResults()} data={data}/>
           ) : (
             <Image
               src="/img/viva.png"

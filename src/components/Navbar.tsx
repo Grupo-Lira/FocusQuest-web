@@ -1,6 +1,6 @@
 "use client";
 
-import { Award, Bolt, HelpCircle, Home, ScanEyeIcon } from "lucide-react";
+import { Award, Bolt, Home, ScanEyeIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
@@ -8,9 +8,8 @@ import Image from "next/image";
 const links = [
   { id: 1, href: "/menu", label: "Menu", icon: <Home /> },
   { id: 2, href: "/ranking", label: "Ranking", icon: <Award /> },
-  { id: 3, href: "/settings", label: "Configurações", icon: <Bolt /> },
   { id: 4, href: "/calibration", label: "Calibração", icon: <ScanEyeIcon /> },
-  { id: 5, href: "/help", label: "Ajuda", icon: <HelpCircle /> },
+  { id: 3, href: "/settings", label: "Configurações", icon: <Bolt /> },
 ];
 
 export default function Navbar() {

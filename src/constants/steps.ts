@@ -7,7 +7,7 @@ export type StepProps = {
 
 export const steps: StepProps[] = [
   { id: 1, description: "CHEGOU A HORA DE APRENDER A JOGAR!" },
-  { id: 2, description: "OLÁ ASTROUNATA, TEMOS UMA MISSÃO PARA VOCÊ!" },
+  { id: 2, description: "OLÁ ASTRONAUTA, TEMOS UMA MISSÃO PARA VOCÊ!" },
   { id: 3, description: "PRECISAMOS QUE VOCÊ CLIQUE EM CADA UMA DAS ESTRELAS 5 VEZES" },
   {
     id: 4,
@@ -21,7 +21,7 @@ export const fase1Steps: StepProps[] = [
   { id: 1, description: "Seja bem-vindo ao seu primeiro desafio, astronauta." },
   { id: 2, description: "Prepare-se para testar sua concentração." },
   { id: 3, description: "Na tela, aparecerão cinco estrelas." },
-  { id: 4, description: "Fixe os olhos em cada uma delas até sumirem." },
+  { id: 4, description: "Fixe os olhos em qual estiver brilhando até ela sumir." },
   { id: 5, description: "Você terá 1 minuto para completar a missão." },
   { id: 6, description: "Seja rápido e mantenha o foco." },
   {

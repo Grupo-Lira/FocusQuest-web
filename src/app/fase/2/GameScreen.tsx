@@ -55,6 +55,9 @@ export default function GameScreen() {
     setAudioGameStarted(true);
     startAudio();
     startGame(currentRound);
+
+    //TODO-USAR-ID-DO-PACIENTE-REAL
+    socket?.emit("iniciar_fase2", { fase: 2, usuarioId: 123 });
   };
 
   const handleCloseForm = () => {
@@ -141,8 +144,7 @@ export default function GameScreen() {
 
     socket.on("resposta_planeta", handlePlanetaResponse);
     socket.on("fase_atual_finalizada", handleFaseConcluida);
-
-  }, [socket]); 
+  }, [socket]);
 
   return (
     <>
@@ -181,7 +183,7 @@ export default function GameScreen() {
             }}
           />
 
-         <StarsField shiningStar={shiningStar} />
+          <StarsField shiningStar={shiningStar} />
 
           <div className="h-screen w-screen relative">
             {isGameActive &&
