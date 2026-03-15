@@ -49,15 +49,28 @@ export default function GameScreen() {
   const lastSentGazeRef = useRef<GazeData | null>(null);
   const fase3ConfigRef = useRef<Fase3BoundingBox[]>([]);
 
-  const getBoundingBox = (element: HTMLElement | null): Fase3BoundingBox | null => {
+  const getBoundingBox = (
+    element: HTMLElement | null,
+    toleranceX = 0.15,
+    toleranceY = 0.15
+  ): Fase3BoundingBox | null => {
     if (!element) return null;
 
     const rect = element.getBoundingClientRect();
+
+    // centro do elemento
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    // normalização
+    const normalizedX = centerX / window.innerWidth;
+    const normalizedY = centerY / window.innerHeight;
+
     return {
-      x_min: Math.round(rect.left),
-      x_max: Math.round(rect.right),
-      y_min: Math.round(rect.top),
-      y_max: Math.round(rect.bottom),
+      x_min: Math.max(0, normalizedX - toleranceX),
+      x_max: Math.min(1, normalizedX + toleranceX),
+      y_min: Math.max(0, normalizedY - toleranceY),
+      y_max: Math.min(1, normalizedY + toleranceY),
     };
   };
 
@@ -140,6 +153,8 @@ export default function GameScreen() {
     const interval = setInterval(() => {
       const gaze = lastGazeRef.current;
       if (!gaze || !socket.connected) return;
+      const normalizedX = Math.max(0, Math.min(1, gaze.x / window.innerWidth));
+      const normalizedY = Math.max(0, Math.min(1, gaze.y / window.innerHeight));
 
       const isNewData =
         gaze.x !== lastSentGazeRef.current?.x ||
@@ -148,8 +163,8 @@ export default function GameScreen() {
 
       if (isNewData) {
         socket.emit("gaze_data_fase3", {
-          x: gaze.x,
-          y: gaze.y,
+          x: normalizedX,
+          y: normalizedY,
           timestamp: gaze.timestamp,
           larguraTela: window.innerWidth,
         });
