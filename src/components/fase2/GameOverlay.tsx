@@ -1,6 +1,6 @@
-import SuccessScreen, { Metricas } from "@/components/SuccessScreen";
-import FormModal from "./FormModal";
-import OverlayInstruction from "../Calibration/OverlayInstruction";
+import { SuccessScreen, Metricas } from "@/components/SuccessScreen";
+import { FormModal } from "./FormModal";
+import { OverlayInstruction } from "../Calibration/OverlayInstruction";
 import { fase2Steps } from "@/constants/steps";
 import { PlanetaResposta } from "@/app/fase/2/GameScreen";
 
@@ -14,8 +14,15 @@ interface GameOverlayProps {
   readonly onCloseForm: () => void;
 }
 
-export default function GameOverlay({ audioGameStarted, showSuccessModal, data, planetasSelecionados,showFormModal, onStart, onCloseForm }: GameOverlayProps) {
-
+export function GameOverlay({
+  audioGameStarted,
+  showSuccessModal,
+  data,
+  planetasSelecionados,
+  showFormModal,
+  onStart,
+  onCloseForm,
+}: GameOverlayProps) {
   if (!audioGameStarted) {
     return <OverlayInstruction onComplete={onStart} steps={fase2Steps} />;
   }
@@ -31,7 +38,10 @@ export default function GameOverlay({ audioGameStarted, showSuccessModal, data, 
   if (showFormModal) {
     return (
       <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
-        <FormModal onClose={onCloseForm} planetasSelecionados={planetasSelecionados || []} />
+        <FormModal
+          onClose={onCloseForm}
+          planetasSelecionados={planetasSelecionados || []}
+        />
       </div>
     );
   }

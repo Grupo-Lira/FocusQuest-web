@@ -48,7 +48,7 @@ function startEyeTracking(
   };
 }
 
-export default function StarCalibration({
+export function StarCalibration({
   top,
   left,
   onHit,

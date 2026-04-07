@@ -22,7 +22,7 @@ const planetas = [
   { id: 7, image: "/img/focos-fase-2/purple.png", name: "Violetor" },
 ];
 
-export default function ResultsTable({ results, data }: Readonly<ResultsTableProps>) {
+export function ResultsTable({ results, data }: Readonly<ResultsTableProps>) {
   const grupos = [
     { label: "Vistos", key: "planetas_vistos" as const },
     { label: "Ignorados", key: "planetas_ignorados" as const },

@@ -1,10 +1,10 @@
-import SettingsButton from "../SettingsButton";
+import { SettingsButton } from "../SettingsButton";
 
 type NavbarCalibrationProps = Readonly<{
   setIsModalOpen: (isOpen: boolean) => void;
 }>;
 
-export default function NavbarCalibration({ setIsModalOpen }: NavbarCalibrationProps) {
+export function NavbarCalibration({ setIsModalOpen }: NavbarCalibrationProps) {
   return (
     <div className="pt-6 flex justify-center">
       <div className="bg-[var(--white)] px-6 py-3 flex w-fit rounded-full gap-40 h-[70px]">

@@ -18,11 +18,17 @@ const planetas = [
   { id: 7, image: "/img/focos-fase-2/purple.png", name: "Violetor" },
 ];
 
-export default function FormModal({ onClose, planetasSelecionados }: FormModalProps) {
+export function FormModal({ onClose, planetasSelecionados }: FormModalProps) {
   return (
     <Card
       title={"Quais planetas apareceram durante o jogo?"}
-      buttons={<Button text="Continuar" onClick={onClose} disabled={planetasSelecionados.length < 3} />}
+      buttons={
+        <Button
+          text="Continuar"
+          onClick={onClose}
+          disabled={planetasSelecionados.length < 3}
+        />
+      }
     >
       <div className="flex flex-col gap-8">
         <div className="flex flex-col items-center">
@@ -33,7 +39,6 @@ export default function FormModal({ onClose, planetasSelecionados }: FormModalPr
         </div>
         <div className="grid grid-cols-3 gap-4 justify-items-center px-24">
           {planetas.map((planeta, index) => {
-
             const selecao = planetasSelecionados?.find((p) => p.planeta === planeta.id);
 
             let borderColorClass = "border-gray-300"; // Padrão: não selecionado

@@ -1,4 +1,4 @@
-export default function StarHover() {
+export function StarHover() {
   return (
     <div
       className="absolute z-0 bg-[#FFDDBD] opacity-30 rounded-full star-hover"

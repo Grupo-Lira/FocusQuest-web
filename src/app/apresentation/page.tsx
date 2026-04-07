@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/Button";
-import SettingsButton from "@/components/SettingsButton";
-import SettingsModal from "@/components/SettingsModal";
+import { SettingsButton } from "@/components/SettingsButton";
+import { SettingsModal } from "@/components/SettingsModal";
 import { useState } from "react";
 
 export default function ApresentationPage() {

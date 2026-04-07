@@ -1,19 +1,19 @@
 "use client";
 
-import NavbarGame from "@/components/NavbarGame";
-import SettingsModal from "@/components/SettingsModal";
+import { NavbarGame } from "@/components/NavbarGame";
+import { SettingsModal } from "@/components/SettingsModal";
 import { useEffect, useRef, useState } from "react";
 import { useGameContext } from "@/context/GameContext";
 import { AnimatedElement } from "@/components/AnimatedElements/AnimatedElement";
 import { animatedElementsFase2 } from "@/config/gameConfig";
 import { stars } from "@/constants/fase2Stars";
 import { AnimatePresence } from "framer-motion";
-import SettingsButton from "@/components/SettingsButton";
-import Clouds from "@/components/fase2/Clouds";
-import GameOverlay from "@/components/fase2/GameOverlay";
+import { SettingsButton } from "@/components/SettingsButton";
+import { Clouds } from "@/components/fase2/Clouds";
+import { GameOverlay } from "@/components/fase2/GameOverlay";
 import { usePlanets } from "@/hooks/usePlanets";
-import PlanetsAnimation from "@/components/fase2/PlanetsAnimations";
-import StarsField from "@/components/fase2/StarsField";
+import { PlanetsAnimation } from "@/components/fase2/PlanetsAnimations";
+import { StarsField } from "@/components/fase2/StarsField";
 import { useAudio } from "@/context/AudioContext";
 import { useSocketIO } from "@/hooks/useWebSocket";
 import { Metricas } from "@/components/SuccessScreen";
@@ -23,7 +23,7 @@ export type PlanetaResposta = {
   correto: boolean;
 };
 
-export default function GameScreen() {
+export function GameScreen() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const {
     isPaused,
@@ -141,8 +141,7 @@ export default function GameScreen() {
 
     socket.on("resposta_planeta", handlePlanetaResponse);
     socket.on("fase_atual_finalizada", handleFaseConcluida);
-
-  }, [socket]); 
+  }, [socket]);
 
   return (
     <>
@@ -181,7 +180,7 @@ export default function GameScreen() {
             }}
           />
 
-         <StarsField shiningStar={shiningStar} />
+          <StarsField shiningStar={shiningStar} />
 
           <div className="h-screen w-screen relative">
             {isGameActive &&

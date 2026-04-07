@@ -2,14 +2,14 @@ import Image from "next/image";
 import { Button } from "./Button";
 import { Card } from "./Card";
 import { useState } from "react";
-import ResultsTable from "./ResultsTable";
+import { ResultsTable } from "./ResultsTable";
 import { Metricas } from "./SuccessScreen";
 
 type Prop = {
   readonly data?: Metricas;
 };
 
-export default function TimeOut({data}: Prop) {
+export function TimeOut({ data }: Prop) {
   const [resultsOpen, setResultsOpen] = useState(false);
 
   const results = [
@@ -55,7 +55,7 @@ export default function TimeOut({data}: Prop) {
       <div className="flex flex-col gap-4">
         <div className="flex flex-col items-center">
           {resultsOpen ? (
-            <ResultsTable results={results} />
+            <ResultsTable results={results} data={data} />
           ) : (
             <Image
               src="/img/sad.png"

@@ -1,24 +1,24 @@
 "use client";
 
-import NavbarGame from "@/components/NavbarGame";
-import Thermometer from "@/components/Thermometer";
-import Star from "@/components/Star";
-import SettingsModal from "@/components/SettingsModal";
 import { useEffect, useRef, useState } from "react";
 import { Bolt } from "lucide-react";
 import { useGameContext } from "@/context/GameContext";
 import { AnimatedElement } from "@/components/AnimatedElements/AnimatedElement";
 import { useGameLogic } from "./useGameLogic";
 import { animatedElements } from "@/config/gameConfig";
-import TimeOut from "@/components/TimeOut";
 import { useAudio } from "@/context/AudioContext";
-import OverlayInstruction from "@/components/Calibration/OverlayInstruction";
 import { fase1Steps } from "@/constants/steps";
 import { GazeData, useEyeTracking } from "@/context/EyeTrackingContext";
 import { useSocketIO } from "@/hooks/useWebSocket";
-import SuccessScreen, { Metricas } from "@/components/SuccessScreen";
+import { Metricas, SuccessScreen } from "@/components/SuccessScreen";
+import { SettingsModal } from "@/components/SettingsModal";
+import { NavbarGame } from "@/components/NavbarGame";
+import { Thermometer } from "@/components/Thermometer";
+import { OverlayInstruction } from "@/components/Calibration/OverlayInstruction";
+import { TimeOut } from "@/components/TimeOut";
+import { Star } from "@/components/Star";
 
-export default function GameScreen() {
+export function GameScreen() {
   const starsContainerRef = useRef<HTMLDivElement>(null);
   const { stars, level, handleHit, handleError, handleRemove } = useGameLogic();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -248,7 +248,7 @@ export default function GameScreen() {
             <NavbarGame label="ENCONTRE E FIXE OS OLHOS NOS 5 ALVOS DURANTE 5 SEGUNDOS" />
           </div>
 
-          <div className="absolute top-44 ml-6 z-20">
+          <div className="absolute top-15 ml-6 z-20">
             <Thermometer level={level} />
           </div>
 

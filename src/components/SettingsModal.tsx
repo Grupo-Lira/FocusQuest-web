@@ -10,7 +10,7 @@ interface SettingPageProps {
   readonly onClick?: () => void;
 }
 
-export default function SettingsModal({
+export function SettingsModal({
   isInitialGame = false,
   isStoppedGame = false,
   onClick,

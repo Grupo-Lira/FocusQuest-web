@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useStarBehavior } from "@/hooks/useStarBehavior";
-import FixedStar from "./FixedStar";
+import { FixedStar } from "./FixedStar";
 
 interface IrisPosition {
   x: number;
@@ -51,11 +51,8 @@ function startEyeTracking(
   };
 }
 
-export default function Star({ top, left, onRemove, onError, isShining }: StarProps) {
-  const { handleMouseEnter, handleMouseLeave } = useStarBehavior(
-    onRemove,
-    onError
-  );
+export function Star({ top, left, onRemove, onError, isShining }: StarProps) {
+  const { handleMouseEnter, handleMouseLeave } = useStarBehavior(onRemove, onError);
   const [isBeingLookedAt, setIsBeingLookedAt] = useState(false);
 
   // Detect if gaze is on the star
@@ -90,7 +87,5 @@ export default function Star({ top, left, onRemove, onError, isShining }: StarPr
     }
   }, [isBeingLookedAt, handleMouseEnter, handleMouseLeave]);
 
-  return (
-    <FixedStar top={top} left={left} isShining={isShining || isBeingLookedAt} />
-  );
+  return <FixedStar top={top} left={left} isShining={isShining || isBeingLookedAt} />;
 }

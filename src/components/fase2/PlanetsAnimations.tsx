@@ -12,7 +12,7 @@ interface PlanetsAnimationProps {
   readonly activePlanet: PlanetInstance | null;
 }
 
-export default function PlanetsAnimation({ activePlanet }: PlanetsAnimationProps) {
+export function PlanetsAnimation({ activePlanet }: PlanetsAnimationProps) {
   if (!activePlanet) return null;
 
   return (

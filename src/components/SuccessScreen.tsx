@@ -2,7 +2,7 @@ import Image from "next/image";
 import { Button } from "./Button";
 import { Card } from "./Card";
 import { useEffect, useState } from "react";
-import ResultsTable from "./ResultsTable";
+import { ResultsTable } from "./ResultsTable";
 
 export interface Metricas {
   tempo_reacao_medio_ms: number;
@@ -19,7 +19,7 @@ interface SuccessScreenProps {
   readonly data?: Metricas;
 }
 
-export default function SuccessScreen({ fase, data }: SuccessScreenProps) {
+export function SuccessScreen({ fase, data }: SuccessScreenProps) {
   const [resultsOpen, setResultsOpen] = useState(false);
 
   const results = [
@@ -40,8 +40,9 @@ export default function SuccessScreen({ fase, data }: SuccessScreenProps) {
     },
   ];
 
-  const resultsFase2 = [{ id: 1, name: "🎯 Planetas vistos", score: `${data?.acertos ?? 0} de 6 planetas`}];
-  
+  const resultsFase2 = [
+    { id: 1, name: "🎯 Planetas vistos", score: `${data?.acertos ?? 0} de 6 planetas` },
+  ];
 
   const handleFaseResults = () => {
     if (fase === 2) {
@@ -61,7 +62,7 @@ export default function SuccessScreen({ fase, data }: SuccessScreenProps) {
       globalThis.location.href = `/fase/${fase}`;
     }
   };
-  
+
   useEffect(() => {
     console.debug("Métricas recebidas no SuccessScreen:", data);
   }, [data]);
@@ -91,7 +92,7 @@ export default function SuccessScreen({ fase, data }: SuccessScreenProps) {
       <div className="flex flex-col gap-4">
         <div className="flex flex-col items-center">
           {resultsOpen ? (
-            <ResultsTable results={handleFaseResults()} data={data}/>
+            <ResultsTable results={handleFaseResults()} data={data} />
           ) : (
             <Image
               src="/img/viva.png"

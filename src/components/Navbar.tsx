@@ -1,18 +1,18 @@
 "use client";
 
-import { Award, Bolt, Home, ScanEyeIcon } from "lucide-react";
+import { Bolt, Home, ScanEyeIcon, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 
 const links = [
   { id: 1, href: "/menu", label: "Menu", icon: <Home /> },
-  { id: 2, href: "/ranking", label: "Ranking", icon: <Award /> },
+  { id: 2, href: "/fichas", label: "Fichas", icon: <Users /> },
   { id: 4, href: "/calibration", label: "Calibração", icon: <ScanEyeIcon /> },
   { id: 3, href: "/settings", label: "Configurações", icon: <Bolt /> },
 ];
 
-export default function Navbar() {
+export function Navbar() {
   const pathname = usePathname();
   return (
     <div className="bg-[var(--white)] px-6 py-3 flex w-fit rounded-full gap-40">

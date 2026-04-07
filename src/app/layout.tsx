@@ -19,7 +19,8 @@ const poppins = Poppins({
 });
 export const metadata: Metadata = {
   title: "Focus Quest",
-  description: "Desafie a sua mente com o Focus Quest, um jogo de perguntas e respostas que testa seus conhecimentos em diversas áreas. Aprenda enquanto se diverte!",
+  description:
+    "Desafie a sua mente com o Focus Quest, um jogo de perguntas e respostas que testa seus conhecimentos em diversas áreas. Aprenda enquanto se diverte!",
 };
 
 export default function RootLayout({
@@ -38,9 +39,7 @@ export default function RootLayout({
       <body className={`${orbitron.variable} ${poppins.variable} antialiased`}>
         <EyeTrackingProvider>
           <GameProvider>
-            <AudioProvider>
-              {children}
-            </AudioProvider>
+            <AudioProvider>{children}</AudioProvider>
           </GameProvider>
         </EyeTrackingProvider>
       </body>

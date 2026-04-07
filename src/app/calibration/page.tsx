@@ -1,13 +1,13 @@
 "use client";
-import NavbarCalibration from "@/components/Calibration/NavbarCalibration";
-import OverlayInstruction from "@/components/Calibration/OverlayInstruction";
 import { useCallback, useEffect, useState } from "react";
 import { stars } from "@/constants/calibrationStar";
-import StarCalibration from "@/components/Calibration/StarCalibration";
-import SettingsModal from "@/components/SettingsModal";
-import SuccessScreen from "@/components/Calibration/SuccessScreen";
 import { steps } from "@/constants/steps";
 import { useEyeTracking } from "@/context/EyeTrackingContext";
+import { SettingsModal } from "@/components/SettingsModal";
+import { OverlayInstruction } from "@/components/Calibration/OverlayInstruction";
+import { NavbarCalibration } from "@/components/Calibration/NavbarCalibration";
+import { StarCalibration } from "@/components/Calibration/StarCalibration";
+import { SuccessScreen } from "@/components/Calibration/SuccessScreen";
 
 interface ClickData {
   clickX: number;

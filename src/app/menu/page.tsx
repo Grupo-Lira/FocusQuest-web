@@ -1,4 +1,5 @@
-import Navbar from "@/components/Navbar";
+
+import { Navbar } from "@/components/Navbar";
 import Image from "next/image";
 import Link from "next/link";
 const levels = [
@@ -38,14 +39,14 @@ export default function MenuPage() {
         <Link key={level.id} href={level.href}>
           <Image
             src={level.image}
-            width={400}
-            height={400}
+            width={300}
+            height={300}
             alt={`Planeta ${level.id}`}
             className="absolute transition-transform duration-300"
             style={level.position}
           />
           <div
-            className={`absolute w-28 h-28 border-4 ${
+            className={`absolute w-24 h-24 border-4 ${
               level.disabled
                 ? "border-[#414141]"
                 : "border-[var(--primary)] button-glow transition-all duration-300"
@@ -56,13 +57,13 @@ export default function MenuPage() {
               src={level.disabled ? "/img/luz-disabled.svg" : "/img/luz.svg"}
               alt={`Planeta ${level.id}`}
               className="absolute top-3.5 right-3.5"
-              width={43}
-              height={42}
+              width={39}
+              height={38}
             />
             <p
               className={`text-[var(--white)] text-5xl ${
                 level.disabled ? "bg-[#414141]" : "bg-[var(--primary)]"
-              } w-[5.4375rem] h-[5.4375rem] rounded-full flex items-center justify-center font-semibold`}
+              } w-[5.188rem] h-[5.188rem] rounded-full flex items-center justify-center font-semibold`}
             >
               {level.id}
             </p>
