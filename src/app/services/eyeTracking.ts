@@ -1,51 +1,56 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+const DEFAULT_POLL_INTERVAL_MS = 1000;
 
-export interface IrisPosition {
+export type IrisPosition = {
   x: number;
   y: number;
   timestamp?: string;
-}
+};
+
+type EyeTrackingResponse = {
+  iris_position?: IrisPosition | null;
+};
+
+const fetchIrisPosition = async (): Promise<IrisPosition | null> => {
+  const response = await fetch(`${API_URL}/eyetracking`, {
+    mode: "cors",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (response.ok === false) {
+    console.error("Erro na requisição: HTTP", response.status);
+    return null;
+  }
+
+  const data = (await response.json()) as EyeTrackingResponse;
+  if (data.iris_position === null || data.iris_position === undefined) return null;
+  return data.iris_position;
+};
 
 /**
- * Monitora o rastreamento ocular em tempo real
- * @param callback Função chamada quando novos dados são recebidos
- * @param interval Intervalo de polling em ms (padrão: 1s)
- * @returns Função para parar o monitoramento
+ * Monitors eye tracking in real time.
+ * @param callback Called whenever new data is received.
+ * @param interval Polling interval in ms (default: 1s).
+ * @returns A function to stop the monitoring.
  */
 export function startEyeTracking(
   callback: (position: IrisPosition | null) => void,
-  interval: number = 1000
+  interval: number = DEFAULT_POLL_INTERVAL_MS
 ): () => void {
-  let isActive = true;
+  const state = { isActive: true };
 
   const fetchData = async () => {
-    if (!isActive) return;
-
-    try {
-      const res = await fetch(`${API_URL}/eyetracking`, {
-        mode: "cors",
-        headers: {
-          "Content-Type": "application/json",
-        }
-      });
-
-      if (!res.ok) {
-        throw new Error(`Erro HTTP: ${res.status}`);
-      }
-
-      const data = await res.json();
-      callback(data.iris_position || null);
-    } catch (error) {
-      console.error("Erro na requisição:", error);
-      callback(null);
-    }
+    if (state.isActive === false) return;
+    const position = await fetchIrisPosition();
+    callback(position);
   };
 
   const timerId = setInterval(fetchData, interval);
 
-  // Retorna uma função de cleanup
   return () => {
-    isActive = false;
+    state.isActive = false;
     clearInterval(timerId);
   };
 }

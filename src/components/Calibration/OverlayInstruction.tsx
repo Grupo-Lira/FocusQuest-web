@@ -1,20 +1,46 @@
 import { PlayIcon } from "lucide-react";
-import { useState } from "react";
 import Image from "next/image";
+import { useState } from "react";
 import { StepProps } from "@/constants/steps";
 import { Button } from "../Button";
 
-interface OverlayInstructionProps {
+type Props = {
   readonly onComplete: () => void;
   readonly steps: ReadonlyArray<StepProps>;
-}
+};
 
-export function OverlayInstruction({ onComplete, steps }: OverlayInstructionProps) {
+const getPrevIndex = (currentIndex: number, total: number) => {
+  const prevIndex = (currentIndex - 1 + total) % total;
+  return prevIndex;
+};
+
+const getNextIndex = (currentIndex: number, total: number) => {
+  const nextIndex = (currentIndex + 1) % total;
+  return nextIndex;
+};
+
+const getPrevButtonClass = (currentIndex: number) => {
+  if (currentIndex === 0) return "hidden";
+  return "";
+};
+
+export function OverlayInstruction({ onComplete, steps }: Props) {
   const [currentStep, setCurrentStep] = useState(steps[0]);
 
-  if (!currentStep) return null;
+  if (currentStep === undefined) return null;
 
   const currentIndex = steps.findIndex((step) => step.id === currentStep.id);
+  const prevButtonClass = getPrevButtonClass(currentIndex);
+
+  const onPrev = () => {
+    const prevIndex = getPrevIndex(currentIndex, steps.length);
+    setCurrentStep(steps[prevIndex]);
+  };
+
+  const onNext = () => {
+    const nextIndex = getNextIndex(currentIndex, steps.length);
+    setCurrentStep(steps[nextIndex]);
+  };
 
   return (
     <div className="absolute w-full min-h-screen inset-0 flex items-center justify-center bg-[#00000055] bg-opacity-50 z-12">
@@ -24,26 +50,15 @@ export function OverlayInstruction({ onComplete, steps }: OverlayInstructionProp
             {currentStep.description}
           </p>
           <div className="flex">
-            <button
-              onClick={() => {
-                const prevIndex = (currentIndex - 1 + steps.length) % steps.length;
-                setCurrentStep(steps[prevIndex]);
-              }}
-              className={currentIndex === 0 ? "hidden" : ""}
-            >
+            <button type="button" onClick={onPrev} className={prevButtonClass}>
               <PlayIcon className="scale-x-[-1]" size={50} />
             </button>
-            {currentStep.isFinal ? (
+            {currentStep.isFinal === true ? (
               <div className="flex">
                 <Button onClick={onComplete} text="Começar" />
               </div>
             ) : (
-              <button
-                onClick={() => {
-                  const nextIndex = (currentIndex + 1) % steps.length;
-                  setCurrentStep(steps[nextIndex]);
-                }}
-              >
+              <button type="button" onClick={onNext}>
                 <PlayIcon size={50} />
               </button>
             )}

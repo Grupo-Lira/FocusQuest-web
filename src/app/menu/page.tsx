@@ -1,8 +1,17 @@
-
-import { Navbar } from "@/components/Navbar";
 import Image from "next/image";
 import Link from "next/link";
-const levels = [
+import { Navbar } from "@/components/Navbar";
+
+type Level = {
+  id: number;
+  image: string;
+  position: { top: string; left: string };
+  positionNumber: { top: string; left: string };
+  disabled: boolean;
+  href: string;
+};
+
+const LEVELS: ReadonlyArray<Level> = [
   {
     id: 1,
     image: "/img/planeta1.svg",
@@ -27,49 +36,69 @@ const levels = [
     disabled: true,
     href: "/fase/3",
   },
-];
+] as const;
+
+const getBorderClass = (disabled: boolean) => {
+  if (disabled === true) return "border-[#414141]";
+  return "border-[var(--primary)] button-glow transition-all duration-300";
+};
+
+const getBadgeBackgroundClass = (disabled: boolean) => {
+  if (disabled === true) return "bg-[#414141]";
+  return "bg-[var(--primary)]";
+};
+
+const getLightIcon = (disabled: boolean) => {
+  if (disabled === true) return "/img/luz-disabled.svg";
+  return "/img/luz.svg";
+};
+
+const LevelMarker = ({ level }: { level: Level }) => {
+  const borderClass = getBorderClass(level.disabled);
+  const badgeBgClass = getBadgeBackgroundClass(level.disabled);
+  const lightIcon = getLightIcon(level.disabled);
+  const alt = `Planeta ${level.id}`;
+
+  return (
+    <Link href={level.href}>
+      <Image
+        src={level.image}
+        width={300}
+        height={300}
+        alt={alt}
+        className="absolute transition-transform duration-300"
+        style={level.position}
+      />
+      <div
+        className={`absolute w-24 h-24 border-4 ${borderClass} rounded-full flex items-center justify-center`}
+        style={level.positionNumber}
+      >
+        <Image
+          src={lightIcon}
+          alt={alt}
+          className="absolute top-3.5 right-3.5"
+          width={39}
+          height={38}
+        />
+        <p
+          className={`text-[var(--white)] text-5xl ${badgeBgClass} w-[5.188rem] h-[5.188rem] rounded-full flex items-center justify-center font-semibold`}
+        >
+          {level.id}
+        </p>
+      </div>
+    </Link>
+  );
+};
 
 export default function MenuPage() {
+  const markers = LEVELS.map((level) => <LevelMarker key={level.id} level={level} />);
+
   return (
     <div className="relative w-full h-screen overflow-hidden ">
       <div className="flex justify-center mt-6">
         <Navbar />
       </div>
-      {levels.map((level) => (
-        <Link key={level.id} href={level.href}>
-          <Image
-            src={level.image}
-            width={300}
-            height={300}
-            alt={`Planeta ${level.id}`}
-            className="absolute transition-transform duration-300"
-            style={level.position}
-          />
-          <div
-            className={`absolute w-24 h-24 border-4 ${
-              level.disabled
-                ? "border-[#414141]"
-                : "border-[var(--primary)] button-glow transition-all duration-300"
-            }  rounded-full flex items-center justify-center`}
-            style={level.positionNumber}
-          >
-            <Image
-              src={level.disabled ? "/img/luz-disabled.svg" : "/img/luz.svg"}
-              alt={`Planeta ${level.id}`}
-              className="absolute top-3.5 right-3.5"
-              width={39}
-              height={38}
-            />
-            <p
-              className={`text-[var(--white)] text-5xl ${
-                level.disabled ? "bg-[#414141]" : "bg-[var(--primary)]"
-              } w-[5.188rem] h-[5.188rem] rounded-full flex items-center justify-center font-semibold`}
-            >
-              {level.id}
-            </p>
-          </div>
-        </Link>
-      ))}
+      {markers}
     </div>
   );
 }

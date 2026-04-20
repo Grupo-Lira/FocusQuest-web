@@ -1,23 +1,105 @@
 "use client";
+
 import { useCallback, useEffect, useState } from "react";
+import { NavbarCalibration } from "@/components/Calibration/NavbarCalibration";
+import { OverlayInstruction } from "@/components/Calibration/OverlayInstruction";
+import { StarCalibration } from "@/components/Calibration/StarCalibration";
+import { SuccessScreen } from "@/components/Calibration/SuccessScreen";
+import { SettingsModal } from "@/components/SettingsModal";
 import { stars } from "@/constants/calibrationStar";
 import { steps } from "@/constants/steps";
 import { useEyeTracking } from "@/context/EyeTrackingContext";
-import { SettingsModal } from "@/components/SettingsModal";
-import { OverlayInstruction } from "@/components/Calibration/OverlayInstruction";
-import { NavbarCalibration } from "@/components/Calibration/NavbarCalibration";
-import { StarCalibration } from "@/components/Calibration/StarCalibration";
-import { SuccessScreen } from "@/components/Calibration/SuccessScreen";
 
-interface ClickData {
+type ClickData = {
   clickX: number;
   clickY: number;
   gazeX: number | null;
   gazeY: number | null;
   timestamp: number;
   element: string;
-  distance?: number; // Distância entre clique e gaze em pixels
-}
+  distance?: number;
+};
+
+const MAX_HITS_PER_STAR = 5;
+const MAX_TOTAL_HITS = stars.length * MAX_HITS_PER_STAR;
+const START_DELAY_MS = 100;
+
+const calculateDistance = (x1: number, y1: number, x2: number, y2: number) => {
+  const distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+  return distance;
+};
+
+const getClickPrecisionLabel = (distance: number) => {
+  if (distance < 50) return "Boa";
+  if (distance < 100) return "Média";
+  return "Baixa";
+};
+
+const getOverallPrecisionLabel = (avgDistance: number) => {
+  if (avgDistance < 50) return "Excelente";
+  if (avgDistance < 100) return "Boa";
+  return "Precisa melhorar";
+};
+
+const computeDistance = (
+  clickX: number,
+  clickY: number,
+  gazeX: number | null,
+  gazeY: number | null
+) => {
+  if (gazeX === null || gazeY === null) return undefined;
+  return calculateDistance(clickX, clickY, gazeX, gazeY);
+};
+
+const logClickDetails = (clickData: ClickData) => {
+  const { clickX, clickY, gazeX, gazeY, element, distance } = clickData;
+  console.log("=== CLICK LOG ===");
+  console.log("Elemento:", element);
+  console.log("Coordenadas do clique:", { x: clickX, y: clickY });
+  console.log("Coordenadas do WebGazer:", { x: gazeX, y: gazeY });
+
+  if (distance === undefined) {
+    console.log("WebGazer não forneceu dados de gaze");
+  } else {
+    const precision = getClickPrecisionLabel(distance);
+    console.log("Distância:", distance.toFixed(2), "pixels");
+    console.log("Precisão:", precision);
+  }
+  console.log("=================");
+  console.table([clickData]);
+};
+
+const logCalibrationStats = (clickLog: ClickData[]) => {
+  console.log("=== ESTATÍSTICAS FINAIS DA CALIBRAÇÃO ===");
+  const validLogs = clickLog.filter((log) => log.distance !== undefined);
+
+  if (validLogs.length === 0) {
+    console.log("========================================");
+    return;
+  }
+
+  const distances = validLogs.map((log) => log.distance as number);
+  const avgDistance = distances.reduce((sum, value) => sum + value, 0) / distances.length;
+  const minDistance = Math.min(...distances);
+  const maxDistance = Math.max(...distances);
+  const precision = getOverallPrecisionLabel(avgDistance);
+
+  console.log("Total de cliques registrados:", clickLog.length);
+  console.log("Cliques com dados de gaze:", validLogs.length);
+  console.log("Distância média:", avgDistance.toFixed(2), "pixels");
+  console.log("Menor distância:", minDistance.toFixed(2), "pixels");
+  console.log("Maior distância:", maxDistance.toFixed(2), "pixels");
+  console.log("Precisão geral:", precision);
+  console.log("========================================");
+};
+
+const incrementStarHit = (starId: string) => {
+  const starIndex = stars.findIndex((star) => star.id === starId);
+  if (starIndex === -1) return;
+  stars[starIndex].totalHits += 1;
+};
+
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export default function CalibrationPage() {
   const [showInstructions, setShowInstructions] = useState(true);
@@ -27,25 +109,14 @@ export default function CalibrationPage() {
   const [clickLog, setClickLog] = useState<ClickData[]>([]);
   const { isWebGazerLoaded, startTracking, stopTracking, lastGazeData } =
     useEyeTracking();
-  const maxHistPerStarNeeded = 5;
-  const maxTotalHitsNeeded = stars.length * maxHistPerStarNeeded;
-  const calculateDistance = (x1: number, y1: number, x2: number, y2: number): number => {
-    return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-  };
 
-  // Função para registrar cliques
   const logClick = useCallback(
     (event: React.MouseEvent, element: string) => {
       const clickX = event.clientX;
       const clickY = event.clientY;
-
-      const gazeX = lastGazeData?.x || null;
-      const gazeY = lastGazeData?.y || null;
-
-      let distance = undefined;
-      if (gazeX !== null && gazeY !== null) {
-        distance = calculateDistance(clickX, clickY, gazeX, gazeY);
-      }
+      const gazeX = lastGazeData === null ? null : lastGazeData.x;
+      const gazeY = lastGazeData === null ? null : lastGazeData.y;
+      const distance = computeDistance(clickX, clickY, gazeX, gazeY);
 
       const clickData: ClickData = {
         clickX,
@@ -58,58 +129,28 @@ export default function CalibrationPage() {
       };
 
       setClickLog((prev) => [...prev, clickData]);
-      // Log detalhado no console
-      console.log("=== CLICK LOG ===");
-      console.log("Elemento:", element);
-      console.log("Coordenadas do clique:", { x: clickX, y: clickY });
-      console.log("Coordenadas do WebGazer:", { x: gazeX, y: gazeY });
-      if (distance === undefined) {
-        console.log("WebGazer não forneceu dados de gaze");
-      } else {
-        console.log("Distância:", distance.toFixed(2), "pixels");
-        let precision = "Baixa";
-        if (distance < 50) {
-          precision = "Boa";
-        } else if (distance < 100) {
-          precision = "Média";
-        }
-        console.log("Precisão:", precision);
-      }
-      console.log("=================");
-
-      // Também loga para facilitar a análise
-      console.table([clickData]);
+      logClickDetails(clickData);
     },
     [lastGazeData]
   );
 
-  // Handler modificado para as estrelas
   const handleStarClick = (event: React.MouseEvent, starId: string) => {
     logClick(event, `star-${starId}`);
-
-    setHits((prev) => {
-      const newHits = prev + 1;
-      return newHits;
-    });
-
-    const starIndex = stars.findIndex((star) => star.id === starId);
-    if (starIndex !== -1) {
-      stars[starIndex].totalHits += 1;
-    }
+    setHits((prev) => prev + 1);
+    incrementStarHit(starId);
   };
 
   const handleStartCalibration = async () => {
     setShowInstructions(false);
+    await wait(START_DELAY_MS);
 
-    // Pequeno delay para garantir que o estado foi atualizado
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    if (isWebGazerLoaded) {
-      console.log("Iniciando rastreamento ocular...");
-      await startTracking(true, true); // Iniciar com mouse
-    } else {
+    if (isWebGazerLoaded === false) {
       console.warn("WebGazer não está carregado ainda");
+      return;
     }
+
+    console.log("Iniciando rastreamento ocular...");
+    await startTracking(true, true);
   };
 
   const handleRestart = () => {
@@ -119,88 +160,55 @@ export default function CalibrationPage() {
     setClickLog([]);
   };
 
-  // Verifica quando o usuário completa a calibração
+  const onCloseSettings = () => setIsModalVisible(false);
+  const onOpenSettings = () => setIsModalVisible(true);
+
   useEffect(() => {
-    const completeCalibration = async () => {
-      if (hits >= maxTotalHitsNeeded && !successModalVisible) {
-        console.log("Calibração concluída com", hits, "hits");
-        stopTracking();
-        setSuccessModalVisible(true);
+    if (hits < MAX_TOTAL_HITS) return;
+    if (successModalVisible === true) return;
 
-        console.log("=== ESTATÍSTICAS FINAIS DA CALIBRAÇÃO ===");
-        const validLogs = clickLog.filter((log) => log.distance !== undefined);
-        if (validLogs.length > 0) {
-          const avgDistance =
-            validLogs.reduce((sum, log) => sum + (log.distance || 0), 0) /
-            validLogs.length;
-          const minDistance = Math.min(
-            ...validLogs.map((log) => log.distance || Infinity)
-          );
-          const maxDistance = Math.max(...validLogs.map((log) => log.distance || 0));
+    console.log("Calibração concluída com", hits, "hits");
+    stopTracking();
+    setSuccessModalVisible(true);
+    logCalibrationStats(clickLog);
+  }, [hits, successModalVisible, clickLog, stopTracking]);
 
-          console.log("Total de cliques registrados:", clickLog.length);
-          console.log("Cliques com dados de gaze:", validLogs.length);
-          console.log("Distância média:", avgDistance.toFixed(2), "pixels");
-          console.log("Menor distância:", minDistance.toFixed(2), "pixels");
-          console.log("Maior distância:", maxDistance.toFixed(2), "pixels");
-          let precision = "Precisa melhorar";
-          if (avgDistance < 50) {
-            precision = "Excelente";
-          } else if (avgDistance < 100) {
-            precision = "Boa";
-          }
-          console.log("Precisão geral:", precision);
-        }
-        console.log("========================================");
-      }
-    };
-    completeCalibration();
-  }, [hits, successModalVisible, clickLog]);
+  const activeStars = stars.filter((star) => star.totalHits < MAX_HITS_PER_STAR);
+
+  if (isModalVisible === true) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <SettingsModal isStoppedGame={true} onClick={onCloseSettings} />
+      </div>
+    );
+  }
 
   return (
-    <>
-      {isModalVisible ? (
-        <div className="flex items-center justify-center min-h-screen">
-          <SettingsModal
-            isStoppedGame={true}
-            onClick={() => {
-              setIsModalVisible(false);
-            }}
-          />
+    <div className="min-h-screen flex flex-col text-white">
+      <div className="min-h-screen flex flex-col text-white">
+        {showInstructions === true ? (
+          <OverlayInstruction onComplete={handleStartCalibration} steps={steps} />
+        ) : null}
+
+        <NavbarCalibration setIsModalOpen={onOpenSettings} />
+
+        <div className="flex-1 relative overflow-hidden">
+          {activeStars.map((star) => (
+            <StarCalibration
+              key={star.id}
+              top={star.top}
+              left={star.left}
+              onHit={() => {}}
+              onError={() => console.error("Erro com estrela", star.id)}
+              onClick={(event: React.MouseEvent) => handleStarClick(event, star.id)}
+            />
+          ))}
         </div>
-      ) : (
-        <div className="min-h-screen flex flex-col text-white">
-          <div className="min-h-screen flex flex-col text-white">
-            {/* Tela de instruções antes da calibração */}
-            {showInstructions && (
-              <OverlayInstruction onComplete={handleStartCalibration} steps={steps} />
-            )}
 
-            {/* Navbar de controle */}
-            <NavbarCalibration setIsModalOpen={() => setIsModalVisible(true)} />
-
-            {/* Área principal da calibração */}
-            <div className="flex-1 relative overflow-hidden">
-              {stars.map(
-                (star) =>
-                  star.totalHits < 5 && (
-                    <StarCalibration
-                      key={star.id}
-                      top={star.top}
-                      left={star.left}
-                      onHit={() => {}}
-                      onError={() => console.error("Erro com estrela", star.id)}
-                      onClick={(e: React.MouseEvent) => handleStarClick(e, star.id)}
-                    />
-                  )
-              )}
-            </div>
-
-            {/* Modal de sucesso */}
-            {successModalVisible && <SuccessScreen onRestart={handleRestart} />}
-          </div>
-        </div>
-      )}
-    </>
+        {successModalVisible === true ? (
+          <SuccessScreen onRestart={handleRestart} />
+        ) : null}
+      </div>
+    </div>
   );
 }

@@ -1,10 +1,10 @@
 import { Bolt } from "lucide-react";
 
-interface SettingsButtonProps {
+type Props = {
   readonly onClick: () => void;
-}
+};
 
-export function SettingsButton({ onClick }: SettingsButtonProps) {
+export function SettingsButton({ onClick }: Props) {
   return (
     <button
       type="button"

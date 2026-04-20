@@ -1,5 +1,5 @@
 import { GameScreen } from "./GameScreen";
 
-export default function Fase1() {
+export default function Fase3Page() {
   return <GameScreen />;
 }

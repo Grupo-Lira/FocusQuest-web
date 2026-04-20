@@ -1,91 +1,82 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useStarBehavior } from "@/hooks/useStarBehavior";
 import { FixedStar } from "./FixedStar";
 
-interface IrisPosition {
+type IrisPosition = {
   x: number;
   y: number;
   timestamp?: string;
-}
+};
 
-interface StarProps {
+type Props = {
   readonly top: number;
   readonly left: number;
   readonly onRemove: () => void;
   readonly onError: () => void;
   readonly isShining: boolean;
-}
+};
 
-// Constants
-const GAZE_TOLERANCE = 5; // % margin of error
-const SCREEN_WIDTH = 1560; // Should match API's WIDTH
-const SCREEN_HEIGHT = 1024; // Should match API's HEIGHT
+const GAZE_TOLERANCE = 5;
+const SCREEN_WIDTH = 1560;
+const SCREEN_HEIGHT = 1024;
+const POLL_INTERVAL_MS = 500;
 
-// Eye tracking service function
-function startEyeTracking(
-  callback: (position: IrisPosition | null) => void,
-  interval: number = 1000
-): () => void {
-  let isActive = true;
+const isGazeOnStar = (position: IrisPosition, left: number, top: number) => {
+  const gazeXPercent = (position.x / SCREEN_WIDTH) * 100;
+  const gazeYPercent = (position.y / SCREEN_HEIGHT) * 100;
+  const onStar =
+    Math.abs(gazeXPercent - left) < GAZE_TOLERANCE &&
+    Math.abs(gazeYPercent - top) < GAZE_TOLERANCE;
+  return onStar;
+};
+
+const startEyeTracking = (
+  _callback: (position: IrisPosition | null) => void,
+  interval: number = POLL_INTERVAL_MS
+): (() => void) => {
+  const state = { isActive: true };
 
   const fetchData = async () => {
-    if (!isActive) return;
-
-    try {
-      // const res = await fetch("http://localhost:4000/eyetracking");
-      // const data = await res.json();
-      //callback(data.iris_position || null);
-    } catch (error) {
-      console.error("Eye Tracking Error:", error);
-      callback(null);
-    }
+    if (state.isActive === false) return;
+    // Eye tracking fetch is disabled; callback stays available for future integration.
   };
 
   const timerId = setInterval(fetchData, interval);
 
   return () => {
-    isActive = false;
+    state.isActive = false;
     clearInterval(timerId);
   };
-}
+};
 
-export function Star({ top, left, onRemove, onError, isShining }: StarProps) {
+export function Star({ top, left, onRemove, onError, isShining }: Props) {
   const { handleMouseEnter, handleMouseLeave } = useStarBehavior(onRemove, onError);
   const [isBeingLookedAt, setIsBeingLookedAt] = useState(false);
 
-  // Detect if gaze is on the star
   const checkGazePosition = useCallback(
     (position: IrisPosition | null) => {
-      if (!position) return;
-
-      // Convert absolute coordinates (pixels) to percentage
-      const gazeXPercent = (position.x / SCREEN_WIDTH) * 100;
-      const gazeYPercent = (position.y / SCREEN_HEIGHT) * 100;
-
-      setIsBeingLookedAt(
-        Math.abs(gazeXPercent - left) < GAZE_TOLERANCE &&
-          Math.abs(gazeYPercent - top) < GAZE_TOLERANCE
-      );
+      if (position === null) return;
+      setIsBeingLookedAt(isGazeOnStar(position, left, top));
     },
     [top, left]
   );
 
-  // Start eye tracking
   useEffect(() => {
-    const stopTracking = startEyeTracking(checkGazePosition, 500);
+    const stopTracking = startEyeTracking(checkGazePosition, POLL_INTERVAL_MS);
     return stopTracking;
   }, [checkGazePosition]);
 
-  // Trigger hover behavior when being looked at
   useEffect(() => {
-    if (isBeingLookedAt) {
+    if (isBeingLookedAt === true) {
       handleMouseEnter();
-    } else {
-      handleMouseLeave();
+      return;
     }
+    handleMouseLeave();
   }, [isBeingLookedAt, handleMouseEnter, handleMouseLeave]);
 
-  return <FixedStar top={top} left={left} isShining={isShining || isBeingLookedAt} />;
+  const shining = isShining === true || isBeingLookedAt === true;
+
+  return <FixedStar top={top} left={left} isShining={shining} />;
 }
