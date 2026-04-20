@@ -1,20 +1,35 @@
 "use client";
 
-interface ButtonProps {
+type Props = {
   text: string;
   onClick?: () => void;
   className?: string;
   disabled?: boolean;
-}
+};
 
-export const Button = ({ text, onClick, className, disabled }: ButtonProps) => {
+const DEFAULT_SIZE_CLASS = "px-[4.25rem] py-2.5" as const;
+const DISABLED_CLASS = "opacity-50 cursor-not-allowed" as const;
+
+const getDisabledClass = (disabled: boolean | undefined) => {
+  if (disabled === true) return DISABLED_CLASS;
+  return "";
+};
+
+const getSizeClass = (className: string | undefined) => {
+  if (className === undefined) return DEFAULT_SIZE_CLASS;
+  return className;
+};
+
+export const Button = ({ text, onClick, className, disabled }: Props) => {
+  const disabledClass = getDisabledClass(disabled);
+  const sizeClass = getSizeClass(className);
+  const buttonClassName = `bg-[var(--primary)] text-[var(--white)] font-orbitron text-xl ${disabledClass} ${sizeClass} rounded-xl button-glow transition-all duration-300`;
+
   return (
     <button
+      type="button"
       onClick={onClick}
-      className={`
-        bg-[var(--primary)] text-[var(--white)] font-orbitron text-xl ${disabled ? "opacity-50 cursor-not-allowed" : ""} ${
-          className || "px-[4.25rem] py-2.5"
-        } rounded-xl button-glow transition-all duration-300`}
+      className={buttonClassName}
       disabled={disabled}
     >
       {text}

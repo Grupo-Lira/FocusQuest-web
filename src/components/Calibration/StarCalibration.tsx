@@ -1,126 +1,97 @@
 "use client";
 
-import Image from "next/image";
 import clsx from "clsx";
-import { useEffect, useState, useCallback } from "react";
+import Image from "next/image";
+import { useCallback, useEffect, useState } from "react";
 
-interface IrisPosition {
+type IrisPosition = {
   x: number;
   y: number;
   timestamp?: string;
-}
+};
 
-interface StarCalibrationProps {
+type Props = {
   readonly top: number;
   readonly left: number;
   readonly onHit: () => void;
   readonly onError?: () => void;
   readonly onClick: (event: React.MouseEvent) => void;
-}
+};
 
-// Configurações do rastreamento ocular
-const GAZE_TOLERANCE = 5; // % de margem de erro
+const GAZE_TOLERANCE = 5;
 const SCREEN_WIDTH = 1560;
 const SCREEN_HEIGHT = 1024;
+const HIT_DELAY_MS = 600;
 
-function startEyeTracking(
-  callback: (position: IrisPosition | null) => void,
-  interval: number = 300
-): () => void {
-  let isActive = true;
+const isGazeInside = (position: IrisPosition, left: number, top: number) => {
+  const gazeXPercent = (position.x / SCREEN_WIDTH) * 100;
+  const gazeYPercent = (position.y / SCREEN_HEIGHT) * 100;
+  const inside =
+    Math.abs(gazeXPercent - left) < GAZE_TOLERANCE &&
+    Math.abs(gazeYPercent - top) < GAZE_TOLERANCE;
+  return inside;
+};
 
-  const fetchData = async () => {
-    if (!isActive) return;
-    try {
-      const res = await fetch("http://localhost:4000/eyetracking");
-      const data = await res.json();
-      callback(data.iris_position || null);
-    } catch (error) {
-      console.error("Erro no Eye Tracking:", error);
-      callback(null);
-    }
-  };
-
-  const timerId = setInterval(fetchData, interval);
-  return () => {
-    isActive = false;
-    clearInterval(timerId);
-  };
-}
-
-export default function StarCalibration({
-  top,
-  left,
-  onHit,
-  onError,
-  onClick,
-}: StarCalibrationProps) {
+export function StarCalibration({ top, left, onHit, onError, onClick }: Props) {
   const [isBeingLookedAt, setIsBeingLookedAt] = useState(false);
   const [hasBeenHit, setHasBeenHit] = useState(false);
   const [visible, setVisible] = useState(true);
 
-  // Verifica se o olhar está dentro da área da estrela
   const checkGazePosition = useCallback(
     (position: IrisPosition | null) => {
-      if (!position || hasBeenHit) return;
+      if (position === null || hasBeenHit === true) return;
 
-      const gazeXPercent = (position.x / SCREEN_WIDTH) * 100;
-      const gazeYPercent = (position.y / SCREEN_HEIGHT) * 100;
+      const inside = isGazeInside(position, left, top);
+      setIsBeingLookedAt(inside);
 
-      const isInside =
-        Math.abs(gazeXPercent - left) < GAZE_TOLERANCE &&
-        Math.abs(gazeYPercent - top) < GAZE_TOLERANCE;
+      if (inside === false) return;
 
-      setIsBeingLookedAt(isInside);
-
-      if (isInside) {
-        setHasBeenHit(true);
-        setTimeout(() => {
-          setVisible(false);
-          onHit();
-        }, 600); // pequena pausa antes de sumir
-      }
+      setHasBeenHit(true);
+      setTimeout(() => {
+        setVisible(false);
+        onHit();
+      }, HIT_DELAY_MS);
     },
     [top, left, hasBeenHit, onHit]
   );
 
-  // Inicia o rastreamento ocular
-  // useEffect(() => {
-  //   const stopTracking = startEyeTracking(checkGazePosition, 300);
-  //   return stopTracking;
-  // }, [checkGazePosition]);
-
-  // Se der erro no carregamento, dispara callback
   useEffect(() => {
-    if (!visible && !hasBeenHit) {
+    if (visible === false && hasBeenHit === false) {
       onError?.();
     }
   }, [visible, hasBeenHit, onError]);
 
-  if (!visible) return null;
+  if (visible === false) return null;
 
   const handleClick = (event: React.MouseEvent) => {
     onHit();
     onClick(event);
   };
 
+  const containerClass = clsx(
+    "absolute transition-all duration-500 ease-out",
+    isBeingLookedAt === true
+      ? "scale-125 drop-shadow-[0_0_20px_rgba(255,255,0,0.8)]"
+      : "scale-100 opacity-90"
+  );
+  const imageClass = clsx(
+    "transition-transform",
+    isBeingLookedAt === true ? "animate-pulse" : ""
+  );
+  const positionStyle = {
+    top: `${top}%`,
+    left: `${left}%`,
+    transform: "translate(-50%, -50%)",
+  };
+
   return (
-    <div
-      className={clsx(
-        "absolute transition-all duration-500 ease-out",
-        isBeingLookedAt
-          ? "scale-125 drop-shadow-[0_0_20px_rgba(255,255,0,0.8)]"
-          : "scale-100 opacity-90"
-      )}
-      style={{ top: `${top}%`, left: `${left}%`, transform: "translate(-50%, -50%)" }}
-      onClick={handleClick}
-    >
+    <div className={containerClass} style={positionStyle} onClick={handleClick}>
       <Image
         width={50}
         height={50}
         alt="Estrela de calibração"
         src="/img/star.svg"
-        className={clsx("transition-transform", isBeingLookedAt ? "animate-pulse" : "")}
+        className={imageClass}
       />
     </div>
   );

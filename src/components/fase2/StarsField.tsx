@@ -1,11 +1,11 @@
-import FixedStar from "@/components/FixedStar";
+import { FixedStar } from "@/components/FixedStar";
 import { stars } from "@/constants/fase2Stars";
 
-interface StarsFieldProps {
+type Props = {
   readonly shiningStar: string | null;
-}
+};
 
-export default function StarsField({ shiningStar }: StarsFieldProps) {
+export function StarsField({ shiningStar }: Props) {
   return (
     <div className="h-[70%] w-screen ml-32 relative">
       {stars.map((star) => (

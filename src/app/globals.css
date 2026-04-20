@@ -30,6 +30,7 @@ body {
   min-height: 100vh;
   color: var(--foreground);
   font-family: var(--font-poppins);
+  font-size: 14px;
 }
 
 .button-glow:hover {
@@ -106,7 +107,7 @@ body {
   background-image: url("/img/thermometer.svg");
   background-position: center;
   background-repeat: no-repeat;
-  min-height: 497px;
+  min-height: 490px;
   width: 100%;
 }
 

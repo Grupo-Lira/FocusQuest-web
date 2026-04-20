@@ -1,27 +1,30 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 
-interface PlanetInstance {
+type PlanetInstance = {
   src: string;
   start: { left: string | number; bottom: number | string };
   end: { left: string | number; bottom: number | string };
   side: "left" | "right";
-}
+};
 
-interface PlanetsAnimationProps {
+type Props = {
   readonly activePlanet: PlanetInstance | null;
-}
+};
 
-export default function PlanetsAnimation({ activePlanet }: PlanetsAnimationProps) {
-  if (!activePlanet) return null;
+const TRANSITION = { duration: 2, ease: "easeInOut" } as const;
+const EXIT_VARIANT = { opacity: 0 } as const;
+
+export function PlanetsAnimation({ activePlanet }: Props) {
+  if (activePlanet === null) return null;
 
   return (
     <motion.div
       key={activePlanet.src}
       initial={activePlanet.start}
       animate={activePlanet.end}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 2, ease: "easeInOut" }}
+      exit={EXIT_VARIANT}
+      transition={TRANSITION}
       className="absolute"
     >
       <Image src={activePlanet.src} alt="Planeta" width={120} height={120} />
