@@ -5,6 +5,7 @@ type Props = {
   placeholder: string;
   name: string;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  value?: string;
 };
 
 const INPUT_CLASS =
@@ -15,7 +16,12 @@ const getInputType = (showPassword: boolean) => {
   return "password";
 };
 
-export const InputPassword = ({ placeholder, name, onChange }: Readonly<Props>) => {
+export const InputPassword = ({
+  placeholder,
+  name,
+  onChange,
+  value,
+}: Readonly<Props>) => {
   const [showPassword, setShowPassword] = useState(false);
 
   const onToggleVisibility = () => setShowPassword(!showPassword);
@@ -28,6 +34,7 @@ export const InputPassword = ({ placeholder, name, onChange }: Readonly<Props>) 
         placeholder={placeholder}
         onChange={onChange}
         name={name}
+        value={value}
         className={INPUT_CLASS}
       />
       <button
