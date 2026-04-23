@@ -38,7 +38,11 @@ export function RecordsScreen() {
       <div className="flex flex-col gap-6">
         <div className="flex items-center gap-4 justify-between">
           <SearchBar />
-          <Button text="Criar nova ficha" onClick={noop} className="px-6 py-2.5" />
+          <Button
+            text="Criar nova ficha"
+            onClick={() => (window.location.href = "/fichas/criar")}
+            className="px-6 py-2.5"
+          />
         </div>
         <RecordsTable records={PATIENT_RECORDS} />
       </div>
