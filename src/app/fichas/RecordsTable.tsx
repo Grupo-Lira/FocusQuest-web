@@ -14,6 +14,10 @@ type Record = {
 type Props = {
   readonly records: ReadonlyArray<Record>;
   readonly onRefresh: () => void;
+  readonly total: number;
+  readonly currentPage: number;
+  readonly onPageChange: (page: number) => void;
+  readonly loading?: boolean;
 };
 
 const HEADERS = [
@@ -158,41 +162,74 @@ const RecordRow = ({ record, onRefresh }: { record: Record; onRefresh: () => voi
   );
 };
 
-const Pagination = () => {
+const Pagination = ({
+  total,
+  currentPage,
+  onPageChange,
+}: {
+  total: number;
+  currentPage: number;
+  onPageChange: (page: number) => void;
+}) => {
+  const pageSize = 10;
+  const totalPages = Math.ceil(total / pageSize);
+
+  if (totalPages <= 1) return null;
+
+  const pages = [];
+  for (let i = 1; i <= totalPages; i++) {
+    pages.push(i);
+  }
+
   return (
     <div className="flex items-center justify-between mt-4">
-      <p className="text-sm text-[var(--text)]">35 registros encontrados</p>
+      <p className="text-sm text-[var(--text)]">
+        {total} {total === 1 ? "registro encontrado" : "registros encontrados"}
+      </p>
       <div className="flex gap-2">
-        <button
-          type="button"
-          className="px-3 py-1 rounded-full bg-[var(--primary)] text-white font-semibold"
-        >
-          1
-        </button>
-        <button
-          type="button"
-          className="px-3 py-1 rounded-full bg-[var(--white)] text-[var(--primary)] font-semibold hover:bg-gray-100"
-        >
-          2
-        </button>
-        <button
-          type="button"
-          className="px-3 py-1 rounded-full bg-[var(--white)] text-[var(--primary)] font-semibold hover:bg-gray-100"
-        >
-          3
-        </button>
-        <button
-          type="button"
-          className="px-3 py-1 rounded-full bg-[var(--white)] text-[var(--primary)] font-semibold hover:bg-gray-100"
-        >
-          4
-        </button>
+        {pages.map((page) => (
+          <button
+            key={page}
+            type="button"
+            onClick={() => onPageChange(page)}
+            className={`px-3 py-1 rounded-full font-semibold ${
+              page === currentPage
+                ? "bg-[var(--primary)] text-white"
+                : "bg-[var(--white)] text-[var(--primary)] hover:bg-gray-100"
+            }`}
+          >
+            {page}
+          </button>
+        ))}
       </div>
     </div>
   );
 };
 
-export function RecordsTable({ records, onRefresh }: Props) {
+export function RecordsTable({
+  records,
+  onRefresh,
+  total,
+  currentPage,
+  onPageChange,
+  loading,
+}: Props) {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <p className="text-[var(--text)]">Carregando...</p>
+      </div>
+    );
+  }
+
+  if (records.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-8">
+        <p className="text-[var(--text)]">Nenhum registro encontrado</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col">
       <table className="w-full">
@@ -203,7 +240,7 @@ export function RecordsTable({ records, onRefresh }: Props) {
           ))}
         </tbody>
       </table>
-      <Pagination />
+      <Pagination total={total} currentPage={currentPage} onPageChange={onPageChange} />
     </div>
   );
 }

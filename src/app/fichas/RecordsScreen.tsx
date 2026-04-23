@@ -19,6 +19,7 @@ export function RecordsScreen() {
   const [records, setRecords] = useState<Record[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const fetchPacientes = async () => {
     try {
@@ -38,19 +39,13 @@ export function RecordsScreen() {
     }
   };
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
   useEffect(() => {
     fetchPacientes();
   }, []);
-
-  if (loading) {
-    return (
-      <Card title="Fichas">
-        <div className="flex items-center justify-center py-8">
-          <p className="text-[var(--text)]">Carregando...</p>
-        </div>
-      </Card>
-    );
-  }
 
   if (error) {
     return (
@@ -73,7 +68,14 @@ export function RecordsScreen() {
             className="px-6 py-2.5"
           />
         </div>
-        <RecordsTable records={records} onRefresh={fetchPacientes} />
+        <RecordsTable
+          records={records}
+          onRefresh={fetchPacientes}
+          total={records.length}
+          currentPage={currentPage}
+          onPageChange={handlePageChange}
+          loading={loading}
+        />
       </div>
     </Card>
   );
