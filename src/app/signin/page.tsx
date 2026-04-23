@@ -15,7 +15,6 @@ const SOCIAL_PROVIDERS = [
   { src: "/img/apple.svg", alt: "Entrar com Apple" },
 ] as const;
 
-const AFTER_REGISTER_PATH = "/apresentation" as const;
 const MIN_PASSWORD_LENGTH = 6;
 
 type FormState = {
@@ -36,7 +35,7 @@ const validateForm = (form: FormState) => {
 };
 
 const redirectAfterRegister = () => {
-  globalThis.location.href = AFTER_REGISTER_PATH;
+  globalThis.location.href = "/apresentation";
 };
 
 const SocialLoginButtons = () => {
