@@ -1,58 +1,46 @@
-import { Search } from "lucide-react";
-import Image from "next/image";
+import { Search, Plus } from "lucide-react";
+import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { RecordsTable } from "./RecordsTable";
 
-const RANKING_RECORDS = [
-  { id: 1, rank: "🥇 1º", name: "AstroLiderX", forecast: "99%", time: "00:10" },
-  { id: 2, rank: "🥈 2º", name: "CometHunter", forecast: "97%", time: "00:15" },
-  {
-    id: 3,
-    rank: "🥉 3º",
-    name: "Patrulheiro Espacial",
-    forecast: "95%",
-    time: "00:17",
-  },
-  { id: 4, rank: "🏆 4º", name: "LunaNova", forecast: "92%", time: "00:25" },
-  { id: 5, rank: "🏆 5º", name: "AmandaCode", forecast: "90%", time: "00:28" },
-  { id: 6, rank: "🏆 6º", name: "HeyAstro", forecast: "89%", time: "00:34" },
+const PATIENT_RECORDS = [
+  { id: 1, nome: "João Silva", rg: "123456789", metricaFinal: "85%" },
+  { id: 2, nome: "Maria Santos", rg: "987654321", metricaFinal: "92%" },
+  { id: 3, nome: "Pedro Oliveira", rg: "456789123", metricaFinal: "78%" },
+  { id: 4, nome: "Ana Costa", rg: "321654987", metricaFinal: "88%" },
+  { id: 5, nome: "Carlos Lima", rg: "789123456", metricaFinal: "91%" },
 ] as const;
 
 const noop = () => {};
 
 const SearchBar = () => {
   return (
-    <div className="flex items-center pl-4 h-12 rounded-full font-semibold bg-[var(--white)] text-[var(--text)] inner-shadow w-[50%] justify-between">
-      <input type="text" placeholder="Pesquisar por jogador" />
+    <div className="flex items-center pl-4 h-10 rounded-full font-semibold bg-[var(--white)] text-[var(--text)] inner-shadow w-[400px]">
+      <input
+        type="text"
+        placeholder="Pesquisar por jogador"
+        className="flex-grow bg-transparent outline-none text-sm"
+      />
       <button
         type="button"
-        className="button-3d bg-[var(--primary)] flex p-2 px-3 rounded-full cursor-pointer transition-transform duration-300 hover:scale-105 "
+        className="button-3d bg-[var(--primary)] flex p-1.5 px-3 rounded-full cursor-pointer transition-transform duration-300 hover:scale-105 mr-1"
         onClick={noop}
       >
-        <Search color="white" strokeWidth={3} width={20} />
+        <Search color="white" strokeWidth={3} width={18} />
       </button>
-    </div>
-  );
-};
-
-const LastUpdated = () => {
-  return (
-    <div className="flex items-center gap-2">
-      <Image src="/img/icon/reload.svg" alt="Refresh" width={20} height={20} />
-      <p className="text-sm text-[var(--text)]">
-        Atualizado há: <span className="text-[var(--primary)] font-semibold">10s</span>
-      </p>
     </div>
   );
 };
 
 export function RecordsScreen() {
   return (
-    <Card title="Ranking Global">
-      <div className="flex flex-col gap-4 max-h-[400px]">
-        <SearchBar />
-        <RecordsTable records={RANKING_RECORDS} />
-        <LastUpdated />
+    <Card title="Fichas">
+      <div className="flex flex-col gap-6">
+        <div className="flex items-center gap-4 justify-between">
+          <SearchBar />
+          <Button text="Criar nova ficha" onClick={noop} className="px-6 py-2.5" />
+        </div>
+        <RecordsTable records={PATIENT_RECORDS} />
       </div>
     </Card>
   );

@@ -39,7 +39,7 @@ export const Button = ({
   const isDisabled = disabled === true || isLoading === true;
   const disabledClass = getDisabledClass(isDisabled);
   const sizeClass = getSizeClass(className);
-  const buttonClassName = `bg-[var(--primary)] text-[var(--white)] font-orbitron text-xl ${disabledClass} ${sizeClass} rounded-xl button-glow transition-all duration-300`;
+  const buttonClassName = `bg-[var(--primary)] text-[var(--white)] font-orbitron ${disabledClass} ${sizeClass} rounded-xl button-glow transition-all duration-300`;
   const label = getButtonLabel(text, isLoading);
 
   return (
