@@ -6,7 +6,7 @@ import { useState } from "react";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { InputPassword } from "@/components/InputPassword";
-import { login, register } from "@/services/authService";
+import { login, register } from "@/services/auth.service";
 import { saveAuthToken } from "@/utils/authStorage";
 
 const SOCIAL_PROVIDERS = [

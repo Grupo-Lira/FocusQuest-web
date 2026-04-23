@@ -4,6 +4,8 @@ import { Bolt, Home, ScanEyeIcon, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { ProfileEditModal } from "./ProfileEditModal";
 
 type NavLinkItem = {
   id: number;
@@ -40,9 +42,12 @@ const NavLink = ({ link, isActive }: { link: NavLinkItem; isActive: boolean }) =
   );
 };
 
-const Avatar = () => {
+const Avatar = ({ onClick }: { onClick: () => void }) => {
   return (
-    <div className="w-11.5 h-11.5 border-2 rounded-full border-[var(--primary)] flex items-center justify-center cursor-pointer transition-transform duration-300 hover:scale-105">
+    <div
+      className="w-11.5 h-11.5 border-2 rounded-full border-[var(--primary)] flex items-center justify-center cursor-pointer transition-transform duration-300 hover:scale-105"
+      onClick={onClick}
+    >
       <Image
         src="/img/avatar.png"
         alt="Avatar"
@@ -56,15 +61,19 @@ const Avatar = () => {
 
 export function Navbar() {
   const pathname = usePathname();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
-    <div className="bg-[var(--white)] px-6 py-3 flex w-fit rounded-full gap-40">
-      <div className="flex gap-5">
-        {LINKS.map((link) => (
-          <NavLink key={link.id} link={link} isActive={pathname === link.href} />
-        ))}
+    <>
+      <div className="bg-[var(--white)] px-6 py-3 flex w-fit rounded-full gap-40">
+        <div className="flex gap-5">
+          {LINKS.map((link) => (
+            <NavLink key={link.id} link={link} isActive={pathname === link.href} />
+          ))}
+        </div>
+        <Avatar onClick={() => setIsModalOpen(true)} />
       </div>
-      <Avatar />
-    </div>
+      <ProfileEditModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+    </>
   );
 }
