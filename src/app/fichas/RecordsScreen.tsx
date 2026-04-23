@@ -20,25 +20,25 @@ export function RecordsScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchPacientes = async () => {
-      try {
-        const response = await listPacientes();
-        const mappedRecords: Record[] = response.data.map((paciente, index) => ({
-          id: index + 1,
-          nome: paciente.nome,
-          dataNascimento: paciente.dataNascimento || "-",
-          escolaridade: paciente.escolaridade || "-",
-          metricaFinal: "-",
-        }));
-        setRecords(mappedRecords);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Erro ao carregar pacientes");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchPacientes = async () => {
+    try {
+      const response = await listPacientes();
+      const mappedRecords: Record[] = response.data.map((paciente, index) => ({
+        id: index + 1,
+        nome: paciente.nome,
+        dataNascimento: paciente.dataNascimento || "-",
+        escolaridade: paciente.escolaridade || "-",
+        metricaFinal: "-",
+      }));
+      setRecords(mappedRecords);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao carregar pacientes");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchPacientes();
   }, []);
 
@@ -73,7 +73,7 @@ export function RecordsScreen() {
             className="px-6 py-2.5"
           />
         </div>
-        <RecordsTable records={records} />
+        <RecordsTable records={records} onRefresh={fetchPacientes} />
       </div>
     </Card>
   );

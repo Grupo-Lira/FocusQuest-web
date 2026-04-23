@@ -5,9 +5,10 @@ import { Card } from "@/components/Card";
 import { FormInput } from "@/components/FormInput";
 import { RadioGroup } from "@/components/RadioGroup";
 import { Navbar } from "@/components/Navbar";
+import { DeleteConfirmModal } from "@/components/DeleteConfirmModal";
 import { useState, useEffect } from "react";
 import { PenIcon, PlusIcon } from "lucide-react";
-import { getPaciente, updatePaciente } from "@/services/paciente.service";
+import { getPaciente, updatePaciente, deletePaciente } from "@/services/paciente.service";
 import { useParams, useRouter } from "next/navigation";
 
 type FormState = {
@@ -35,6 +36,8 @@ export default function EditarFichaPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loadingInitial, setLoadingInitial] = useState(true);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const applyDateMask = (value: string) => {
     const numbers = value.replace(/\D/g, "");
@@ -77,6 +80,19 @@ export default function EditarFichaPage() {
       setError(err instanceof Error ? err.message : "Erro ao atualizar paciente");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await deletePaciente(params.id as string);
+      setIsDeleteModalOpen(false);
+      router.push("/fichas");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao deletar paciente");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -137,42 +153,52 @@ export default function EditarFichaPage() {
               onSubmit={onSubmit}
               className="flex flex-col gap-8 w-full"
             >
-              <div className="flex items-start gap-6">
-                <button
-                  type="button"
-                  className="w-[100px] h-[100px] flex-shrink-0 border-2 border-dashed border-gray-300 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors"
-                >
-                  <PlusIcon size={24} />
-                </button>
+              <div className="flex justify-between">
+                <div className="flex items-start gap-6">
+                  <button
+                    type="button"
+                    className="w-[100px] h-[100px] flex-shrink-0 border-2 border-dashed border-gray-300 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors"
+                  >
+                    <PlusIcon size={24} />
+                  </button>
 
-                <div className="flex flex-col gap-3 mt-2 w-full">
-                  <div className="flex items-center gap-3 border-b border-transparent focus-within:border-gray-200 pb-1 w-max">
-                    <input
-                      type="text"
-                      name="nome"
-                      value={form.nome}
-                      onChange={onChangeField("nome")}
-                      placeholder="Editar nome"
-                      className="text-2xl font-orbitron text-[var(--primary)] font-semibold bg-transparent outline-none placeholder:text-[var(--primary)] w-auto"
-                    />
-                    <PenIcon color="var(--primary)" />
-                  </div>
-
-                  <div className="flex items-center gap-2 text-[var(--text)]">
-                    <span className="text-lg">Data da Avaliação:</span>
-                    <div className="flex items-center gap-2 border-b border-transparent focus-within:border-gray-200 pb-1">
+                  <div className="flex flex-col gap-3 mt-2 w-full">
+                    <div className="flex items-center gap-3 border-b border-transparent focus-within:border-gray-200 pb-1 w-max">
                       <input
                         type="text"
-                        name="dataAvaliacao"
-                        value={form.dataAvaliacao}
-                        onChange={onChangeField("dataAvaliacao")}
-                        placeholder="DD/MM/AAAA"
-                        className="font-bold text-lg bg-transparent outline-none w-[130px] text-[var(--text)] uppercase"
+                        name="nome"
+                        value={form.nome}
+                        onChange={onChangeField("nome")}
+                        placeholder="Editar nome"
+                        className="text-2xl font-orbitron text-[var(--primary)] font-semibold bg-transparent outline-none placeholder:text-[var(--primary)] w-auto"
                       />
                       <PenIcon color="var(--primary)" />
                     </div>
+
+                    <div className="flex items-center gap-2 text-[var(--text)]">
+                      <span className="text-lg">Data da Avaliação:</span>
+                      <div className="flex items-center gap-2 border-b border-transparent focus-within:border-gray-200 pb-1">
+                        <input
+                          type="text"
+                          name="dataAvaliacao"
+                          value={form.dataAvaliacao}
+                          onChange={onChangeField("dataAvaliacao")}
+                          placeholder="DD/MM/AAAA"
+                          className="font-bold text-lg bg-transparent outline-none w-[130px] text-[var(--text)] uppercase"
+                        />
+                        <PenIcon color="var(--primary)" />
+                      </div>
+                    </div>
                   </div>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  disabled={isDeleting}
+                  className="bg-red-600 hover:bg-red-700 h-fit text-white font-medium px-8 py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Deletar
+                </button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -264,6 +290,13 @@ export default function EditarFichaPage() {
           </div>
         </div>
       </div>
+      <DeleteConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        patientName={form.nome}
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

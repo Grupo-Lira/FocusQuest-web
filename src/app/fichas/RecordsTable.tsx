@@ -1,5 +1,7 @@
 import { MoreVertical } from "lucide-react";
 import { useState } from "react";
+import { DeleteConfirmModal } from "@/components/DeleteConfirmModal";
+import { deletePaciente } from "@/services/paciente.service";
 
 type Record = {
   id: number;
@@ -11,6 +13,7 @@ type Record = {
 
 type Props = {
   readonly records: ReadonlyArray<Record>;
+  readonly onRefresh: () => void;
 };
 
 const HEADERS = [
@@ -39,8 +42,31 @@ const TableHeader = () => {
   );
 };
 
-const ActionsDropdown = ({ recordName }: { recordName: string }) => {
+const ActionsDropdown = ({
+  recordName,
+  onRefresh,
+}: {
+  recordName: string;
+  onRefresh: () => void;
+}) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await deletePaciente(recordName);
+      setIsDeleteModalOpen(false);
+      setIsOpen(false);
+      onRefresh();
+    } catch (err) {
+      console.error("Error deleting patient:", err);
+      alert("Erro ao deletar paciente");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <div className="relative">
@@ -56,14 +82,20 @@ const ActionsDropdown = ({ recordName }: { recordName: string }) => {
           <button
             type="button"
             className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
-            onClick={() => (window.location.href = `/fichas/editar/${recordName}`)}
+            onClick={() => {
+              setIsOpen(false);
+              window.location.href = `/fichas/editar/${recordName}`;
+            }}
           >
             Editar
           </button>
           <button
             type="button"
-            className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
-            onClick={() => setIsOpen(false)}
+            className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-red-600"
+            onClick={() => {
+              setIsDeleteModalOpen(true);
+              setIsOpen(false);
+            }}
           >
             Deletar
           </button>
@@ -76,11 +108,18 @@ const ActionsDropdown = ({ recordName }: { recordName: string }) => {
           </button>
         </div>
       )}
+      <DeleteConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        patientName={recordName}
+        isLoading={isDeleting}
+      />
     </div>
   );
 };
 
-const RecordRow = ({ record }: { record: Record }) => {
+const RecordRow = ({ record, onRefresh }: { record: Record; onRefresh: () => void }) => {
   const formatDate = (dateString: string) => {
     if (!dateString || dateString === "-") return "-";
     try {
@@ -113,7 +152,7 @@ const RecordRow = ({ record }: { record: Record }) => {
         {record.metricaFinal}
       </td>
       <td className="w-20 text-left pl-3">
-        <ActionsDropdown recordName={record.nome} />
+        <ActionsDropdown recordName={record.nome} onRefresh={onRefresh} />
       </td>
     </tr>
   );
@@ -153,14 +192,14 @@ const Pagination = () => {
   );
 };
 
-export function RecordsTable({ records }: Props) {
+export function RecordsTable({ records, onRefresh }: Props) {
   return (
     <div className="flex flex-col">
       <table className="w-full">
         <TableHeader />
         <tbody>
           {records.map((record) => (
-            <RecordRow key={record.id} record={record} />
+            <RecordRow key={record.id} record={record} onRefresh={onRefresh} />
           ))}
         </tbody>
       </table>
