@@ -5,9 +5,10 @@ import { Card } from "@/components/Card";
 import { FormInput } from "@/components/FormInput";
 import { RadioGroup } from "@/components/RadioGroup";
 import { Navbar } from "@/components/Navbar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PenIcon, PlusIcon } from "lucide-react";
-import { createPaciente } from "@/services/paciente.service";
+import { getPaciente, updatePaciente } from "@/services/paciente.service";
+import { useParams, useRouter } from "next/navigation";
 
 type FormState = {
   nome: string;
@@ -27,10 +28,13 @@ const INITIAL_FORM_STATE: FormState = {
   motivoAvaliacao: "",
 };
 
-export default function CriarFichaPage() {
+export default function EditarFichaPage() {
+  const params = useParams();
+  const router = useRouter();
   const [form, setForm] = useState<FormState>(INITIAL_FORM_STATE);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loadingInitial, setLoadingInitial] = useState(true);
 
   const applyDateMask = (value: string) => {
     const numbers = value.replace(/\D/g, "");
@@ -51,7 +55,7 @@ export default function CriarFichaPage() {
   };
 
   const onCancel = () => {
-    window.location.href = "/fichas";
+    router.push("/fichas");
   };
 
   const onSubmit = async (event: React.FormEvent) => {
@@ -60,7 +64,7 @@ export default function CriarFichaPage() {
     setLoading(true);
 
     try {
-      await createPaciente({
+      await updatePaciente(params.id as string, {
         nome: form.nome,
         data_nascimento: form.dataNascimento || undefined,
         sexo: form.sexo || undefined,
@@ -68,13 +72,57 @@ export default function CriarFichaPage() {
         observacoes: form.motivoAvaliacao || undefined,
       });
 
-      window.location.href = "/fichas";
+      router.push("/fichas");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao criar paciente");
+      setError(err instanceof Error ? err.message : "Erro ao atualizar paciente");
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const fetchPaciente = async () => {
+      try {
+        const response = await getPaciente(params.id as string);
+        const paciente = response.data;
+
+        const formatDate = (dateString?: string) => {
+          if (!dateString) return "";
+          try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString("pt-BR");
+          } catch {
+            return "";
+          }
+        };
+
+        setForm({
+          nome: paciente.nome,
+          dataAvaliacao: "",
+          sexo: paciente.sexo || "",
+          escolaridade: paciente.escolaridade || "",
+          dataNascimento: formatDate(paciente.dataNascimento),
+          motivoAvaliacao: paciente.observacoes || "",
+        });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Erro ao carregar paciente");
+      } finally {
+        setLoadingInitial(false);
+      }
+    };
+
+    if (params.id) {
+      fetchPaciente();
+    }
+  }, [params.id]);
+
+  if (loadingInitial) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen">
+        <p className="text-[var(--text)]">Carregando...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center justify-center h-screen overflow-hidden">
@@ -194,25 +242,25 @@ export default function CriarFichaPage() {
                   {error}
                 </div>
               )}
-            </form>
 
-            <div className="flex gap-4 justify-end pt-8 w-full">
-              <button
-                type="button"
-                onClick={onCancel}
-                className="text-gray-600 font-medium px-6 py-2.5 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                form="paciente-form"
-                disabled={loading}
-                className="bg-[var(--primary)] text-white font-medium px-8 py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? "Adicionando..." : "Adicionar"}
-              </button>
-            </div>
+              <div className="flex gap-4 justify-end pt-8 w-full">
+                <button
+                  type="button"
+                  onClick={onCancel}
+                  className="text-gray-600 font-medium px-6 py-2.5 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  form="paciente-form"
+                  disabled={loading}
+                  className="bg-[var(--primary)] text-white font-medium px-8 py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? "Salvando..." : "Salvar"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>

@@ -4,7 +4,8 @@ import { useState } from "react";
 type Record = {
   id: number;
   nome: string;
-  rg: string;
+  dataNascimento: string;
+  escolaridade: string;
   metricaFinal: string;
 };
 
@@ -15,7 +16,8 @@ type Props = {
 const HEADERS = [
   { label: "ID" },
   { label: "Nome" },
-  { label: "RG" },
+  { label: "Data de nascimento" },
+  { label: "Escolaridade" },
   { label: "Métrica final" },
   { label: "Ações" },
 ] as const;
@@ -37,7 +39,7 @@ const TableHeader = () => {
   );
 };
 
-const ActionsDropdown = ({ recordId }: { recordId: number }) => {
+const ActionsDropdown = ({ recordName }: { recordName: string }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -54,7 +56,7 @@ const ActionsDropdown = ({ recordId }: { recordId: number }) => {
           <button
             type="button"
             className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
-            onClick={() => setIsOpen(false)}
+            onClick={() => (window.location.href = `/fichas/editar/${recordName}`)}
           >
             Editar
           </button>
@@ -79,16 +81,39 @@ const ActionsDropdown = ({ recordId }: { recordId: number }) => {
 };
 
 const RecordRow = ({ record }: { record: Record }) => {
+  const formatDate = (dateString: string) => {
+    if (!dateString || dateString === "-") return "-";
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("pt-BR");
+    } catch {
+      return "-";
+    }
+  };
+
   return (
     <tr className="border-b border-[#FFD3C7] hover:bg-[#f3f2f2]">
-      <td className="text-[var(--text)] w-[100px] text-left pl-3">{record.id}</td>
+      <td className="text-[var(--text)] w-[100px] text-left pl-3">
+        <button
+          type="button"
+          onClick={() => (window.location.href = `/fichas/editar/${record.nome}`)}
+          className="text-[var(--primary)] hover:underline cursor-pointer font-medium"
+        >
+          {record.id}
+        </button>
+      </td>
       <td className="text-[var(--text)] w-[300px] text-left pl-3">{record.nome}</td>
-      <td className="text-[var(--text)] w-[300px] text-left pl-3">{record.rg}</td>
-      <td className="text-[var(--text)] w-[300px] text-left pl-3">
+      <td className="text-[var(--text)] w-[200px] text-left pl-3">
+        {formatDate(record.dataNascimento)}
+      </td>
+      <td className="text-[var(--text)] w-[200px] text-left pl-3">
+        {record.escolaridade}
+      </td>
+      <td className="text-[var(--text)] w-[150px] text-left pl-3">
         {record.metricaFinal}
       </td>
       <td className="w-20 text-left pl-3">
-        <ActionsDropdown recordId={record.id} />
+        <ActionsDropdown recordName={record.nome} />
       </td>
     </tr>
   );

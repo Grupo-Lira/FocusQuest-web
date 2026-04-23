@@ -2,16 +2,82 @@ import { Search, Plus } from "lucide-react";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { RecordsTable } from "./RecordsTable";
+import { listPacientes } from "@/services/paciente.service";
+import { useEffect, useState } from "react";
 
-const PATIENT_RECORDS = [
-  { id: 1, nome: "João Silva", rg: "123456789", metricaFinal: "85%" },
-  { id: 2, nome: "Maria Santos", rg: "987654321", metricaFinal: "92%" },
-  { id: 3, nome: "Pedro Oliveira", rg: "456789123", metricaFinal: "78%" },
-  { id: 4, nome: "Ana Costa", rg: "321654987", metricaFinal: "88%" },
-  { id: 5, nome: "Carlos Lima", rg: "789123456", metricaFinal: "91%" },
-] as const;
+type Record = {
+  id: number;
+  nome: string;
+  dataNascimento: string;
+  escolaridade: string;
+  metricaFinal: string;
+};
 
 const noop = () => {};
+
+export function RecordsScreen() {
+  const [records, setRecords] = useState<Record[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchPacientes = async () => {
+      try {
+        const response = await listPacientes();
+        const mappedRecords: Record[] = response.data.map((paciente, index) => ({
+          id: index + 1,
+          nome: paciente.nome,
+          dataNascimento: paciente.dataNascimento || "-",
+          escolaridade: paciente.escolaridade || "-",
+          metricaFinal: "-",
+        }));
+        setRecords(mappedRecords);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Erro ao carregar pacientes");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPacientes();
+  }, []);
+
+  if (loading) {
+    return (
+      <Card title="Fichas">
+        <div className="flex items-center justify-center py-8">
+          <p className="text-[var(--text)]">Carregando...</p>
+        </div>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card title="Fichas">
+        <div className="flex items-center justify-center py-8">
+          <p className="text-red-600">{error}</p>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <Card title="Fichas">
+      <div className="flex flex-col gap-6">
+        <div className="flex items-center gap-4 justify-between">
+          <SearchBar />
+          <Button
+            text="Criar nova ficha"
+            onClick={() => (window.location.href = "/fichas/criar")}
+            className="px-6 py-2.5"
+          />
+        </div>
+        <RecordsTable records={records} />
+      </div>
+    </Card>
+  );
+}
 
 const SearchBar = () => {
   return (
@@ -31,21 +97,3 @@ const SearchBar = () => {
     </div>
   );
 };
-
-export function RecordsScreen() {
-  return (
-    <Card title="Fichas">
-      <div className="flex flex-col gap-6">
-        <div className="flex items-center gap-4 justify-between">
-          <SearchBar />
-          <Button
-            text="Criar nova ficha"
-            onClick={() => (window.location.href = "/fichas/criar")}
-            className="px-6 py-2.5"
-          />
-        </div>
-        <RecordsTable records={PATIENT_RECORDS} />
-      </div>
-    </Card>
-  );
-}
