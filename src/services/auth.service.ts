@@ -43,3 +43,20 @@ export const register = async (
     };
   }
 };
+
+/**
+ * @service
+ * @route /auth/logout
+ * @http POST
+ */
+export const logout = async (): Promise<AuthResult<null>> => {
+  try {
+    await BRequest.post("/auth/logout");
+    return { data: null, error: null };
+  } catch (err) {
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : "Erro ao fazer logout",
+    };
+  }
+};

@@ -35,7 +35,9 @@ type BackendRequest = {
 
 const getAuthToken = () => {
   if (typeof window === "undefined") return null;
-  return window.localStorage.getItem("focusquest.authToken");
+  const cookies = document.cookie.split("; ");
+  const tokenCookie = cookies.find((cookie) => cookie.startsWith("focusquest.authToken="));
+  return tokenCookie ? tokenCookie.split("=")[1] : null;
 };
 
 const JSONHeaders: Headers = {

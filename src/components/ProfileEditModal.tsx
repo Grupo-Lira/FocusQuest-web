@@ -5,7 +5,10 @@ import { Button } from "./Button";
 import { Card } from "./Card";
 import { Input } from "./Input";
 import { getMyProfile, updateMyProfile } from "@/services/usuario.service";
+import { logout } from "@/services/auth.service";
+import { clearAuthToken } from "@/utils/authStorage";
 import { useToast } from "@/context/ToastContext";
+import { useRouter } from "next/navigation";
 
 type Props = {
   readonly isOpen: boolean;
@@ -27,7 +30,9 @@ export function ProfileEditModal({ isOpen, onClose }: Props) {
     especialidade: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { showSuccess, showError } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     if (isOpen) {
@@ -69,6 +74,22 @@ export function ProfileEditModal({ isOpen, onClose }: Props) {
       showError(errorMessage);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      clearAuthToken();
+      showSuccess("Logout realizado com sucesso!");
+      onClose();
+      router.push("/");
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Erro ao fazer logout";
+      showError(errorMessage);
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 
@@ -133,6 +154,16 @@ export function ProfileEditModal({ isOpen, onClose }: Props) {
             />
           </div>
         </form>
+
+        <div className="border-t border-gray-200 pt-4 mt-4">
+          <Button
+            text="Sair da Conta"
+            onClick={handleLogout}
+            className="w-full px-6 py-2.5"
+            variant="gray"
+            isLoading={isLoggingOut}
+          />
+        </div>
       </Card>
     </div>
   );
