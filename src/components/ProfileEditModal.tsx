@@ -4,140 +4,130 @@ import { useState, useEffect } from "react";
 import { Button } from "./Button";
 import { Card } from "./Card";
 import { Input } from "./Input";
-import { getMyProfile, updateMyProfile, createProfile } from "@/services/doctor.service";
+import { getMyProfile, updateMyProfile } from "@/services/usuario.service";
 
 type Props = {
-    readonly isOpen: boolean;
-    readonly onClose: () => void;
+  readonly isOpen: boolean;
+  readonly onClose: () => void;
 };
 
-type DoctorProfile = {
-    nome: string;
-    email?: string;
-    telefone: string;
-    especialidade: string;
+type UserProfile = {
+  nome: string;
+  email: string;
+  telefone: string;
+  especialidade: string;
 };
 
 export function ProfileEditModal({ isOpen, onClose }: Props) {
-    const [formData, setFormData] = useState<DoctorProfile>({
-        nome: "",
-        email: "",
-        telefone: "",
-        especialidade: "",
-    });
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string>("");
-    const [hasProfile, setHasProfile] = useState(false);
+  const [formData, setFormData] = useState<UserProfile>({
+    nome: "",
+    email: "",
+    telefone: "",
+    especialidade: "",
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string>("");
 
-    useEffect(() => {
-        if (isOpen) {
-            fetchProfile();
-        }
-    }, [isOpen]);
+  useEffect(() => {
+    if (isOpen) {
+      fetchProfile();
+    }
+  }, [isOpen]);
 
-    const fetchProfile = async () => {
-        try {
-            const data = await getMyProfile();
+  const fetchProfile = async () => {
+    try {
+      const data = await getMyProfile();
 
-            setFormData({
-                nome: data.data.nome || "",
-                email: data.data.email || "",
-                telefone: data.data.telefone || "",
-                especialidade: data.data.especialidade || "",
-            });
+      setFormData({
+        nome: data.data.nome || "",
+        email: data.data.email || "",
+        telefone: data.data.telefone || "",
+        especialidade: data.data.especialidade || "",
+      });
+    } catch (err) {
+      console.error("Error fetching profile:", err);
+      setError("Erro ao carregar perfil");
+    }
+  };
 
-            setHasProfile(true);
-        } catch (err) {
-            console.error("Error fetching profile:", err);
-            setHasProfile(false);
-        }
-    };
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
-    };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsLoading(true);
-        setError("");
+    try {
+      await updateMyProfile(formData);
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao salvar perfil");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-        try {
-            if (hasProfile) {
-                await updateMyProfile(formData);
-            } else {
-                const { email, ...dataToSend } = formData;
-                await createProfile(dataToSend);
-            }
-            onClose();
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Erro ao salvar perfil");
-        } finally {
-            setIsLoading(false);
-        }
-    };
+  if (!isOpen) return null;
 
-    if (!isOpen) return null;
-
-    return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <Card title="Editar Perfil">
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                    <div className="flex flex-col gap-2">
-                        <label className="text-[var(--text)] font-semibold">Nome</label>
-                        <Input
-                            type="text"
-                            placeholder="Digite seu nome"
-                            name="nome"
-                            value={formData.nome}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    {hasProfile && (
-                        <div className="flex flex-col gap-2">
-                            <label className="text-[var(--text)] font-semibold">Email</label>
-                            <Input
-                                type="text"
-                                placeholder="Digite seu email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleInputChange}
-                            />
-                        </div>
-                    )}
-                    <div className="flex flex-col gap-2">
-                        <label className="text-[var(--text)] font-semibold">Telefone</label>
-                        <Input
-                            type="text"
-                            placeholder="Digite seu telefone"
-                            name="telefone"
-                            value={formData.telefone}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                        <label className="text-[var(--text)] font-semibold">Especialidade</label>
-                        <Input
-                            type="text"
-                            placeholder="Digite sua especialidade"
-                            name="especialidade"
-                            value={formData.especialidade}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    {error && <p className="text-red-500 text-sm">{error}</p>}
-                    <div className="flex gap-4 justify-center">
-                        <Button text="Cancelar" onClick={onClose} className="px-6 py-2.5" />
-                        <Button
-                            text="Salvar"
-                            type="submit"
-                            className="px-6 py-2.5"
-                            isLoading={isLoading}
-                        />
-                    </div>
-                </form>
-            </Card>
-        </div>
-    );
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <Card title="Editar Perfil">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <label className="text-[var(--text)] font-semibold">Nome</label>
+            <Input
+              type="text"
+              placeholder="Digite seu nome"
+              name="nome"
+              value={formData.nome}
+              onChange={handleInputChange}
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-[var(--text)] font-semibold">Email</label>
+            <Input
+              type="text"
+              placeholder="Digite seu email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-[var(--text)] font-semibold">Telefone</label>
+            <Input
+              type="text"
+              placeholder="Digite seu telefone"
+              name="telefone"
+              value={formData.telefone}
+              onChange={handleInputChange}
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-[var(--text)] font-semibold">Especialidade</label>
+            <Input
+              type="text"
+              placeholder="Digite sua especialidade"
+              name="especialidade"
+              value={formData.especialidade}
+              onChange={handleInputChange}
+            />
+          </div>
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+          <div className="flex gap-4 justify-center">
+            <Button text="Cancelar" onClick={onClose} className="px-6 py-2.5" />
+            <Button
+              text="Salvar"
+              type="submit"
+              className="px-6 py-2.5"
+              isLoading={isLoading}
+            />
+          </div>
+        </form>
+      </Card>
+    </div>
+  );
 }
