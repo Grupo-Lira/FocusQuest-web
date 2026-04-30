@@ -10,6 +10,7 @@ import { Star } from "@/components/Star";
 import { Metricas, SuccessScreen } from "@/components/SuccessScreen";
 import { Thermometer } from "@/components/Thermometer";
 import { TimeOut } from "@/components/TimeOut";
+import { PatientSelectModal } from "@/components/PatientSelectModal";
 import { animatedElements } from "@/config/gameConfig";
 import { fase1Steps } from "@/constants/steps";
 import { useAudio } from "@/context/AudioContext";
@@ -77,6 +78,8 @@ export function GameScreen() {
   const [successModalData, setSuccessModalData] = useState<Metricas | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [shiningStars, setShiningStars] = useState<number[]>([]);
+  const [isPatientSelectOpen, setIsPatientSelectOpen] = useState(true);
+  const [selectedPacienteId, setSelectedPacienteId] = useState<string>("");
 
   const {
     isPaused,
@@ -129,14 +132,25 @@ export function GameScreen() {
 
       if (targetsConfig.length > 0) {
         console.debug("EMITINDO evento: fase_1_alvos_configuracao", targetsConfig.length);
-        // TODO: Replace hardcoded usuarioId with dynamic value
-        socket.emit("iniciar_fase1", { fase1: targetsConfig, usuarioId: "123" });
+        socket.emit("iniciar_fase1", {
+          fase1: targetsConfig,
+          usuarioId: selectedPacienteId,
+        });
       }
     }
 
     setIsGameActive(true);
     setAudioGameStarted(true);
     startAudio();
+  };
+
+  const handlePatientSelect = (pacienteId: string) => {
+    setSelectedPacienteId(pacienteId);
+    setIsPatientSelectOpen(false);
+  };
+
+  const handlePatientSelectCancel = () => {
+    window.location.href = "/fichas";
   };
 
   const onCloseSettings = async () => {
@@ -254,6 +268,12 @@ export function GameScreen() {
 
   return (
     <div className="fase1 relative w-full h-screen overflow-hidden">
+      <PatientSelectModal
+        isOpen={isPatientSelectOpen}
+        onSelect={handlePatientSelect}
+        onCancel={handlePatientSelectCancel}
+      />
+
       <div className="flex justify-center mt-6 z-20">
         <NavbarGame label={NAVBAR_LABEL} />
       </div>
