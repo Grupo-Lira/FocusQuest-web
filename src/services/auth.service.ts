@@ -1,3 +1,4 @@
+import { clearAuthToken } from "@/utils/authStorage";
 import BRequest from "./BRequest";
 import { Auth } from "@/types/auth.types";
 
@@ -52,8 +53,12 @@ export const register = async (
 export const logout = async (): Promise<AuthResult<null>> => {
   try {
     await BRequest.post("/auth/logout");
+    clearAuthToken(); 
+    
     return { data: null, error: null };
   } catch (err) {
+    clearAuthToken(); 
+    
     return {
       data: null,
       error: err instanceof Error ? err.message : "Erro ao fazer logout",

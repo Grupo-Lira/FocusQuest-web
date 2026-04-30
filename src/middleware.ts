@@ -1,27 +1,34 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const publicRoutes = ["/", "/login", "/register", "/signin"];
+const publicRoutes = ["/", "/signin"];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("focusquest.authToken")?.value;
 
-  // Se a rota é pública, permite acesso
-  if (publicRoutes.some((route) => pathname.startsWith(route))) {
+  if (publicRoutes.includes(pathname)) {
     return NextResponse.next();
   }
 
-  // Se não há token, redireciona para login
   if (!token) {
-    const loginUrl = new URL("/login", request.url);
+    const loginUrl = new URL("/", request.url);
     return NextResponse.redirect(loginUrl);
   }
 
-  // Se tem token, permite acesso
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    /*
+     * Aplica o middleware em todas as rotas, EXCETO nas que começam com:
+     * - api (rotas de API)
+     * - _next/static (arquivos estáticos do Next)
+     * - _next/image (otimização de imagens do Next)
+     * - favicon.ico (ícone do site)
+     * - img (sua pasta public/img)
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico|img).*)",
+  ],
 };
