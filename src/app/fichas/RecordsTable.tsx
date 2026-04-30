@@ -130,7 +130,7 @@ const RecordRow = ({
         <button
           type="button"
           onClick={() => (window.location.href = `/fichas/editar/${record.id}`)}
-          className="text-[var(--primary)] hover:underline cursor-pointer font-medium max-w-[30px] "
+          className="text-[var(--primary)] hover:underline cursor-pointer font-medium w-[70px] truncate"
         >
           {record.id}
         </button>
