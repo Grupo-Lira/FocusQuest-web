@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { getPaciente, updatePaciente, deletePaciente } from "@/services/paciente.service";
 import { useParams, useRouter } from "next/navigation";
 import { Loading } from "@/components/Loading";
+import { useToast } from "@/context/ToastContext";
 
 export default function EditarFichaPage() {
   const params = useParams();
@@ -18,6 +19,7 @@ export default function EditarFichaPage() {
   const [loadingInitial, setLoadingInitial] = useState(true);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const { showSuccess, showError } = useToast();
 
   const onCancel = () => {
     router.push("/fichas");
@@ -25,7 +27,6 @@ export default function EditarFichaPage() {
 
   const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    setError(null);
     setIsLoading(true);
 
     try {
@@ -39,9 +40,14 @@ export default function EditarFichaPage() {
         motivoAvaliacao: form.motivoAvaliacao || undefined,
       });
 
-      router.push("/fichas");
+      showSuccess("Paciente atualizado com sucesso!");
+      setTimeout(() => {
+        router.push("/fichas");
+      }, 1000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao atualizar paciente");
+      const errorMessage =
+        err instanceof Error ? err.message : "Erro ao atualizar paciente";
+      showError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -52,9 +58,15 @@ export default function EditarFichaPage() {
     try {
       await deletePaciente(params.id as string);
       setIsDeleteModalOpen(false);
-      router.push("/fichas");
+      showSuccess("Paciente deletado com sucesso!");
+      setTimeout(() => {
+        router.push("/fichas");
+      }, 1000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao deletar paciente");
+      const errorMessage =
+        err instanceof Error ? err.message : "Erro ao deletar paciente";
+      setError(errorMessage);
+      showError(errorMessage);
     } finally {
       setIsDeleting(false);
     }

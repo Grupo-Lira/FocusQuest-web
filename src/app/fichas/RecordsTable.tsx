@@ -4,6 +4,7 @@ import { DeleteConfirmModal } from "@/components/DeleteConfirmModal";
 import { Pagination } from "@/components/Pagination";
 import { deletePaciente } from "@/services/paciente.service";
 import { Paciente } from "@/types/paciente.types";
+import { useToast } from "@/context/ToastContext";
 
 type Props = {
   readonly records: ReadonlyArray<Paciente.Record>;
@@ -50,17 +51,20 @@ const ActionsDropdown = ({
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const { showSuccess, showError } = useToast();
 
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
       await deletePaciente(recordId);
       setIsDeleteModalOpen(false);
+      showSuccess("Paciente deletado com sucesso!");
       setIsOpen(false);
       onRefresh();
     } catch (err) {
-      console.error("Error deleting patient:", err);
-      alert("Erro ao deletar paciente");
+      const errorMessage =
+        err instanceof Error ? err.message : "Erro ao deletar paciente";
+      showError(errorMessage);
     } finally {
       setIsDeleting(false);
     }

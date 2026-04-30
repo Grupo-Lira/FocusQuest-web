@@ -6,11 +6,13 @@ import { Navbar } from "@/components/Navbar";
 import { PacienteForm, FormState, INITIAL_FORM_STATE } from "@/components/PacienteForm";
 import { useState } from "react";
 import { createPaciente } from "@/services/paciente.service";
+import { useToast } from "@/context/ToastContext";
 
 export default function CriarFichaPage() {
   const [form, setForm] = useState<FormState>(INITIAL_FORM_STATE);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { showSuccess, showError } = useToast();
 
   const onCancel = () => {
     window.location.href = "/fichas";
@@ -18,7 +20,6 @@ export default function CriarFichaPage() {
 
   const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    setError(null);
     setIsLoading(true);
 
     try {
@@ -32,9 +33,13 @@ export default function CriarFichaPage() {
         motivoAvaliacao: form.motivoAvaliacao || undefined,
       });
 
-      window.location.href = "/fichas";
+      showSuccess("Paciente criado com sucesso!");
+      setTimeout(() => {
+        window.location.href = "/fichas";
+      }, 1000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao criar paciente");
+      const errorMessage = err instanceof Error ? err.message : "Erro ao criar paciente";
+      showError(errorMessage);
     } finally {
       setIsLoading(false);
     }
