@@ -11,7 +11,7 @@ type Props = {
   readonly total: number;
   readonly currentPage: number;
   readonly onPageChange: (page: number) => void;
-  readonly loading?: boolean;
+  readonly isLoading?: boolean;
 };
 
 const HEADERS = [
@@ -158,12 +158,19 @@ export function RecordsTable({
   total,
   currentPage,
   onPageChange,
-  loading,
+  isLoading,
 }: Props) {
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <p className="text-[var(--text)]">Carregando...</p>
+      <div className="flex flex-col items-center justify-center py-8">
+        <div className="relative flex items-center justify-center w-16 h-16">
+          <div className="absolute w-full h-full border-4 border-gray-200/20 rounded-full"></div>
+          <div className="absolute w-full h-full border-4 border-[var(--primary)] rounded-full border-t-transparent animate-spin"></div>
+        </div>
+
+        <p className="text-[var(--text)] font-medium text-lg animate-pulse tracking-wide">
+          Carregando pacientes...
+        </p>
       </div>
     );
   }

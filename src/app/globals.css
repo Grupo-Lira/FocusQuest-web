@@ -46,7 +46,9 @@ body {
 }
 
 .button-3d {
-  box-shadow: inset 5px 6px 4px rgba(255, 255, 255, 0.15), 0 4px 4px rgba(0, 0, 0, 0.25);
+  box-shadow:
+    inset 5px 6px 4px rgba(255, 255, 255, 0.15),
+    0 4px 4px rgba(0, 0, 0, 0.25);
 }
 
 .fase1 {
@@ -57,7 +59,7 @@ body {
   min-height: 100vh;
 }
 
-.fase2{
+.fase2 {
   background-image: url("/img/planetas/planet2.png");
   background-size: cover;
   background-position: center;
@@ -78,7 +80,7 @@ body {
   z-index: 11;
   position: absolute;
   bottom: 26%; /* porcentagem baseada na altura da imagem */
-  left: 14%;   /* porcentagem baseada na largura da imagem */
+  left: 14%; /* porcentagem baseada na largura da imagem */
   width: 1.8%;
   height: 12%;
   background: #800101;
@@ -92,14 +94,14 @@ body {
   box-shadow: 0 0 55px 50px rgba(255, 0, 0, 0.6);
 }
 
-.base-sinalizador{
+.base-sinalizador {
   z-index: 10;
   position: absolute;
   bottom: 16%; /* porcentagem baseada na altura da imagem */
-  left: 14.3%;   /* porcentagem baseada na largura da imagem */
+  left: 14.3%; /* porcentagem baseada na largura da imagem */
   width: 1.1%;
   height: 12%;
-  background: #14779F;
+  background: #14779f;
   border-radius: 3px;
 }
 
@@ -123,4 +125,31 @@ body {
 .star-hover {
   animation: grow 1s linear forwards;
   transform-origin: center;
+}
+
+/* Custom Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 10px;
+  border: 2px solid transparent;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ff9500;
+}
+
+/* Firefox Scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) transparent;
 }

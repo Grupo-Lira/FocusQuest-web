@@ -9,7 +9,7 @@ import { createPaciente } from "@/services/paciente.service";
 
 export default function CriarFichaPage() {
   const [form, setForm] = useState<FormState>(INITIAL_FORM_STATE);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const onCancel = () => {
@@ -19,7 +19,7 @@ export default function CriarFichaPage() {
   const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
-    setLoading(true);
+    setIsLoading(true);
 
     try {
       await createPaciente({
@@ -36,7 +36,7 @@ export default function CriarFichaPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao criar paciente");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -53,7 +53,7 @@ export default function CriarFichaPage() {
             setForm={setForm}
             onSubmit={onSubmit}
             onCancel={onCancel}
-            loading={loading}
+            isLoading={isLoading}
             error={error}
             formId="paciente-form"
             submitButtonText="Adicionar"
@@ -67,11 +67,11 @@ export default function CriarFichaPage() {
               variant="gray"
             />
             <Button
-              text={loading ? "Adicionando..." : "Adicionar"}
+              text={isLoading ? "Adicionando..." : "Adicionar"}
               type="submit"
               form="paciente-form"
-              disabled={loading}
-              isLoading={loading}
+              disabled={isLoading}
+              isLoading={isLoading}
               className="px-8 py-2.5"
             />
           </div>

@@ -27,7 +27,7 @@ type Props = {
   setForm: (form: FormState | ((prev: FormState) => FormState)) => void;
   onSubmit: (event: React.FormEvent) => void;
   onCancel: () => void;
-  loading: boolean;
+  isLoading: boolean;
   error: string | null;
   formId: string;
   submitButtonText: string;
@@ -41,7 +41,7 @@ export function PacienteForm({
   setForm,
   onSubmit,
   onCancel,
-  loading,
+  isLoading,
   error,
   formId,
   submitButtonText,

@@ -10,7 +10,7 @@ const noop = () => {};
 
 export function RecordsScreen() {
   const [records, setRecords] = useState<Paciente.Record[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -28,7 +28,7 @@ export function RecordsScreen() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao carregar pacientes");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -67,7 +67,7 @@ export function RecordsScreen() {
           total={records.length}
           currentPage={currentPage}
           onPageChange={handlePageChange}
-          loading={loading}
+          isLoading={isLoading}
         />
       </div>
     </Card>

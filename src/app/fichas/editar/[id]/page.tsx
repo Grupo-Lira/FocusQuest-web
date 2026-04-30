@@ -7,12 +7,13 @@ import { PacienteForm, FormState, INITIAL_FORM_STATE } from "@/components/Pacien
 import { useState, useEffect } from "react";
 import { getPaciente, updatePaciente, deletePaciente } from "@/services/paciente.service";
 import { useParams, useRouter } from "next/navigation";
+import { Loading } from "@/components/Loading";
 
 export default function EditarFichaPage() {
   const params = useParams();
   const router = useRouter();
   const [form, setForm] = useState<FormState>(INITIAL_FORM_STATE);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loadingInitial, setLoadingInitial] = useState(true);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -25,7 +26,7 @@ export default function EditarFichaPage() {
   const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
-    setLoading(true);
+    setIsLoading(true);
 
     try {
       await updatePaciente(params.id as string, {
@@ -42,7 +43,7 @@ export default function EditarFichaPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao atualizar paciente");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -87,11 +88,7 @@ export default function EditarFichaPage() {
   }, [params.id]);
 
   if (loadingInitial) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen">
-        <p className="text-[var(--text)]">Carregando...</p>
-      </div>
-    );
+    return <Loading message="Carregando dados do paciente..." />;
   }
 
   return (
@@ -107,7 +104,7 @@ export default function EditarFichaPage() {
             setForm={setForm}
             onSubmit={onSubmit}
             onCancel={onCancel}
-            loading={loading}
+            isLoading={isLoading}
             error={error}
             formId="edit-paciente-form"
             submitButtonText="Salvar"
@@ -124,11 +121,11 @@ export default function EditarFichaPage() {
               variant="gray"
             />
             <Button
-              text={loading ? "Salvando..." : "Salvar"}
+              text={isLoading ? "Salvando..." : "Salvar"}
               type="submit"
               form="edit-paciente-form"
-              disabled={loading}
-              isLoading={loading}
+              disabled={isLoading}
+              isLoading={isLoading}
               className="px-8 py-2.5"
             />
           </div>
