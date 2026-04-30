@@ -13,6 +13,7 @@ import { useParams, useRouter } from "next/navigation";
 
 type FormState = {
   nome: string;
+  rg: string;
   dataAvaliacao: string;
   sexo: "M" | "F" | "";
   escolaridade: string;
@@ -22,6 +23,7 @@ type FormState = {
 
 const INITIAL_FORM_STATE: FormState = {
   nome: "",
+  rg: "",
   dataAvaliacao: "",
   sexo: "",
   escolaridade: "",
@@ -69,10 +71,12 @@ export default function EditarFichaPage() {
     try {
       await updatePaciente(params.id as string, {
         nome: form.nome,
-        data_nascimento: form.dataNascimento || undefined,
+        rg: form.rg || undefined,
+        dataNascimento: form.dataNascimento || undefined,
+        dataAvaliacao: form.dataAvaliacao || undefined,
         sexo: form.sexo || undefined,
         escolaridade: form.escolaridade || undefined,
-        observacoes: form.motivoAvaliacao || undefined,
+        motivoAvaliacao: form.motivoAvaliacao || undefined,
       });
 
       router.push("/fichas");
@@ -102,23 +106,14 @@ export default function EditarFichaPage() {
         const response = await getPaciente(params.id as string);
         const paciente = response.data;
 
-        const formatDate = (dateString?: string) => {
-          if (!dateString) return "";
-          try {
-            const date = new Date(dateString);
-            return date.toLocaleDateString("pt-BR");
-          } catch {
-            return "";
-          }
-        };
-
         setForm({
           nome: paciente.nome,
+          rg: paciente.rg || "",
           dataAvaliacao: "",
           sexo: paciente.sexo || "",
           escolaridade: paciente.escolaridade || "",
-          dataNascimento: formatDate(paciente.dataNascimento),
-          motivoAvaliacao: paciente.observacoes || "",
+          dataNascimento: paciente.dataNascimento || "",
+          motivoAvaliacao: paciente.motivoAvaliacao || "",
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Erro ao carregar paciente");
@@ -149,7 +144,7 @@ export default function EditarFichaPage() {
         <div className="mt-20 h-full w-full flex flex-col items-center justify-center pb-8">
           <div className="bg-white px-12 py-10 rounded-[2rem] shadow-sm flex flex-col w-full max-w-4xl max-h-[calc(100vh-120px)] overflow-y-auto">
             <form
-              id="paciente-form"
+              id="edit-paciente-form"
               onSubmit={onSubmit}
               className="flex flex-col gap-8 w-full"
             >
@@ -202,10 +197,19 @@ export default function EditarFichaPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <FormInput
+                  label="RG"
+                  type="text"
+                  placeholder=""
+                  name="rg"
+                  value={form.rg}
+                  onChange={onChangeField("rg")}
+                />
+
                 <div className="flex flex-col gap-1">
-                  <label className="text-[var(--primary)] font-orbitron uppercase font-semibold text-xs tracking-wide mb-1">
+                  <span className="text-[var(--primary)] font-orbitron uppercase font-semibold text-xs tracking-wide mb-1">
                     Sexo
-                  </label>
+                  </span>
                   <div className="flex gap-4">
                     <RadioGroup
                       label="M"
@@ -225,21 +229,23 @@ export default function EditarFichaPage() {
                 </div>
 
                 <FormInput
-                  label="Escolaridade"
-                  type="text"
-                  placeholder=""
-                  name="escolaridade"
-                  value={form.escolaridade}
-                  onChange={onChangeField("escolaridade")}
-                />
-
-                <FormInput
                   label="Data de Nascimento"
                   type="text"
                   placeholder=""
                   name="dataNascimento"
                   value={form.dataNascimento}
                   onChange={onChangeField("dataNascimento")}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-1 gap-8">
+                <FormInput
+                  label="Escolaridade"
+                  type="text"
+                  placeholder=""
+                  name="escolaridade"
+                  value={form.escolaridade}
+                  onChange={onChangeField("escolaridade")}
                 />
               </div>
 
@@ -268,25 +274,25 @@ export default function EditarFichaPage() {
                   {error}
                 </div>
               )}
-
-              <div className="flex gap-4 justify-end pt-8 w-full">
-                <button
-                  type="button"
-                  onClick={onCancel}
-                  className="text-gray-600 font-medium px-6 py-2.5 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  form="paciente-form"
-                  disabled={loading}
-                  className="bg-[var(--primary)] text-white font-medium px-8 py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? "Salvando..." : "Salvar"}
-                </button>
-              </div>
             </form>
+
+            <div className="flex gap-4 justify-end pt-8 w-full">
+              <button
+                type="button"
+                onClick={onCancel}
+                className="text-gray-600 font-medium px-6 py-2.5 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                form="edit-paciente-form"
+                disabled={loading}
+                className="bg-[var(--primary)] text-white font-medium px-8 py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? "Salvando..." : "Salvar"}
+              </button>
+            </div>
           </div>
         </div>
       </div>

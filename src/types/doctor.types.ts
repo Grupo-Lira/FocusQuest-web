@@ -8,9 +8,9 @@ export namespace Doctor {
 
   export namespace CreateProfile {
     export type Body = {
-      nome: string;
-      telefone: string;
-      especialidade: string;
+      nome: Doctor.Profile['nome'];
+      telefone: Doctor.Profile['telefone'];
+      especialidade: Doctor.Profile['especialidade'];
     };
 
     export type Response = {

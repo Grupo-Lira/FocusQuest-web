@@ -3,17 +3,10 @@ import { useState } from "react";
 import { DeleteConfirmModal } from "@/components/DeleteConfirmModal";
 import { Pagination } from "@/components/Pagination";
 import { deletePaciente } from "@/services/paciente.service";
-
-type Record = {
-  id: number;
-  nome: string;
-  dataNascimento: string;
-  escolaridade: string;
-  metricaFinal: string;
-};
+import { Paciente } from "@/types/paciente.types";
 
 type Props = {
-  readonly records: ReadonlyArray<Record>;
+  readonly records: ReadonlyArray<Paciente.Record>;
   readonly onRefresh: () => void;
   readonly total: number;
   readonly currentPage: number;
@@ -48,10 +41,10 @@ const TableHeader = () => {
 };
 
 const ActionsDropdown = ({
-  recordName,
+  recordId,
   onRefresh,
 }: {
-  recordName: string;
+  recordId: Paciente.Record["id"];
   onRefresh: () => void;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -61,7 +54,7 @@ const ActionsDropdown = ({
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      await deletePaciente(recordName);
+      await deletePaciente(recordId);
       setIsDeleteModalOpen(false);
       setIsOpen(false);
       onRefresh();
@@ -89,7 +82,7 @@ const ActionsDropdown = ({
             className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
             onClick={() => {
               setIsOpen(false);
-              window.location.href = `/fichas/editar/${recordName}`;
+              window.location.href = `/fichas/editar/${recordId}`;
             }}
           >
             Editar
@@ -117,47 +110,43 @@ const ActionsDropdown = ({
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDelete}
-        patientName={recordName}
+        patientName={recordId}
         isLoading={isDeleting}
       />
     </div>
   );
 };
 
-const RecordRow = ({ record, onRefresh }: { record: Record; onRefresh: () => void }) => {
-  const formatDate = (dateString: string) => {
-    if (!dateString || dateString === "-") return "-";
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString("pt-BR");
-    } catch {
-      return "-";
-    }
-  };
-
+const RecordRow = ({
+  record,
+  onRefresh,
+}: {
+  record: Paciente.Record;
+  onRefresh: () => void;
+}) => {
   return (
     <tr className="border-b border-[#FFD3C7] hover:bg-[#f3f2f2]">
       <td className="text-[var(--text)] w-[100px] text-left pl-3">
         <button
           type="button"
-          onClick={() => (window.location.href = `/fichas/editar/${record.nome}`)}
-          className="text-[var(--primary)] hover:underline cursor-pointer font-medium"
+          onClick={() => (window.location.href = `/fichas/editar/${record.id}`)}
+          className="text-[var(--primary)] hover:underline cursor-pointer font-medium max-w-[30px] "
         >
           {record.id}
         </button>
       </td>
       <td className="text-[var(--text)] w-[300px] text-left pl-3">{record.nome}</td>
       <td className="text-[var(--text)] w-[200px] text-left pl-3">
-        {formatDate(record.dataNascimento)}
+        {record.dataNascimento}
       </td>
       <td className="text-[var(--text)] w-[200px] text-left pl-3">
-        {record.escolaridade}
+        {record.escolaridade || "-"}
       </td>
       <td className="text-[var(--text)] w-[150px] text-left pl-3">
-        {record.metricaFinal}
+        {record.metrica_final || "-"}
       </td>
       <td className="w-20 text-left pl-3">
-        <ActionsDropdown recordName={record.nome} onRefresh={onRefresh} />
+        <ActionsDropdown recordId={record.id} onRefresh={onRefresh} />
       </td>
     </tr>
   );

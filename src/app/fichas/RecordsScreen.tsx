@@ -4,19 +4,12 @@ import { Card } from "@/components/Card";
 import { RecordsTable } from "./RecordsTable";
 import { listPacientes } from "@/services/paciente.service";
 import { useEffect, useState } from "react";
-
-type Record = {
-  id: number;
-  nome: string;
-  dataNascimento: string;
-  escolaridade: string;
-  metricaFinal: string;
-};
+import { Paciente } from "@/types/paciente.types";
 
 const noop = () => {};
 
 export function RecordsScreen() {
-  const [records, setRecords] = useState<Record[]>([]);
+  const [records, setRecords] = useState<Paciente.Record[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -24,12 +17,12 @@ export function RecordsScreen() {
   const fetchPacientes = async () => {
     try {
       const response = await listPacientes();
-      const mappedRecords: Record[] = response.data.map((paciente, index) => ({
-        id: index + 1,
+      const mappedRecords: Paciente.Record[] = response.data.map((paciente) => ({
+        id: paciente.id,
         nome: paciente.nome,
         dataNascimento: paciente.dataNascimento || "-",
         escolaridade: paciente.escolaridade || "-",
-        metricaFinal: "-",
+        metrica_final: "-",
       }));
       setRecords(mappedRecords);
     } catch (err) {

@@ -11,6 +11,7 @@ import { createPaciente } from "@/services/paciente.service";
 
 type FormState = {
   nome: string;
+  rg: string;
   dataAvaliacao: string;
   sexo: "M" | "F" | "";
   escolaridade: string;
@@ -20,6 +21,7 @@ type FormState = {
 
 const INITIAL_FORM_STATE: FormState = {
   nome: "",
+  rg: "",
   dataAvaliacao: "",
   sexo: "",
   escolaridade: "",
@@ -62,10 +64,12 @@ export default function CriarFichaPage() {
     try {
       await createPaciente({
         nome: form.nome,
-        data_nascimento: form.dataNascimento || undefined,
+        rg: form.rg,
+        dataNascimento: form.dataNascimento || undefined,
+        dataAvaliacao: form.dataAvaliacao || undefined,
         sexo: form.sexo || undefined,
         escolaridade: form.escolaridade || undefined,
-        observacoes: form.motivoAvaliacao || undefined,
+        motivoAvaliacao: form.motivoAvaliacao || undefined,
       });
 
       window.location.href = "/fichas";
@@ -128,10 +132,19 @@ export default function CriarFichaPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <FormInput
+                  label="RG"
+                  type="text"
+                  placeholder=""
+                  name="rg"
+                  value={form.rg}
+                  onChange={onChangeField("rg")}
+                />
+
                 <div className="flex flex-col gap-1">
-                  <label className="text-[var(--primary)] font-orbitron uppercase font-semibold text-xs tracking-wide mb-1">
+                  <span className="text-[var(--primary)] font-orbitron uppercase font-semibold text-xs tracking-wide mb-1">
                     Sexo
-                  </label>
+                  </span>
                   <div className="flex gap-4">
                     <RadioGroup
                       label="M"
@@ -151,21 +164,23 @@ export default function CriarFichaPage() {
                 </div>
 
                 <FormInput
-                  label="Escolaridade"
-                  type="text"
-                  placeholder=""
-                  name="escolaridade"
-                  value={form.escolaridade}
-                  onChange={onChangeField("escolaridade")}
-                />
-
-                <FormInput
                   label="Data de Nascimento"
                   type="text"
                   placeholder=""
                   name="dataNascimento"
                   value={form.dataNascimento}
                   onChange={onChangeField("dataNascimento")}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-1 gap-8">
+                <FormInput
+                  label="Escolaridade"
+                  type="text"
+                  placeholder=""
+                  name="escolaridade"
+                  value={form.escolaridade}
+                  onChange={onChangeField("escolaridade")}
                 />
               </div>
 
