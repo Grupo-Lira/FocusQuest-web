@@ -81,7 +81,7 @@ export default function EditarFichaPage() {
         setForm({
           nome: paciente.nome,
           rg: paciente.rg || "",
-          dataAvaliacao: "",
+          dataAvaliacao: paciente.dataAvaliacao || "",
           sexo: paciente.sexo || "",
           escolaridade: paciente.escolaridade || "",
           dataNascimento: paciente.dataNascimento || "",

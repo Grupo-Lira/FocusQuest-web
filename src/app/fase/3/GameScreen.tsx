@@ -13,6 +13,7 @@ import { fase3Steps } from "@/constants/steps";
 import { useAudio } from "@/context/AudioContext";
 import { GazeData, useEyeTracking } from "@/context/EyeTrackingContext";
 import { useGameContext } from "@/context/GameContext";
+import { usePatient } from "@/context/PatientContext";
 import { useSocketIO } from "@/hooks/useWebSocket";
 
 type Fase3BoundingBox = {
@@ -96,6 +97,7 @@ export function GameScreen() {
   } = useGameContext();
   const { startAudio } = useAudio();
   const { socket, isConnected } = useSocketIO();
+  const { selectedPacienteId } = usePatient();
   const { stopTracking, isWebGazerLoaded, startTracking, lastGazeData, isTracking } =
     useEyeTracking();
 
@@ -125,9 +127,8 @@ export function GameScreen() {
       fase3ConfigRef.current = fase3;
 
       if (fase3.length > 0) {
-        // TODO: Replace hardcoded usuarioId with dynamic value
         socket.emit("iniciar_fase3", {
-          usuarioId: "123",
+          usuarioId: selectedPacienteId,
           alvoInicialNome: "ESTRELA",
           fase3,
         });

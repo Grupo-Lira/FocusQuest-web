@@ -15,6 +15,7 @@ import { animatedElementsFase2 } from "@/config/gameConfig";
 import { stars } from "@/constants/fase2Stars";
 import { useAudio } from "@/context/AudioContext";
 import { useGameContext } from "@/context/GameContext";
+import { usePatient } from "@/context/PatientContext";
 import { usePlanets } from "@/hooks/usePlanets";
 import { useSocketIO } from "@/hooks/useWebSocket";
 
@@ -60,6 +61,7 @@ export function GameScreen() {
   const { startAudio } = useAudio();
   const { activePlanets, startGame, resetPlanets } = usePlanets();
   const { socket, isConnected } = useSocketIO();
+  const { selectedPacienteId } = usePatient();
 
   const handleStartGame = () => {
     setIsGameActive(true);
@@ -67,8 +69,7 @@ export function GameScreen() {
     startAudio();
     startGame(currentRound);
 
-    //TODO-USAR-ID-DO-PACIENTE-REAL
-    socket?.emit("iniciar_fase2", { fase: 2, usuarioId: 123 });
+    socket?.emit("iniciar_fase2", { fase: 2, usuarioId: selectedPacienteId });
   };
 
   const advanceToNextRound = () => {

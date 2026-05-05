@@ -16,6 +16,7 @@ import { fase1Steps } from "@/constants/steps";
 import { useAudio } from "@/context/AudioContext";
 import { GazeData, useEyeTracking } from "@/context/EyeTrackingContext";
 import { useGameContext } from "@/context/GameContext";
+import { usePatient } from "@/context/PatientContext";
 import { useSocketIO } from "@/hooks/useWebSocket";
 import { useGameLogic } from "./useGameLogic";
 
@@ -79,7 +80,6 @@ export function GameScreen() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [shiningStars, setShiningStars] = useState<number[]>([]);
   const [isPatientSelectOpen, setIsPatientSelectOpen] = useState(true);
-  const [selectedPacienteId, setSelectedPacienteId] = useState<string>("");
 
   const {
     isPaused,
@@ -94,6 +94,7 @@ export function GameScreen() {
     useEyeTracking();
   const { startAudio } = useAudio();
   const { socket, isConnected } = useSocketIO();
+  const { selectedPacienteId, setSelectedPacienteId } = usePatient();
 
   const turnOnStar = (target: TargetConfig) => {
     setShiningStars((prev) => {

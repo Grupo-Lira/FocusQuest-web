@@ -4,6 +4,7 @@ import Script from "next/script";
 import { AudioProvider } from "@/context/AudioContext";
 import { EyeTrackingProvider } from "@/context/EyeTrackingContext";
 import { GameProvider } from "@/context/GameContext";
+import { PatientProvider } from "@/context/PatientContext";
 import { ToastProvider } from "@/context/ToastContext";
 import "./globals.css";
 
@@ -44,7 +45,9 @@ export default function RootLayout({ children }: Readonly<Props>) {
         <ToastProvider>
           <EyeTrackingProvider>
             <GameProvider>
-              <AudioProvider>{children}</AudioProvider>
+              <PatientProvider>
+                <AudioProvider>{children}</AudioProvider>
+              </PatientProvider>
             </GameProvider>
           </EyeTrackingProvider>
         </ToastProvider>
