@@ -1,3 +1,18 @@
+export type DadoComparativo = {
+  idade: number;
+  mediaAcertos: number;
+};
+
+export type Metricas = {
+  tempoReacao?: string;
+  variabilidadeTemporalRespostas?: string;
+  acertos?: number;
+  errosOmissao?: number;
+  errosComissao?: number;
+  observacoes?: string;
+  dadosComparativos?: DadoComparativo[];
+};
+
 export namespace Paciente {
   export type Profile = {
     id: string;
@@ -7,10 +22,11 @@ export namespace Paciente {
     dataAvaliacao?: string;
     sexo?: "M" | "F";
     escolaridade?: string;
-    motivoAvaliacao?: string
+    motivoAvaliacao?: string;
     observacoes?: string;
     criado_em?: string;
     metrica_final?: string;
+    metricas?: Metricas;
   };
 
   export type Record = {

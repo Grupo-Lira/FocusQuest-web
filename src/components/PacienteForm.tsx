@@ -196,15 +196,6 @@ export function PacienteForm({
         />
       </div>
 
-      <div className="flex flex-col items-center justify-center gap-2 mt-4 p-6 border-[1.5px] border-[var(--primary)] rounded-3xl">
-        <p className="text-xl font-orbitron text-[var(--primary)] font-semibold uppercase tracking-wider">
-          Métricas
-        </p>
-        <p className="text-sm font-medium text-red-600 text-center">
-          Finalize o atendimento para que as métricas sejam preenchidas
-        </p>
-      </div>
-
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
           {error}

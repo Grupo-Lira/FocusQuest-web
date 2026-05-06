@@ -8,7 +8,9 @@ import { useState, useEffect } from "react";
 import { getPaciente, updatePaciente, deletePaciente } from "@/services/paciente.service";
 import { useParams, useRouter } from "next/navigation";
 import { Loading } from "@/components/Loading";
+import { MetricsSection } from "@/components/MetricsSection";
 import { useToast } from "@/context/ToastContext";
+import { Paciente } from "@/types/paciente.types";
 
 export default function EditarFichaPage() {
   const params = useParams();
@@ -19,6 +21,7 @@ export default function EditarFichaPage() {
   const [loadingInitial, setLoadingInitial] = useState(true);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [pacienteData, setPacienteData] = useState<Paciente.Profile | null>(null);
   const { showSuccess, showError } = useToast();
 
   const onCancel = () => {
@@ -78,6 +81,24 @@ export default function EditarFichaPage() {
         const response = await getPaciente(params.id as string);
         const paciente = response.data;
 
+        // MOCK: Adicionar métricas para teste
+        paciente.metricas = {
+          tempoReacao: "0:15",
+          variabilidadeTemporalRespostas: "3%",
+          acertos: 9,
+          errosOmissao: 5,
+          errosComissao: 3,
+          observacoes: "Paciente com sensibilidade a luz forte.",
+          dadosComparativos: [
+            { idade: 10, mediaAcertos: 8 },
+            { idade: 11, mediaAcertos: 7.5 },
+            { idade: 12, mediaAcertos: 9.2 },
+            { idade: 13, mediaAcertos: 8.8 },
+          ],
+        };
+
+        setPacienteData(paciente);
+
         setForm({
           nome: paciente.nome,
           rg: paciente.rg || "",
@@ -124,6 +145,26 @@ export default function EditarFichaPage() {
             onDelete={() => setIsDeleteModalOpen(true)}
             isDeleting={isDeleting}
           />
+
+          {pacienteData?.metricas ? (
+            <MetricsSection
+              metricas={pacienteData.metricas}
+              onObservacoesChange={(observacoes) => {
+                setPacienteData(prev =>
+                  prev ? { ...prev, metricas: { ...prev.metricas!, observacoes } } : null
+                );
+              }}
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center gap-2 mt-4 p-6 border-[1.5px] border-[var(--primary)] rounded-3xl">
+              <p className="text-xl font-orbitron text-[var(--primary)] font-semibold uppercase tracking-wider">
+                Métricas
+              </p>
+              <p className="text-sm font-medium text-red-600 text-center">
+                Finalize o atendimento para que as métricas sejam preenchidas
+              </p>
+            </div>
+          )}
 
           <div className="flex gap-4 justify-end pt-8 w-full">
             <Button
