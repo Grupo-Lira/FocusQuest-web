@@ -1,8 +1,9 @@
-import { MoreVertical } from "lucide-react";
+import { MoreVertical, Download } from "lucide-react";
 import { useState } from "react";
 import { DeleteConfirmModal } from "@/components/DeleteConfirmModal";
 import { Pagination } from "@/components/Pagination";
 import { deletePaciente } from "@/services/paciente.service";
+import { downloadRelatorioPdf } from "@/services/relatorio.service";
 import { Paciente } from "@/types/paciente.types";
 import { useToast } from "@/context/ToastContext";
 
@@ -51,7 +52,43 @@ const ActionsDropdown = ({
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const { showSuccess, showError } = useToast();
+
+  const handleDownloadRelatorio = async () => {
+    console.log("🔥 Botão de download clicado! Record ID:", recordId);
+    setIsDownloading(true);
+    try {
+      console.log("🔄 Chamando downloadRelatorioPdf...");
+      const blob = await downloadRelatorioPdf(recordId);
+      console.log("✅ Blob recebido, tamanho:", blob.size);
+
+      // Criar URL para download
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `relatorio_paciente_${recordId}.pdf`;
+
+      // Disparar download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Limpar URL
+      window.URL.revokeObjectURL(url);
+
+      console.log("✅ Download concluído com sucesso!");
+      showSuccess("Relatório baixado com sucesso!");
+      setIsOpen(false);
+    } catch (err) {
+      console.error("❌ Erro no download:", err);
+      const errorMessage =
+        err instanceof Error ? err.message : "Erro ao baixar relatório";
+      showError(errorMessage);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -93,6 +130,15 @@ const ActionsDropdown = ({
           </button>
           <button
             type="button"
+            className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"
+            onClick={handleDownloadRelatorio}
+            disabled={isDownloading}
+          >
+            <Download width={16} />
+            {isDownloading ? "Baixando..." : "Baixar Relatório"}
+          </button>
+          <button
+            type="button"
             className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-red-600"
             onClick={() => {
               setIsDeleteModalOpen(true);
@@ -100,13 +146,6 @@ const ActionsDropdown = ({
             }}
           >
             Deletar
-          </button>
-          <button
-            type="button"
-            className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
-            onClick={() => setIsOpen(false)}
-          >
-            Baixar em PDF
           </button>
         </div>
       )}
