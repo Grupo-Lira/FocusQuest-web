@@ -81,25 +81,14 @@ const backendRequest: BackendRequest = {
     // Remover barra inicial da URL para evitar barra dupla
     const cleanUrl = url.startsWith('/') ? url.slice(1) : url;
     const fullUrl = `${FINAL_API_URL}${cleanUrl}`;
-
-    console.log('🔍 Debug Download:');
-    console.log('URL original:', url);
-    console.log('Clean URL:', cleanUrl);
-    console.log('API_URL original:', API_URL);
-    console.log('FINAL_API_URL:', FINAL_API_URL);
-    console.log('Full URL:', fullUrl);
-
     const response = await fetch(fullUrl, {
       method: "GET",
       headers,
+      credentials: "include",
     });
-
-    console.log('Response status:', response.status);
-    console.log('Response ok:', response.ok);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ error: "Erro na requisição" }));
-      console.log('Error data:', errorData);
       throw new Error(errorData.error || "Erro na requisição");
     }
 
