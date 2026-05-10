@@ -5,6 +5,7 @@ declare global {
   interface Window {
     webgazer: any;
   }
+  var webgazer: any;
 }
 
 export interface GazeData {
