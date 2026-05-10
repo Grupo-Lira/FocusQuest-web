@@ -1,14 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/";
-
-// Garantir que API_URL sempre termine com /api/
-const ensureApiPath = (url: string): string => {
-  if (!url.endsWith('/api/')) {
-    return url.endsWith('/') ? `${url}api/` : `${url}/api/`;
-  }
-  return url;
-};
-
-const FINAL_API_URL = ensureApiPath(API_URL);
+const FINAL_API_URL = "/api";
 
 type Callback = (data?: any) => void;
 type Url = string;
@@ -117,12 +107,14 @@ const backendRequest: BackendRequest = {
   },
 
   async sync(url, method, dataObject = null, headers = AuthHeaders()) {
-    const fullUrl = `${API_URL}/api${url}`;
+    const cleanUrl = url.startsWith("/") ? url : `/${url}`;
+    const fullUrl = `${FINAL_API_URL}${cleanUrl}`;
 
     const response = await fetch(fullUrl, {
       method,
       headers,
       body: dataObject ? JSON.stringify(dataObject) : undefined,
+      credentials: "include",
     });
 
     if (!response.ok) {
