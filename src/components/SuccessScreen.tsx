@@ -92,7 +92,7 @@ export function SuccessScreen({ fase, data }: Props) {
       <div className="flex flex-col gap-4">
         <div className="flex flex-col items-center">
           {resultsOpen === true ? (
-            <ResultsTable results={results} data={data} />
+            <ResultsTable results={results} data={data} fase={fase} />
           ) : (
             <Image
               src="/img/viva.png"
