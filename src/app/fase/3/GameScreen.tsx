@@ -43,16 +43,14 @@ const normalizeGaze = (value: number, max: number) => {
 const hasGazeChanged = (current: GazeData, last: GazeData | null) => {
   if (last === null) return true;
   return (
-    current.x !== last.x ||
-    current.y !== last.y ||
-    current.timestamp !== last.timestamp
+    current.x !== last.x || current.y !== last.y || current.timestamp !== last.timestamp
   );
 };
 
 const getBoundingBox = (
   element: HTMLElement | null,
   toleranceX: number = DEFAULT_TOLERANCE_X,
-  toleranceY: number = DEFAULT_TOLERANCE_Y,
+  toleranceY: number = DEFAULT_TOLERANCE_Y
 ): Fase3BoundingBox | null => {
   if (element === null) return null;
 
@@ -111,12 +109,18 @@ export function GameScreen() {
     const estrela = getBoundingBox(starContainerRef.current);
     const radar = getBoundingBox(radarRef.current);
     const fase3 = [estrela, radar].filter(
-      (item): item is Fase3BoundingBox => item !== null,
+      (item): item is Fase3BoundingBox => item !== null
     );
     return fase3;
   };
 
   const handleStartGame = async () => {
+    if (!selectedPacienteId) {
+      alert("Por favor, selecione um paciente na ficha antes de iniciar a fase.");
+      window.location.href = "/fichas";
+      return;
+    }
+
     if (isWebGazerLoaded === true) {
       await wait(START_TRACKING_DELAY_MS);
       await startTracking(false, false);
@@ -127,6 +131,7 @@ export function GameScreen() {
       fase3ConfigRef.current = fase3;
 
       if (fase3.length > 0) {
+        console.log("FASE 3 - usuarioId sendo enviado:", selectedPacienteId);
         socket.emit("iniciar_fase3", {
           usuarioId: selectedPacienteId,
           alvoInicialNome: "ESTRELA",

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 interface PatientContextType {
   selectedPacienteId: string;
@@ -11,7 +11,23 @@ interface PatientContextType {
 const PatientContext = createContext<PatientContextType | undefined>(undefined);
 
 export function PatientProvider({ children }: { children: ReactNode }) {
-  const [selectedPacienteId, setSelectedPacienteId] = useState<string>("");
+  const [selectedPacienteId, setSelectedPacienteId] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("selectedPacienteId");
+      return saved || "";
+    }
+    return "";
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (selectedPacienteId) {
+        localStorage.setItem("selectedPacienteId", selectedPacienteId);
+      } else {
+        localStorage.removeItem("selectedPacienteId");
+      }
+    }
+  }, [selectedPacienteId]);
 
   const clearSelectedPaciente = () => {
     setSelectedPacienteId("");

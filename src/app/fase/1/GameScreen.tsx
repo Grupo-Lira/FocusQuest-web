@@ -133,6 +133,7 @@ export function GameScreen() {
 
       if (targetsConfig.length > 0) {
         console.debug("EMITINDO evento: fase_1_alvos_configuracao", targetsConfig.length);
+        console.log("FASE 1 - usuarioId sendo enviado:", selectedPacienteId);
         socket.emit("iniciar_fase1", {
           fase1: targetsConfig,
           usuarioId: selectedPacienteId,

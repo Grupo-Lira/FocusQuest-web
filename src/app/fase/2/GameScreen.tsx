@@ -64,11 +64,18 @@ export function GameScreen() {
   const { selectedPacienteId } = usePatient();
 
   const handleStartGame = () => {
+    if (!selectedPacienteId) {
+      alert("Por favor, selecione um paciente na ficha antes de iniciar a fase.");
+      window.location.href = "/fichas";
+      return;
+    }
+
     setIsGameActive(true);
     setAudioGameStarted(true);
     startAudio();
     startGame(currentRound);
 
+    console.log("FASE 2 - usuarioId sendo enviado:", selectedPacienteId);
     socket?.emit("iniciar_fase2", { fase: 2, usuarioId: selectedPacienteId });
   };
 

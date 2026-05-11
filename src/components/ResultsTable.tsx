@@ -85,7 +85,6 @@ const ResultRow = ({ result }: { result: Result }) => {
 };
 
 export function ResultsTable({ results, data, fase }: Readonly<Props>) {
-  console.log("fase: ", fase)
   return (
     <div className="flex flex-col items-center gap-8 pb-4">
       <table className="results-table w-full">
