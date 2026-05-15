@@ -7,7 +7,7 @@ import { AnimatedElement } from "@/components/AnimatedElements/AnimatedElement";
 import { FixedStar } from "@/components/FixedStar";
 import { NavbarGame } from "@/components/NavbarGame";
 import { SettingsModal } from "@/components/SettingsModal";
-import { SuccessScreen } from "@/components/SuccessScreen";
+import { Metricas, SuccessScreen } from "@/components/SuccessScreen";
 import { animatedElements } from "@/config/gameConfig";
 import { fase3Steps } from "@/constants/steps";
 import { useAudio } from "@/context/AudioContext";
@@ -82,6 +82,7 @@ export function GameScreen() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isShining, setIsShining] = useState(false);
+  const [successModalData, setSuccessModalData] = useState<Metricas | null>(null);
 
   const {
     isPaused,
@@ -189,6 +190,12 @@ export function GameScreen() {
     socket.on("fase_concluida", (data) => {
       setIsPaused(true);
       stopTracking();
+      setSuccessModalData(data?.metricas);
+
+      if (data?.metricas) {
+        setShowSuccessModal(true);
+        return;
+      }
 
       const shouldShowSuccess = timeLeft !== 0 && data?.motivo !== TIME_EXCEEDED_REASON;
       if (shouldShowSuccess === true) {
@@ -261,7 +268,7 @@ export function GameScreen() {
 
       {showSuccessModal === true ? (
         <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
-          <SuccessScreen fase={2} />
+          <SuccessScreen fase={2} data={successModalData ?? undefined} />
         </div>
       ) : null}
 
