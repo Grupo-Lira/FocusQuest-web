@@ -81,6 +81,7 @@ const isRadarTarget = (alvo: string | undefined) => {
 export function GameScreen() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successData, setSuccessData] = useState<any>(null);
   const [isShining, setIsShining] = useState(false);
 
   const {
@@ -189,6 +190,7 @@ export function GameScreen() {
     socket.on("fase_concluida", (data) => {
       setIsPaused(true);
       stopTracking();
+      setSuccessData(data ?? null);
 
       const shouldShowSuccess = timeLeft !== 0 && data?.motivo !== TIME_EXCEEDED_REASON;
       if (shouldShowSuccess === true) {
@@ -261,7 +263,14 @@ export function GameScreen() {
 
       {showSuccessModal === true ? (
         <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
-          <SuccessScreen fase={2} />
+          <SuccessScreen
+            fase={2}
+            data={successData?.metricas ?? undefined}
+            ai={{
+              avaliacao_final: successData?.avaliacao_final,
+              avaliacao_score: successData?.avaliacao_score,
+            }}
+          />
         </div>
       ) : null}
 
