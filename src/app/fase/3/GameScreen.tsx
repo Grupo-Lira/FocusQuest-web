@@ -7,7 +7,7 @@ import { AnimatedElement } from "@/components/AnimatedElements/AnimatedElement";
 import { FixedStar } from "@/components/FixedStar";
 import { NavbarGame } from "@/components/NavbarGame";
 import { SettingsModal } from "@/components/SettingsModal";
-import { SuccessScreen } from "@/components/SuccessScreen";
+import { Metricas, SuccessScreen } from "@/components/SuccessScreen";
 import { animatedElements } from "@/config/gameConfig";
 import { fase3Steps } from "@/constants/steps";
 import { useAudio } from "@/context/AudioContext";
@@ -83,6 +83,7 @@ export function GameScreen() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successData, setSuccessData] = useState<any>(null);
   const [isShining, setIsShining] = useState(false);
+  const [successModalData, setSuccessModalData] = useState<Metricas | null>(null);
 
   const {
     isPaused,
@@ -190,8 +191,18 @@ export function GameScreen() {
     socket.on("fase_concluida", (data) => {
       setIsPaused(true);
       stopTracking();
-      setSuccessData(data ?? null);
 
+      // store full payload (for AI fields) and the metrics separately
+      setSuccessData(data ?? null);
+      setSuccessModalData(data?.metricas ?? null);
+
+      // prefer develop behavior: if metrics are present, show modal
+      if (data?.metricas) {
+        setShowSuccessModal(true);
+        return;
+      }
+
+      // fallback: show modal when not time-exceeded
       const shouldShowSuccess = timeLeft !== 0 && data?.motivo !== TIME_EXCEEDED_REASON;
       if (shouldShowSuccess === true) {
         setShowSuccessModal(true);
@@ -265,10 +276,10 @@ export function GameScreen() {
         <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
           <SuccessScreen
             fase={2}
-            data={successData?.metricas ?? undefined}
+            data={successModalData ?? successData?.metricas ?? undefined}
             ai={{
-              avaliacao_final: successData?.avaliacao_final,
-              avaliacao_score: successData?.avaliacao_score,
+              avaliacao_final: successData?.avaliacao_final ?? null,
+              avaliacao_score: successData?.avaliacao_score ?? null,
             }}
           />
         </div>

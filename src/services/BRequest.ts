@@ -80,7 +80,7 @@ const backendRequest: BackendRequest = {
   async download(url: Url, headers = AuthHeaders()) {
     // Remover barra inicial da URL para evitar barra dupla
     const cleanUrl = url.startsWith('/') ? url.slice(1) : url;
-    const fullUrl = `${FINAL_API_URL}${cleanUrl}`;
+    const fullUrl = `${FINAL_API_URL}/${cleanUrl}`;
     const response = await fetch(fullUrl, {
       method: "GET",
       headers,
