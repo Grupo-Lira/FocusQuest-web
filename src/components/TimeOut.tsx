@@ -55,7 +55,7 @@ export function TimeOut({ data }: Props) {
       <div className="flex flex-col gap-4">
         <div className="flex flex-col items-center">
           {resultsOpen === true ? (
-            <ResultsTable results={results} data={data} />
+            <ResultsTable results={results} data={data} fase={1} />
           ) : (
             <Image
               src="/img/sad.png"
