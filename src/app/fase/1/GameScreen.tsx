@@ -10,11 +10,13 @@ import { Star } from "@/components/Star";
 import { Metricas, SuccessScreen } from "@/components/SuccessScreen";
 import { Thermometer } from "@/components/Thermometer";
 import { TimeOut } from "@/components/TimeOut";
+import { PatientSelectModal } from "@/components/PatientSelectModal";
 import { animatedElements } from "@/config/gameConfig";
 import { fase1Steps } from "@/constants/steps";
 import { useAudio } from "@/context/AudioContext";
 import { GazeData, useEyeTracking } from "@/context/EyeTrackingContext";
 import { useGameContext } from "@/context/GameContext";
+import { usePatient } from "@/context/PatientContext";
 import { useSocketIO } from "@/hooks/useWebSocket";
 import { useGameLogic } from "./useGameLogic";
 
@@ -77,6 +79,7 @@ export function GameScreen() {
   const [successModalData, setSuccessModalData] = useState<Metricas | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [shiningStars, setShiningStars] = useState<number[]>([]);
+  const [isPatientSelectOpen, setIsPatientSelectOpen] = useState(true);
 
   const {
     isPaused,
@@ -91,6 +94,7 @@ export function GameScreen() {
     useEyeTracking();
   const { startAudio } = useAudio();
   const { socket, isConnected } = useSocketIO();
+  const { selectedPacienteId, setSelectedPacienteId } = usePatient();
 
   const turnOnStar = (target: TargetConfig) => {
     setShiningStars((prev) => {
@@ -129,13 +133,26 @@ export function GameScreen() {
 
       if (targetsConfig.length > 0) {
         console.debug("EMITINDO evento: fase_1_alvos_configuracao", targetsConfig.length);
-        socket.emit("iniciar_experimento_com_config", { fase1: targetsConfig });
+        console.log("FASE 1 - usuarioId sendo enviado:", selectedPacienteId);
+        socket.emit("iniciar_fase1", {
+          fase1: targetsConfig,
+          usuarioId: selectedPacienteId,
+        });
       }
     }
 
     setIsGameActive(true);
     setAudioGameStarted(true);
     startAudio();
+  };
+
+  const handlePatientSelect = (pacienteId: string) => {
+    setSelectedPacienteId(pacienteId);
+    setIsPatientSelectOpen(false);
+  };
+
+  const handlePatientSelectCancel = () => {
+    window.location.href = "/fichas";
   };
 
   const onCloseSettings = async () => {
@@ -162,8 +179,13 @@ export function GameScreen() {
   useEffect(() => {
     if (socket === null) return;
 
-    socket.on("fase_iniciada", (data) => {
+    socket.on("fase1_iniciada", (data) => {
       console.debug("Fase iniciada:", data);
+      turnOnStar(data.alvo);
+    });
+
+    socket.on("brilhar_estrela", (data) => {
+      console.debug("Destaque Estrela:", data);
       turnOnStar(data.alvo);
     });
 
@@ -220,7 +242,7 @@ export function GameScreen() {
 
       if (isNewData === false) return;
 
-      socket.emit("gaze_data", {
+      socket.emit("gaze_data_fase1", {
         x: normalizedX,
         y: normalizedY,
         rawX: gaze.x,
@@ -248,6 +270,12 @@ export function GameScreen() {
 
   return (
     <div className="fase1 relative w-full h-screen overflow-hidden">
+      <PatientSelectModal
+        isOpen={isPatientSelectOpen}
+        onSelect={handlePatientSelect}
+        onCancel={handlePatientSelectCancel}
+      />
+
       <div className="flex justify-center mt-6 z-20">
         <NavbarGame label={NAVBAR_LABEL} />
       </div>

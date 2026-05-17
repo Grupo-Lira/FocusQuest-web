@@ -27,8 +27,8 @@ const buildFase1Results = (data: Metricas | undefined) => {
   const totalOmissao = data?.total_omissao ?? 0;
   return [
     { id: 3, name: "🎯 Acertos", score: `${totalAcertos} de 5 alvos` },
-    { id: 4, name: "❌ Demorou para focar", score: `${totalComissao} vezes` },
-    { id: 5, name: "❌ Distrações", score: `${totalOmissao} distrações` },
+    { id: 4, name: "❌ Demorou para focar", score: `${totalOmissao} vezes` },
+    { id: 5, name: "❌ Distrações", score: `${totalComissao} distrações` },
   ];
 };
 
@@ -92,7 +92,7 @@ export function SuccessScreen({ fase, data }: Props) {
       <div className="flex flex-col gap-4">
         <div className="flex flex-col items-center">
           {resultsOpen === true ? (
-            <ResultsTable results={results} data={data} />
+            <ResultsTable results={results} data={data} fase={fase} />
           ) : (
             <Image
               src="/img/viva.png"

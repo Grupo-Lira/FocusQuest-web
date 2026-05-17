@@ -15,6 +15,7 @@ import { animatedElementsFase2 } from "@/config/gameConfig";
 import { stars } from "@/constants/fase2Stars";
 import { useAudio } from "@/context/AudioContext";
 import { useGameContext } from "@/context/GameContext";
+import { usePatient } from "@/context/PatientContext";
 import { usePlanets } from "@/hooks/usePlanets";
 import { useSocketIO } from "@/hooks/useWebSocket";
 
@@ -60,12 +61,22 @@ export function GameScreen() {
   const { startAudio } = useAudio();
   const { activePlanets, startGame, resetPlanets } = usePlanets();
   const { socket, isConnected } = useSocketIO();
+  const { selectedPacienteId } = usePatient();
 
   const handleStartGame = () => {
+    if (!selectedPacienteId) {
+      alert("Por favor, selecione um paciente na ficha antes de iniciar a fase.");
+      window.location.href = "/fichas";
+      return;
+    }
+
     setIsGameActive(true);
     setAudioGameStarted(true);
     startAudio();
     startGame(currentRound);
+
+    console.log("FASE 2 - usuarioId sendo enviado:", selectedPacienteId);
+    socket?.emit("iniciar_fase2", { fase: 2, usuarioId: selectedPacienteId });
   };
 
   const advanceToNextRound = () => {

@@ -1,28 +1,35 @@
-type Record = {
-  id: number;
-  rank: string;
-  name: string;
-  forecast: string;
-  time: string;
-};
+import { MoreVertical, Download } from "lucide-react";
+import { useState } from "react";
+import { DeleteConfirmModal } from "@/components/DeleteConfirmModal";
+import { Pagination } from "@/components/Pagination";
+import { deletePaciente } from "@/services/paciente.service";
+import { downloadRelatorioPdf } from "@/services/relatorio.service";
+import { Paciente } from "@/types/paciente.types";
+import { useToast } from "@/context/ToastContext";
 
 type Props = {
-  readonly records: ReadonlyArray<Record>;
+  readonly records: ReadonlyArray<Paciente.Record>;
+  readonly onRefresh: () => void;
+  readonly total: number;
+  readonly currentPage: number;
+  readonly onPageChange: (page: number) => void;
+  readonly isLoading?: boolean;
 };
 
 const HEADERS = [
-  { label: "ID", widthClass: "w-44" },
-  { label: "Nome", widthClass: "w-[250px]" },
-  { label: "RG", widthClass: "w-44" },
-  { label: "Métrica final", widthClass: "w-44" },
-  { label: "Ações", widthClass: "w-44" },
+  { label: "ID" },
+  { label: "Nome" },
+  { label: "Data de nascimento" },
+  { label: "Escolaridade" },
+  { label: "Métrica final" },
+  { label: "Ações" },
 ] as const;
 
 const TableHeader = () => {
   const cells = HEADERS.map((header) => (
     <th
       key={header.label}
-      className={`font-orbitron font-semibold text-xl text-[var(--primary)] ${header.widthClass} text-left pl-3 py-2.5`}
+      className="font-orbitron font-semibold text-lg text-[var(--primary)] text-left pl-3 py-2 whitespace-nowrap"
     >
       {header.label}
     </th>
@@ -35,30 +42,201 @@ const TableHeader = () => {
   );
 };
 
-const RecordRow = ({ record }: { record: Record }) => {
+const ActionsDropdown = ({
+  recordId,
+  onRefresh,
+}: {
+  recordId: Paciente.Record["id"];
+  onRefresh: () => void;
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const { showSuccess, showError } = useToast();
+
+  const handleDownloadRelatorio = async () => {
+    console.log("🔥 Botão de download clicado! Record ID:", recordId);
+    setIsDownloading(true);
+    try {
+      console.log("🔄 Chamando downloadRelatorioPdf...");
+      const blob = await downloadRelatorioPdf(recordId);
+      console.log("✅ Blob recebido, tamanho:", blob.size);
+
+      // Criar URL para download
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `relatorio_paciente_${recordId}.pdf`;
+
+      // Disparar download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Limpar URL
+      window.URL.revokeObjectURL(url);
+
+      console.log("✅ Download concluído com sucesso!");
+      showSuccess("Relatório baixado com sucesso!");
+      setIsOpen(false);
+    } catch (err) {
+      console.error("❌ Erro no download:", err);
+      const errorMessage =
+        err instanceof Error ? err.message : "Erro ao baixar relatório";
+      showError(errorMessage);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await deletePaciente(recordId);
+      setIsDeleteModalOpen(false);
+      showSuccess("Paciente deletado com sucesso!");
+      setIsOpen(false);
+      onRefresh();
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Erro ao deletar paciente";
+      showError(errorMessage);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+      >
+        <MoreVertical width={20} />
+      </button>
+      {isOpen && (
+        <div className="absolute right-0 top-8 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10 min-w-[150px]">
+          <button
+            type="button"
+            className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+            onClick={() => {
+              setIsOpen(false);
+              window.location.href = `/fichas/editar/${recordId}`;
+            }}
+          >
+            Editar
+          </button>
+          <button
+            type="button"
+            className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"
+            onClick={handleDownloadRelatorio}
+            disabled={isDownloading}
+          >
+            <Download width={16} />
+            {isDownloading ? "Baixando..." : "Baixar Relatório"}
+          </button>
+          <button
+            type="button"
+            className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-red-600"
+            onClick={() => {
+              setIsDeleteModalOpen(true);
+              setIsOpen(false);
+            }}
+          >
+            Deletar
+          </button>
+        </div>
+      )}
+      <DeleteConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        patientName={recordId}
+        isLoading={isDeleting}
+      />
+    </div>
+  );
+};
+
+const RecordRow = ({
+  record,
+  onRefresh,
+}: {
+  record: Paciente.Record;
+  onRefresh: () => void;
+}) => {
   return (
     <tr className="border-b border-[#FFD3C7] hover:bg-[#f3f2f2]">
-      <td className="text-[var(--text)] w-44 text-left pl-3 py-2.5">{record.id}</td>
-      <td className="text-[var(--text)] w-[250px] text-left pl-3 py-2.5">
-        {record.name}
+      <td className="text-[var(--text)] w-[100px] text-left pl-3">
+        <button
+          type="button"
+          onClick={() => (window.location.href = `/fichas/editar/${record.id}`)}
+          className="text-[var(--primary)] hover:underline cursor-pointer font-medium w-[70px] truncate"
+        >
+          {record.id}
+        </button>
       </td>
-      <td className="text-[var(--text)] w-44 text-left pl-3 py-2.5">{record.forecast}</td>
-      <td className="text-[var(--text)] w-44 text-left pl-3 py-2.5">{record.time}</td>
+      <td className="text-[var(--text)] w-[300px] text-left pl-3">{record.nome}</td>
+      <td className="text-[var(--text)] w-[200px] text-left pl-3">
+        {record.dataNascimento}
+      </td>
+      <td className="text-[var(--text)] w-[200px] text-left pl-3">
+        {record.escolaridade || "-"}
+      </td>
+      <td className="text-[var(--text)] w-[150px] text-left pl-3">
+        {record.metrica_final || "-"}
+      </td>
+      <td className="w-20 text-left pl-3">
+        <ActionsDropdown recordId={record.id} onRefresh={onRefresh} />
+      </td>
     </tr>
   );
 };
 
-export function RecordsTable({ records }: Props) {
+export function RecordsTable({
+  records,
+  onRefresh,
+  total,
+  currentPage,
+  onPageChange,
+  isLoading,
+}: Props) {
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-8">
+        <div className="relative flex items-center justify-center w-16 h-16">
+          <div className="absolute w-full h-full border-4 border-gray-200/20 rounded-full"></div>
+          <div className="absolute w-full h-full border-4 border-[var(--primary)] rounded-full border-t-transparent animate-spin"></div>
+        </div>
+
+        <p className="text-[var(--text)] font-medium text-lg animate-pulse tracking-wide">
+          Carregando pacientes...
+        </p>
+      </div>
+    );
+  }
+
+  if (records.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-8">
+        <p className="text-[var(--text)]">Nenhum registro encontrado</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col items-center gap-8 pb-4">
-      <table className="results-table">
+    <div className="flex flex-col">
+      <table className="w-full">
         <TableHeader />
         <tbody>
           {records.map((record) => (
-            <RecordRow key={record.id} record={record} />
+            <RecordRow key={record.id} record={record} onRefresh={onRefresh} />
           ))}
         </tbody>
       </table>
+      <Pagination total={total} currentPage={currentPage} onPageChange={onPageChange} />
     </div>
   );
 }

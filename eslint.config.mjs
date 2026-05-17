@@ -17,7 +17,7 @@ const eslintConfig = [
       "react-hooks",
       "jsx-a11y",
     ],
-    rules: {
+    rules: {s
       semi: ["error"],
       quotes: ["error", "double"],
       "prefer-arrow-callback": ["error"],

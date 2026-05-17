@@ -5,6 +5,7 @@ declare global {
   interface Window {
     webgazer: any;
   }
+  var webgazer: any;
 }
 
 export interface GazeData {
@@ -18,7 +19,7 @@ interface EyeTrackingContextType {
   isTracking: boolean;
   isPaused: boolean;
   error: string | null;
-  startTracking: (trackWithMouse: boolean, isTutorial: boolean) => Promise<void>;  
+  startTracking: (trackWithMouse: boolean, isTutorial: boolean) => Promise<void>;
   stopTracking: () => void;
   fullStopTracking: () => void;
   lastGazeData: GazeData | null;
@@ -60,6 +61,9 @@ export function EyeTrackingProvider({ children }: EyeTrackingProviderProps) {
 
   const startTracking = useCallback(
     async (trackWithMouse: boolean, isTutorial: boolean) => {
+      console.log(`isPaused: ${isPaused}`);
+      console.log(`isWebGazerLoaded: ${isWebGazerLoaded}`);
+
       if (!isWebGazerLoaded) {
         setError("WebGazer not loaded yet.");
         return;
@@ -85,6 +89,7 @@ export function EyeTrackingProvider({ children }: EyeTrackingProviderProps) {
         if (isTutorial) await globalThis.webgazer.clearData();
         setIsPaused(false);
       } else {
+        console.log("Caiu no if do beggin");
         if (isTutorial) {
           await globalThis.webgazer.clearData();
         }
@@ -113,7 +118,7 @@ export function EyeTrackingProvider({ children }: EyeTrackingProviderProps) {
     },
     [isWebGazerLoaded, isPaused, hasPermission, updateGazeData]
   );
- 
+
   const stopTracking = useCallback(async () => {
     if (isTracking) {
       console.log("Parando o rastreamento ocular...");
@@ -139,7 +144,7 @@ export function EyeTrackingProvider({ children }: EyeTrackingProviderProps) {
     isTracking,
     isPaused,
     error,
-    startTracking,    
+    startTracking,
     stopTracking,
     fullStopTracking,
     lastGazeData,

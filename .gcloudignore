@@ -1,0 +1,23 @@
+# .gcloudignore para frontend
+node_modules/
+.git/
+.gitignore
+.env*
+.env.local
+.env.*.local
+README.md
+.eslintrc*
+.prettierrc*
+.next/
+.turbo/
+dist/
+build/
+*.log
+.DS_Store
+coverage/
+.vscode/
+.idea/
+*.swp
+*.swo
+# include public assets in source deploy
+# public/

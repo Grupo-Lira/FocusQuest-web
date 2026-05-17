@@ -18,6 +18,7 @@ type PlanetGroupKey = "planetas_vistos" | "planetas_ignorados";
 type Props = {
   results: Result[];
   data: Metricas | undefined;
+  fase: number;
 };
 
 const PLANETS: ReadonlyArray<Planet> = [
@@ -83,7 +84,7 @@ const ResultRow = ({ result }: { result: Result }) => {
   );
 };
 
-export function ResultsTable({ results, data }: Readonly<Props>) {
+export function ResultsTable({ results, data, fase }: Readonly<Props>) {
   return (
     <div className="flex flex-col items-center gap-8 pb-4">
       <table className="results-table w-full">
@@ -99,7 +100,7 @@ export function ResultsTable({ results, data }: Readonly<Props>) {
           ))}
         </tbody>
       </table>
-      {data === undefined ? null : (
+      {data === undefined || fase !== 3 ? null : (
         <div className="flex gap-10 flex-col">
           {GROUPS.map(({ label, key }) => (
             <PlanetGroup key={key} label={label} planetIds={data[key] ?? []} />

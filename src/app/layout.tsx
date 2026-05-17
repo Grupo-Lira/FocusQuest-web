@@ -4,6 +4,8 @@ import Script from "next/script";
 import { AudioProvider } from "@/context/AudioContext";
 import { EyeTrackingProvider } from "@/context/EyeTrackingContext";
 import { GameProvider } from "@/context/GameContext";
+import { PatientProvider } from "@/context/PatientContext";
+import { ToastProvider } from "@/context/ToastContext";
 import "./globals.css";
 
 type Props = {
@@ -36,14 +38,19 @@ export default function RootLayout({ children }: Readonly<Props>) {
   return (
     <html lang="pt-br">
       <head>
+        <base href="/" />
         <Script src={WEBGAZER_SCRIPT_URL} strategy="beforeInteractive" />
       </head>
       <body className={bodyClassName}>
-        <EyeTrackingProvider>
-          <GameProvider>
-            <AudioProvider>{children}</AudioProvider>
-          </GameProvider>
-        </EyeTrackingProvider>
+        <ToastProvider>
+          <EyeTrackingProvider>
+            <GameProvider>
+              <PatientProvider>
+                <AudioProvider>{children}</AudioProvider>
+              </PatientProvider>
+            </GameProvider>
+          </EyeTrackingProvider>
+        </ToastProvider>
       </body>
     </html>
   );
