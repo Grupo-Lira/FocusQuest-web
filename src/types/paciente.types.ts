@@ -16,6 +16,7 @@ export type Metricas = {
   dadosComparativos?:
     | { idade: number; mediaAcertos: number }[]
     | Record<string, DadoComparativo>;
+  idade?: number;
 };
 
 export namespace Paciente {
