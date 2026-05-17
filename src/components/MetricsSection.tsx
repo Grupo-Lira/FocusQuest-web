@@ -102,8 +102,7 @@ export function MetricsSection({ metricas, onObservacoesChange }: MetricsSection
                 className="w-5 h-5 rounded-full bg-orange-400 text-white flex items-center justify-center text-xs cursor-help relative group"
                 title="Campo para anotações feitas pelo profissional durante o jogo"
               >
-                ℹ
-                {/* Tooltip customizado */}
+                ℹ{/* Tooltip customizado */}
                 <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
                   Campo para anotações feitas pelo profissional durante o jogo
                   <span className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-800"></span>
@@ -136,8 +135,8 @@ export function MetricsSection({ metricas, onObservacoesChange }: MetricsSection
           <h4 className="text-[var(--primary)] font-orbitron uppercase font-semibold text-sm tracking-wide mb-4 text-center">
             Comparação por Faixa Etária
           </h4>
-          
-          {dadosComparativos && dadosComparativos.length > 0 ? (
+
+          {Array.isArray(dadosComparativos) && dadosComparativos.length > 0 ? (
             <ComparisonChart dados={dadosComparativos} acertos={acertos} />
           ) : (
             <div className="h-48 flex items-center justify-center text-gray-400 text-sm">
@@ -162,7 +161,10 @@ function ComparisonChart({ dados, acertos }: ComparisonChartProps) {
   const innerHeight = 100 - padding.top - padding.bottom;
 
   // Calcula min/max com margem
-  const allValues = [...dados.map(d => d.mediaAcertos), ...(acertos !== undefined ? [acertos] : [])];
+  const allValues = [
+    ...dados.map((d) => d.mediaAcertos),
+    ...(acertos !== undefined ? [acertos] : []),
+  ];
   const maxValue = Math.max(...allValues) + 0.5;
   const minValue = Math.max(0, Math.min(...allValues) - 0.5);
   const range = maxValue - minValue || 1;
@@ -191,14 +193,20 @@ function ComparisonChart({ dados, acertos }: ComparisonChartProps) {
         {acertos !== undefined && (
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-green-500 border-2 border-white shadow"></div>
-            <span className="text-gray-600 font-medium">Paciente atual ({acertos} acertos)</span>
+            <span className="text-gray-600 font-medium">
+              Paciente atual ({acertos} acertos)
+            </span>
           </div>
         )}
       </div>
 
       {/* Container do Gráfico */}
       <div className="relative h-48 w-full max-w-md mx-auto">
-        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 80" preserveAspectRatio="xMidYMid meet">
+        <svg
+          className="absolute inset-0 w-full h-full"
+          viewBox="0 0 100 80"
+          preserveAspectRatio="xMidYMid meet"
+        >
           {/* Grid de fundo */}
           {gridLines.map((line, i) => {
             const y = padding.top + line * innerHeight;
@@ -225,7 +233,7 @@ function ComparisonChart({ dados, acertos }: ComparisonChartProps) {
           </defs>
           <polygon
             fill="url(#areaGradient)"
-            points={`${getX(0)},${getY(dados[0].mediaAcertos)} ${dados.map((d, i) => `${getX(i)},${getY(d.mediaAcertos)}`).join(' ')} ${getX(dados.length - 1)},${padding.top + innerHeight} ${getX(0)},${padding.top + innerHeight}`}
+            points={`${getX(0)},${getY(dados[0].mediaAcertos)} ${dados.map((d, i) => `${getX(i)},${getY(d.mediaAcertos)}`).join(" ")} ${getX(dados.length - 1)},${padding.top + innerHeight} ${getX(0)},${padding.top + innerHeight}`}
           />
 
           {/* Linha principal */}
@@ -235,7 +243,7 @@ function ComparisonChart({ dados, acertos }: ComparisonChartProps) {
             strokeWidth="1"
             strokeLinecap="round"
             strokeLinejoin="round"
-            points={dados.map((d, i) => `${getX(i)},${getY(d.mediaAcertos)}`).join(' ')}
+            points={dados.map((d, i) => `${getX(i)},${getY(d.mediaAcertos)}`).join(" ")}
           />
 
           {/* Pontos da média por idade */}
