@@ -6,6 +6,7 @@ import { deletePaciente } from "@/services/paciente.service";
 import { downloadRelatorioPdf } from "@/services/relatorio.service";
 import { Paciente } from "@/types/paciente.types";
 import { useToast } from "@/context/ToastContext";
+import { formatDate } from "@/utils/dateUtils";
 
 type Props = {
   readonly records: ReadonlyArray<Paciente.Record>;
@@ -134,7 +135,6 @@ const ActionsDropdown = ({
             onClick={handleDownloadRelatorio}
             disabled={isDownloading}
           >
-            <Download width={16} />
             {isDownloading ? "Baixando..." : "Baixar Relatório"}
           </button>
           <button
@@ -180,7 +180,7 @@ const RecordRow = ({
       </td>
       <td className="text-[var(--text)] w-[300px] text-left pl-3">{record.nome}</td>
       <td className="text-[var(--text)] w-[200px] text-left pl-3">
-        {record.dataNascimento}
+        {formatDate(record.dataNascimento)}
       </td>
       <td className="text-[var(--text)] w-[200px] text-left pl-3">
         {record.escolaridade || "-"}

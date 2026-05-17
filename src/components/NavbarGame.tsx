@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useGameContext } from "@/context/GameContext";
-import { formatTime } from "@/utils/formatTime";
+import { formatTime } from "@/utils/dateUtils";
 
 type Props = {
   readonly label: string;
