@@ -268,7 +268,7 @@ export function GameScreen() {
 
       {showSuccessModal === true ? (
         <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
-          <SuccessScreen fase={2} data={successModalData ?? undefined} />
+          <SuccessScreen fase={4} data={successModalData ?? undefined} />
         </div>
       ) : null}
 
