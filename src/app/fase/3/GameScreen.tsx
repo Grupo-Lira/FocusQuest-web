@@ -23,6 +23,13 @@ type Fase3BoundingBox = {
   y_max: number;
 };
 
+type Phase3SuccessPayload = {
+  metricas?: Metricas | null;
+  avaliacao_final?: string | null;
+  avaliacao_score?: number | null;
+  [key: string]: unknown;
+};
+
 const NAVBAR_LABEL =
   "FOQUE OS OLHOS NAS ESTRELAS E QUANDO O SINALIZADOR ACENDER, FOQUE NELE!" as const;
 const TIME_EXCEEDED_REASON = "TEMPO_FASE_EXCEDIDO" as const;
@@ -81,6 +88,7 @@ const isRadarTarget = (alvo: string | undefined) => {
 export function GameScreen() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successData, setSuccessData] = useState<Phase3SuccessPayload | null>(null);
   const [isShining, setIsShining] = useState(false);
   const [successModalData, setSuccessModalData] = useState<Metricas | null>(null);
 
@@ -187,16 +195,21 @@ export function GameScreen() {
   useEffect(() => {
     if (socket === null) return;
 
-    socket.on("fase_concluida", (data) => {
+    socket.on("fase_concluida", (data: Phase3SuccessPayload) => {
       setIsPaused(true);
       stopTracking();
-      setSuccessModalData(data?.metricas);
 
+      // store full payload (for AI fields) and the metrics separately
+      setSuccessData(data ?? null);
+      setSuccessModalData(data?.metricas ?? null);
+
+      // prefer develop behavior: if metrics are present, show modal
       if (data?.metricas) {
         setShowSuccessModal(true);
         return;
       }
 
+      // fallback: show modal when not time-exceeded
       const shouldShowSuccess = timeLeft !== 0 && data?.motivo !== TIME_EXCEEDED_REASON;
       if (shouldShowSuccess === true) {
         setShowSuccessModal(true);
@@ -268,7 +281,14 @@ export function GameScreen() {
 
       {showSuccessModal === true ? (
         <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
-          <SuccessScreen fase={4} data={successModalData ?? undefined} />
+          <SuccessScreen
+            fase={1}
+            data={successModalData ?? successData?.metricas ?? undefined}
+            ai={{
+              avaliacao_final: successData?.avaliacao_final ?? null,
+              avaliacao_score: successData?.avaliacao_score ?? null,
+            }}
+          />
         </div>
       ) : null}
 

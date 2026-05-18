@@ -17,6 +17,7 @@ export type Metricas = {
 type Props = {
   readonly fase: number;
   readonly data?: Metricas;
+  readonly ai?: { avaliacao_final?: string | null; avaliacao_score?: number | null };
 };
 
 const FINAL_PHASE = 4;
@@ -73,7 +74,15 @@ const redirectToMenu = () => {
   globalThis.location.href = "/menu";
 };
 
-export function SuccessScreen({ fase, data }: Props) {
+const getPerformanceLabel = (score: number | null | undefined) => {
+  if (score === null || score === undefined) return null;
+  const percentage = score * 100;
+  if (percentage < 30) return "Abaixo do esperado";
+  if (percentage < 60) return "Dentro do esperado";
+  return "Acima do esperado";
+};
+
+export function SuccessScreen({ fase, data, ai }: Props) {
   const [resultsOpen, setResultsOpen] = useState(false);
 
   useEffect(() => {
@@ -104,7 +113,28 @@ export function SuccessScreen({ fase, data }: Props) {
       <div className="flex flex-col gap-4">
         <div className="flex flex-col items-center">
           {resultsOpen === true ? (
-            <ResultsTable results={results} data={data} fase={fase} />
+            <>
+              <ResultsTable results={results} data={data} fase={fase} />
+              {ai?.avaliacao_score !== null && ai?.avaliacao_score !== undefined ? (
+                <div className="mt-4 text-center">
+                  <div className="font-semibold">Resultado da Avaliação</div>
+                  <div className="mt-2 text-lg font-semibold">
+                    {getPerformanceLabel(ai.avaliacao_score) ?? "—"}
+                  </div>
+                  {ai.avaliacao_final ? (
+                    <div className="mt-1 text-sm text-gray-600">
+                      Classificação: {ai.avaliacao_final}
+                    </div>
+                  ) : null}
+                  <div className="mt-1 text-sm text-gray-600">
+                    Confiança:{" "}
+                    {typeof ai.avaliacao_score === "number"
+                      ? `${Math.round(ai.avaliacao_score * 100)}%`
+                      : "—"}
+                  </div>
+                </div>
+              ) : null}
+            </>
           ) : (
             <Image
               src="/img/viva.png"
