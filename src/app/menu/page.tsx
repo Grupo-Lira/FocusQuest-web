@@ -54,9 +54,13 @@ const getLightIcon = (disabled: boolean) => {
 };
 
 const LevelMarker = ({ level }: { level: Level }) => {
-  const borderClass = getBorderClass(level.disabled);
-  const badgeBgClass = getBadgeBackgroundClass(level.disabled);
-  const lightIcon = getLightIcon(level.disabled);
+  // const borderClass = getBorderClass(level.disabled);
+  // const badgeBgClass = getBadgeBackgroundClass(level.disabled);
+  // const lightIcon = getLightIcon(level.disabled);
+  const borderClass = getBorderClass(false);
+  const badgeBgClass = getBadgeBackgroundClass(false);
+  const lightIcon = getLightIcon(false);
+
   const alt = `Planeta ${level.id}`;
 
   return (

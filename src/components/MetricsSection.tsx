@@ -18,6 +18,7 @@ export function MetricsSection({ metricas, onObservacoesChange }: MetricsSection
     errosComissao,
     observacoes,
     dadosComparativos,
+    idade,
   } = metricas;
 
   const [observacoesEdit, setObservacoesEdit] = useState(observacoes || "");
@@ -102,8 +103,7 @@ export function MetricsSection({ metricas, onObservacoesChange }: MetricsSection
                 className="w-5 h-5 rounded-full bg-orange-400 text-white flex items-center justify-center text-xs cursor-help relative group"
                 title="Campo para anotações feitas pelo profissional durante o jogo"
               >
-                ℹ
-                {/* Tooltip customizado */}
+                ℹ{/* Tooltip customizado */}
                 <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
                   Campo para anotações feitas pelo profissional durante o jogo
                   <span className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-800"></span>
@@ -136,9 +136,13 @@ export function MetricsSection({ metricas, onObservacoesChange }: MetricsSection
           <h4 className="text-[var(--primary)] font-orbitron uppercase font-semibold text-sm tracking-wide mb-4 text-center">
             Comparação por Faixa Etária
           </h4>
-          
-          {dadosComparativos && dadosComparativos.length > 0 ? (
-            <ComparisonChart dados={dadosComparativos} acertos={acertos} />
+
+          {Array.isArray(dadosComparativos) && dadosComparativos.length > 0 ? (
+            <ComparisonChart
+              dados={dadosComparativos}
+              acertos={acertos}
+              idadePaciente={idade}
+            />
           ) : (
             <div className="h-48 flex items-center justify-center text-gray-400 text-sm">
               Dados comparativos não disponíveis
@@ -150,171 +154,186 @@ export function MetricsSection({ metricas, onObservacoesChange }: MetricsSection
   );
 }
 
-// Componente do Gráfico Comparativo
 interface ComparisonChartProps {
   dados: { idade: number; mediaAcertos: number }[];
   acertos?: number;
+  idadePaciente?: number;
 }
 
-function ComparisonChart({ dados, acertos }: ComparisonChartProps) {
-  const padding = { top: 15, right: 15, bottom: 25, left: 40 };
-  const innerWidth = 100 - padding.left - padding.right;
-  const innerHeight = 100 - padding.top - padding.bottom;
+export function ComparisonChart({ dados, acertos, idadePaciente }: ComparisonChartProps) {
+  if (!dados || dados.length === 0) return null;
 
-  // Calcula min/max com margem
-  const allValues = [...dados.map(d => d.mediaAcertos), ...(acertos !== undefined ? [acertos] : [])];
-  const maxValue = Math.max(...allValues) + 0.5;
-  const minValue = Math.max(0, Math.min(...allValues) - 0.5);
-  const range = maxValue - minValue || 1;
+  const acertosPaciente = acertos || 0;
 
-  // Função para converter valor em coordenada Y
-  const getY = (value: number) => {
-    return padding.top + innerHeight - ((value - minValue) / range) * innerHeight;
+  // --- CÁLCULOS DE ESCALA DINÂMICA (Idêntico ao Relatório) ---
+  const todasMedias = dados.map((d) => d.mediaAcertos);
+  const valorMaximoReal = Math.max(...todasMedias, acertosPaciente, 10);
+  const maxAcertos = Math.ceil(valorMaximoReal / 2) * 2;
+
+  // Gerar labels do eixo Y dinamicamente (6 faixas)
+  const labelsY: number[] = [];
+  for (let i = 5; i >= 0; i--) {
+    labelsY.push(Math.round((maxAcertos / 5) * i));
+  }
+
+  // --- DIMENSÕES E CONVERSORES ---
+  const width = 300;
+  const height = 150;
+  const paddingSide = 25;
+  const paddingTop = 30;
+  const paddingBottom = 20;
+
+  const getX = (index: number) =>
+    paddingSide + (index * (width - 2 * paddingSide)) / (dados.length - 1 || 1);
+  const getY = (val: number) => {
+    const availableHeight = height - paddingTop - paddingBottom;
+    return height - paddingBottom - (val * availableHeight) / maxAcertos;
   };
 
-  // Função para converter índice em coordenada X
-  const getX = (index: number) => {
-    return padding.left + (index / (dados.length - 1)) * innerWidth;
-  };
+  const points = dados.map((d, i) => `${getX(i)},${getY(d.mediaAcertos)}`).join(" ");
+  const fillPath = `M ${getX(0)},${height - paddingBottom} L ${points} L ${getX(dados.length - 1)},${height - paddingBottom} Z`;
 
-  // Gerar linhas de grade
-  const gridLines = [0, 0.25, 0.5, 0.75, 1];
+  // --- CÁLCULO DA POSIÇÃO X DO PACIENTE ---
+  let indexPaciente = -1;
+  if (idadePaciente !== undefined) {
+    indexPaciente = dados.findIndex((d) => d.idade === idadePaciente);
+
+    if (indexPaciente === -1) {
+      // Interpola se a idade quebrada/diferente não estiver exata no array
+      const idades = dados.map((d) => d.idade);
+      const minIdade = Math.min(...idades);
+      const maxIdade = Math.max(...idades);
+      indexPaciente =
+        ((idadePaciente - minIdade) / (maxIdade - minIdade)) * (dados.length - 1);
+    }
+  }
+
+  // Fallback de segurança
+  if (indexPaciente === -1 || isNaN(indexPaciente)) {
+    indexPaciente = Math.floor(dados.length / 2);
+  }
+
+  const xVoce = getX(indexPaciente);
+  const yVoce = getY(acertosPaciente);
 
   return (
-    <div className="relative">
-      {/* Legenda */}
-      <div className="flex items-center justify-center gap-6 mb-4 text-xs">
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-[var(--primary)]"></div>
-          <span className="text-gray-600">Média por idade</span>
+    <div className="relative w-full max-w-md mx-auto bg-white p-5 rounded-xl shadow-sm border border-slate-100 font-sans">
+      <div className="flex justify-between items-center mb-5">
+        <div className="text-[11px] text-slate-800 font-extrabold uppercase tracking-wide">
+          Desempenho Comparativo
         </div>
-        {acertos !== undefined && (
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-green-500 border-2 border-white shadow"></div>
-            <span className="text-gray-600 font-medium">Paciente atual ({acertos} acertos)</span>
+        <div className="flex gap-3 text-[10px] font-semibold">
+          <div className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-sm bg-[#FF7A00]"></span> Média
           </div>
-        )}
-      </div>
-
-      {/* Container do Gráfico */}
-      <div className="relative h-48 w-full max-w-md mx-auto">
-        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 80" preserveAspectRatio="xMidYMid meet">
-          {/* Grid de fundo */}
-          {gridLines.map((line, i) => {
-            const y = padding.top + line * innerHeight;
-            return (
-              <line
-                key={i}
-                x1={padding.left}
-                y1={y}
-                x2={padding.left + innerWidth}
-                y2={y}
-                stroke="#e5e7eb"
-                strokeWidth="0.3"
-                strokeDasharray="2,2"
-              />
-            );
-          })}
-
-          {/* Linha de área preenchida */}
-          <defs>
-            <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#f97316" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="#f97316" stopOpacity="0.05" />
-            </linearGradient>
-          </defs>
-          <polygon
-            fill="url(#areaGradient)"
-            points={`${getX(0)},${getY(dados[0].mediaAcertos)} ${dados.map((d, i) => `${getX(i)},${getY(d.mediaAcertos)}`).join(' ')} ${getX(dados.length - 1)},${padding.top + innerHeight} ${getX(0)},${padding.top + innerHeight}`}
-          />
-
-          {/* Linha principal */}
-          <polyline
-            fill="none"
-            stroke="#f97316"
-            strokeWidth="1"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            points={dados.map((d, i) => `${getX(i)},${getY(d.mediaAcertos)}`).join(' ')}
-          />
-
-          {/* Pontos da média por idade */}
-          {dados.map((d, i) => (
-            <circle
-              key={i}
-              cx={getX(i)}
-              cy={getY(d.mediaAcertos)}
-              r="1.2"
-              fill="#f97316"
-              stroke="white"
-              strokeWidth="0.3"
-            />
-          ))}
-
-          {/* Ponto do paciente atual */}
           {acertos !== undefined && (
-            <g>
-              {/* Glow effect */}
-              <circle
-                cx={getX(Math.floor(dados.length / 2))}
-                cy={getY(acertos)}
-                r="3"
-                fill="rgba(34, 197, 94, 0.3)"
-              />
-              <circle
-                cx={getX(Math.floor(dados.length / 2))}
-                cy={getY(acertos)}
-                r="2"
-                fill="#22c55e"
-                stroke="white"
-                strokeWidth="0.5"
-              />
-              {/* Label do paciente */}
-              <rect
-                x={getX(Math.floor(dados.length / 2)) - 6}
-                y={getY(acertos) - 10}
-                width="12"
-                height="4"
-                rx="1"
-                fill="#22c55e"
-              />
-              <text
-                x={getX(Math.floor(dados.length / 2))}
-                y={getY(acertos) - 7}
-                textAnchor="middle"
-                fill="white"
-                fontSize="2.5"
-                fontWeight="bold"
-              >
-                VOCÊ
-              </text>
-            </g>
+            <div className="flex items-center gap-1">
+              <span className="w-2 h-2 rounded-sm bg-[#00C48C]"></span> Paciente
+            </div>
           )}
-        </svg>
-
-        {/* Eixo Y - Labels */}
-        <div className="absolute left-0 top-0 bottom-6 w-10 flex flex-col justify-between text-[10px] text-gray-400 py-4">
-          {[maxValue, (maxValue + minValue) / 2, minValue].map((val, i) => (
-            <span key={i} className="text-right pr-2">
-              {val.toFixed(1)}
-            </span>
-          ))}
-        </div>
-
-        {/* Eixo X - Labels (Idade) */}
-        <div className="absolute bottom-0 left-10 right-4 flex justify-between text-[10px] text-gray-400">
-          {dados.map((d, i) => (
-            <span key={i} className="text-center w-6">
-              {d.idade}a
-            </span>
-          ))}
         </div>
       </div>
 
-      {/* Labels dos eixos */}
-      <div className="flex justify-between items-center mt-2 text-xs text-gray-500">
-        <span className="font-medium">Idade (anos)</span>
-        <span className="font-medium">Média de Acertos</span>
+      {/* Grid Principal */}
+      <div className="flex items-stretch h-[200px]">
+        {/* Eixo Y */}
+        <div className="flex flex-col justify-between py-5 pr-2 text-[10px] text-slate-400 text-right w-[25px]">
+          {labelsY.map((label, idx) => (
+            <span key={idx}>{label}</span>
+          ))}
+        </div>
+
+        {/* Área do Gráfico (SVG) */}
+        <div className="flex-grow relative">
+          <svg
+            viewBox={`0 0 ${width} ${height}`}
+            className="w-full h-full overflow-visible"
+          >
+            <defs>
+              <linearGradient id="gradReact" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#FF7A00" stopOpacity="0.15" />
+                <stop offset="100%" stopColor="#FF7A00" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+
+            {/* Linhas de Grade */}
+            {labelsY.map((val, idx) => (
+              <line
+                key={idx}
+                x1="0"
+                y1={getY(val)}
+                x2={width}
+                y2={getY(val)}
+                stroke="#F1F5F9"
+                strokeWidth="1"
+              />
+            ))}
+
+            {/* Área e Linha da Média */}
+            <path d={fillPath} fill="url(#gradReact)" />
+            <polyline
+              points={points}
+              fill="none"
+              stroke="#FF7A00"
+              strokeWidth="2.5"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+            />
+
+            {/* Pontos da Média */}
+            {dados.map((d, i) => (
+              <circle
+                key={i}
+                cx={getX(i)}
+                cy={getY(d.mediaAcertos)}
+                r="3"
+                fill="#fff"
+                stroke="#FF7A00"
+                strokeWidth="1.5"
+              />
+            ))}
+
+            {/* Marcador VOCÊ (Pin) - Agora na Posição Exata */}
+            {acertos !== undefined && (
+              <g transform={`translate(${xVoce}, ${yVoce})`}>
+                <path
+                  d="M -15 -35 H 15 V -15 H 5 L 0 -8 L -5 -15 H -15 Z"
+                  fill="#00C48C"
+                />
+                <text
+                  x="0"
+                  y="-21"
+                  fontSize="7"
+                  fill="white"
+                  textAnchor="middle"
+                  fontWeight="900"
+                >
+                  VOCÊ
+                </text>
+                <circle
+                  cx="0"
+                  cy="0"
+                  r="5"
+                  fill="#00C48C"
+                  stroke="#fff"
+                  strokeWidth="2"
+                />
+              </g>
+            )}
+          </svg>
+        </div>
+      </div>
+
+      {/* Eixo X (Idades) */}
+      <div className="flex justify-between ml-[33px] pt-2 border-t border-slate-100">
+        {dados.map((d, i) => (
+          <span key={i} className="text-[10px] text-slate-500 font-bold">
+            {d.idade}a
+          </span>
+        ))}
+      </div>
+      <div className="text-center mt-2 text-[9px] text-slate-400 font-extrabold uppercase tracking-wider">
+        Faixa Etária (Anos)
       </div>
     </div>
   );

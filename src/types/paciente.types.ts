@@ -1,6 +1,9 @@
 export type DadoComparativo = {
-  idade: number;
-  mediaAcertos: number;
+  tempoReacaoMedio: string;
+  variabilidadeTemporalMedia: string;
+  acertosMedios: number;
+  errosOmissaoMedios: number;
+  errosComissaoMedios: number;
 };
 
 export type Metricas = {
@@ -10,7 +13,10 @@ export type Metricas = {
   errosOmissao?: number;
   errosComissao?: number;
   observacoes?: string;
-  dadosComparativos?: DadoComparativo[];
+  dadosComparativos?:
+    | { idade: number; mediaAcertos: number }[]
+    | Record<string, DadoComparativo>;
+  idade?: number;
 };
 
 export namespace Paciente {
@@ -39,13 +45,14 @@ export namespace Paciente {
 
   export namespace CreatePaciente {
     export type Body = {
-      nome: Paciente.Profile['nome'];
-      rg: Paciente.Profile['rg'];
-      dataNascimento?: Paciente.Profile['dataNascimento'];
-      dataAvaliacao?: Paciente.Profile['dataAvaliacao'];
-      sexo?: Paciente.Profile['sexo'];
-      escolaridade?: Paciente.Profile['escolaridade'];
-      motivoAvaliacao?: Paciente.Profile['motivoAvaliacao'];
+      nome: Paciente.Profile["nome"];
+      rg: Paciente.Profile["rg"];
+      dataNascimento?: Paciente.Profile["dataNascimento"];
+      dataAvaliacao?: Paciente.Profile["dataAvaliacao"];
+      sexo?: Paciente.Profile["sexo"];
+      escolaridade?: Paciente.Profile["escolaridade"];
+      motivoAvaliacao?: Paciente.Profile["motivoAvaliacao"];
+      observacoes?: Paciente.Profile["observacoes"];
     };
 
     export type Response = {

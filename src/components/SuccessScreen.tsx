@@ -38,8 +38,20 @@ const buildFase2Results = (data: Metricas | undefined) => {
   return [{ id: 1, name: "🎯 Planetas vistos", score: `${acertos} de 6 planetas` }];
 };
 
+const buildFase3Results = (data: Metricas | undefined) => {
+  const totalAcertos = data?.total_acertos ?? 0;
+  const totalComissao = data?.total_comissao ?? 0;
+  const totalOmissao = data?.total_omissao ?? 0;
+  return [
+    { id: 3, name: "🎯 Acertos", score: `${totalAcertos}` },
+    { id: 4, name: "❌ Demorou para focar", score: `${totalOmissao} vezes` },
+    { id: 5, name: "❌ Distrações", score: `${totalComissao} distrações` },
+  ];
+};
+
 const getResultsForPhase = (fase: number, data: Metricas | undefined) => {
   if (fase === 3) return buildFase2Results(data);
+  if (fase === 4) return buildFase3Results(data);
   return buildFase1Results(data);
 };
 

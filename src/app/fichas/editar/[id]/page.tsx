@@ -41,6 +41,7 @@ export default function EditarFichaPage() {
         sexo: form.sexo || undefined,
         escolaridade: form.escolaridade || undefined,
         motivoAvaliacao: form.motivoAvaliacao || undefined,
+        observacoes: pacienteData?.observacoes || undefined,
       });
 
       showSuccess("Paciente atualizado com sucesso!");
@@ -81,21 +82,23 @@ export default function EditarFichaPage() {
         const response = await getPaciente(params.id as string);
         const paciente = response.data;
 
-        // MOCK: Adicionar métricas para teste
-        paciente.metricas = {
-          tempoReacao: "0:15",
-          variabilidadeTemporalRespostas: "3%",
-          acertos: 9,
-          errosOmissao: 5,
-          errosComissao: 3,
-          observacoes: "Paciente com sensibilidade a luz forte.",
-          dadosComparativos: [
-            { idade: 10, mediaAcertos: 8 },
-            { idade: 11, mediaAcertos: 7.5 },
-            { idade: 12, mediaAcertos: 9.2 },
-            { idade: 13, mediaAcertos: 8.8 },
-          ],
-        };
+        if (paciente.metricas) {
+          paciente.metricas.observacoes = paciente.observacoes || "";
+
+          if (
+            paciente.metricas.dadosComparativos &&
+            !Array.isArray(paciente.metricas.dadosComparativos)
+          ) {
+            const rawDados = paciente.metricas.dadosComparativos;
+            paciente.metricas.dadosComparativos = Object.entries(rawDados)
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              .map(([idade, dados]: [string, any]) => ({
+                idade: parseInt(idade, 10),
+                mediaAcertos: dados.acertosMedios || 0,
+              }))
+              .sort((a, b) => a.idade - b.idade);
+          }
+        }
 
         setPacienteData(paciente);
 
@@ -136,11 +139,8 @@ export default function EditarFichaPage() {
             form={form}
             setForm={setForm}
             onSubmit={onSubmit}
-            onCancel={onCancel}
-            isLoading={isLoading}
             error={error}
             formId="edit-paciente-form"
-            submitButtonText="Salvar"
             showDeleteButton={true}
             onDelete={() => setIsDeleteModalOpen(true)}
             isDeleting={isDeleting}
@@ -150,8 +150,14 @@ export default function EditarFichaPage() {
             <MetricsSection
               metricas={pacienteData.metricas}
               onObservacoesChange={(observacoes) => {
-                setPacienteData(prev =>
-                  prev ? { ...prev, metricas: { ...prev.metricas!, observacoes } } : null
+                setPacienteData((prev) =>
+                  prev
+                    ? {
+                        ...prev,
+                        observacoes,
+                        metricas: { ...prev.metricas!, observacoes },
+                      }
+                    : null
                 );
               }}
             />

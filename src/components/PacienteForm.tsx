@@ -1,5 +1,6 @@
 import { FormInput } from "@/components/FormInput";
 import { RadioGroup } from "@/components/RadioGroup";
+import { formatDate } from "@/utils/dateUtils";
 import { PenIcon, PlusIcon } from "lucide-react";
 
 export type FormState = {
@@ -26,11 +27,8 @@ type Props = {
   form: FormState;
   setForm: (form: FormState | ((prev: FormState) => FormState)) => void;
   onSubmit: (event: React.FormEvent) => void;
-  onCancel: () => void;
-  isLoading: boolean;
   error: string | null;
   formId: string;
-  submitButtonText: string;
   showDeleteButton?: boolean;
   onDelete?: () => void;
   isDeleting?: boolean;
@@ -40,11 +38,8 @@ export function PacienteForm({
   form,
   setForm,
   onSubmit,
-  onCancel,
-  isLoading,
   error,
   formId,
-  submitButtonText,
   showDeleteButton = false,
   onDelete,
   isDeleting = false,
@@ -110,7 +105,7 @@ export function PacienteForm({
                 <input
                   type="text"
                   name="dataAvaliacao"
-                  value={form.dataAvaliacao}
+                  value={formatDate(form.dataAvaliacao)}
                   onChange={onChangeField("dataAvaliacao")}
                   placeholder="DD/MM/AAAA"
                   className="font-bold text-lg bg-transparent outline-none w-[130px] text-[var(--text)] uppercase"
@@ -169,7 +164,7 @@ export function PacienteForm({
           type="text"
           placeholder=""
           name="dataNascimento"
-          value={form.dataNascimento}
+          value={formatDate(form.dataNascimento)}
           onChange={onChangeField("dataNascimento")}
         />
       </div>
