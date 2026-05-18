@@ -80,6 +80,9 @@ FocusQuest-web/
 
 ## 📦 Como Executar
 
+### Projeto Hospedado na GCP:
+- Link: https://focusquest-frontend-kxhuw4rwka-uc.a.run.app/
+
 ### Pelo monorepo (recomendado)
 
 Se você quer subir frontend, backend, MongoDB e Redis juntos, use o monorepo.
