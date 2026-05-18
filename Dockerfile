@@ -23,6 +23,9 @@ COPY . .
 # Build Next.js
 RUN npm run build
 
+# Remove dependências de desenvolvimento da árvore final.
+RUN npm prune --omit=dev
+
 # Runtime stage
 FROM node:20-alpine
 
@@ -36,8 +39,12 @@ ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 ENV SOCKET_URL=${SOCKET_URL}
 ENV BACKEND_INTERNAL_URL=${BACKEND_INTERNAL_URL}
 
-# Copiar build otimizado e dependências
-COPY --from=builder /app ./
+# Copiar apenas os artefatos necessários para execução
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/next.config.ts ./next.config.ts
 
 # Exposer porta
 EXPOSE 3000

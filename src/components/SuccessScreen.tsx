@@ -103,12 +103,17 @@ export function SuccessScreen({ fase, data, ai }: Props) {
           {resultsOpen === true ? (
             <>
               <ResultsTable results={results} data={data} fase={fase} />
-              {ai?.avaliacao_final ? (
+              {ai?.avaliacao_score !== null && ai?.avaliacao_score !== undefined ? (
                 <div className="mt-4 text-center">
                   <div className="font-semibold">Resultado da Avaliação</div>
                   <div className="mt-2 text-lg font-semibold">
                     {getPerformanceLabel(ai.avaliacao_score) ?? "—"}
                   </div>
+                  {ai.avaliacao_final ? (
+                    <div className="mt-1 text-sm text-gray-600">
+                      Classificação: {ai.avaliacao_final}
+                    </div>
+                  ) : null}
                   <div className="mt-1 text-sm text-gray-600">
                     Confiança:{" "}
                     {typeof ai.avaliacao_score === "number"
