@@ -139,11 +139,8 @@ export default function EditarFichaPage() {
             form={form}
             setForm={setForm}
             onSubmit={onSubmit}
-            onCancel={onCancel}
-            isLoading={isLoading}
             error={error}
             formId="edit-paciente-form"
-            submitButtonText="Salvar"
             showDeleteButton={true}
             onDelete={() => setIsDeleteModalOpen(true)}
             isDeleting={isDeleting}
