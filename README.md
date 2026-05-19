@@ -137,11 +137,40 @@ npm run dev
 
 ## 🕹️ Como Jogar
 
-1. Clique em "Iniciar Jornada" na tela inicial.
-2. Inicie no primeiro planeta no menu.
-3. Encontre e fixe o olhar nas estrelas enquanto evita distrações.
-4. Complete o desafio para desbloquear o próximo nível.
+1. Selecione a opção **"Criar uma conta"**  
+   *(Essa funcionalidade é destinada aos doutores responsáveis pela aplicação do teste).*
 
+2. Preencha os campos:
+   - E-mail
+   - Senha
+   - Confirmar senha
+
+   Em seguida, clique em **"Cadastrar"**.
+
+3. Faça login utilizando os dados cadastrados.
+
+4. No menu principal, selecione a opção **"Calibração"**.  
+   *(Sem essa etapa, as fases não funcionarão corretamente).*
+
+5. Após finalizar a calibração, as fases serão liberadas.  
+   Inicie pela **Fase 1**.
+
+6. Ao iniciar a Fase 1, será exibida a opção **"Selecionar Paciente"**.
+
+7. Caso o banco de dados ainda não esteja populado, será necessário criar um perfil de paciente.
+
+8. No menu principal:
+   - selecione **"Fichas"**
+   - clique em **"Criar nova ficha"**
+   - preencha os dados solicitados
+   - confirme a criação
+
+9. Após criar o paciente:
+   - volte para a Fase 1
+   - selecione o paciente criado
+
+   O sistema entenderá que aquele paciente será o participante da sessão.
+   
 ## 📖 Documentação do Código
 
 ### Contexto do Jogo
