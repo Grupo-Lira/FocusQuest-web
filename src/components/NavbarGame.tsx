@@ -6,6 +6,7 @@ import { formatTime } from "@/utils/dateUtils";
 
 type Props = {
   readonly label: string;
+  readonly onPauseToggle?: (isPaused: boolean) => void;
 };
 
 const PauseToggleIcon = ({ isPaused }: { isPaused: boolean }) => {
@@ -15,10 +16,14 @@ const PauseToggleIcon = ({ isPaused }: { isPaused: boolean }) => {
   return <Image src="/img/icon/pause.svg" width={21} height={21} alt="Botão de pause" />;
 };
 
-export function NavbarGame({ label }: Props) {
+export function NavbarGame({ label, onPauseToggle }: Props) {
   const { timeLeft, setIsPaused, isPaused } = useGameContext();
 
-  const onTogglePause = () => setIsPaused(!isPaused);
+  const onTogglePause = () => {
+    const nextPaused = !isPaused;
+    setIsPaused(nextPaused);
+    onPauseToggle?.(nextPaused);
+  };
   const formattedTime = formatTime(timeLeft);
 
   return (
