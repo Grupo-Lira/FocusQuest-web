@@ -18,6 +18,7 @@ import { useGameContext } from "@/context/GameContext";
 import { usePatient } from "@/context/PatientContext";
 import { usePlanets } from "@/hooks/usePlanets";
 import { useSocketIO } from "@/hooks/useWebSocket";
+import { PatientSelectModal } from "@/components/PatientSelectModal";
 
 export type PlanetaResposta = {
   planeta: number;
@@ -44,6 +45,7 @@ export function GameScreen() {
   const [data, setData] = useState<Metricas | undefined>(undefined);
   const [planetasSelecionados, setPlanetasSelecionados] = useState<PlanetaResposta[]>([]);
   const [currentRound, setCurrentRound] = useState(FIRST_ROUND);
+  const [isPatientSelectOpen, setIsPatientSelectOpen] = useState(true);
 
   const lastIndexRef = useRef<number | null>(null);
 
@@ -61,15 +63,9 @@ export function GameScreen() {
   const { startAudio } = useAudio();
   const { activePlanets, startGame, resetPlanets } = usePlanets();
   const { socket, isConnected } = useSocketIO();
-  const { selectedPacienteId } = usePatient();
+  const { selectedPacienteId, setSelectedPacienteId } = usePatient();
 
   const handleStartGame = () => {
-    if (!selectedPacienteId) {
-      alert("Por favor, selecione um paciente na ficha antes de iniciar a fase.");
-      window.location.href = "/fichas";
-      return;
-    }
-
     setIsGameActive(true);
     setAudioGameStarted(true);
     startAudio();
@@ -108,6 +104,15 @@ export function GameScreen() {
   const onOpenSettings = () => {
     setIsModalOpen(true);
     setIsPaused(true);
+  };
+
+  const handlePatientSelect = (pacienteId: string) => {
+    setSelectedPacienteId(pacienteId);
+    setIsPatientSelectOpen(false);
+  };
+
+  const handlePatientSelectCancel = () => {
+    window.location.href = "/menu";
   };
 
   useEffect(() => {
@@ -176,6 +181,11 @@ export function GameScreen() {
 
   return (
     <div className="fase2 relative w-full h-screen overflow-hidden">
+      <PatientSelectModal
+        isOpen={isPatientSelectOpen}
+        onSelect={handlePatientSelect}
+        onCancel={handlePatientSelectCancel}
+      />
       <Clouds />
 
       <div className="flex justify-center mt-6 z-20">

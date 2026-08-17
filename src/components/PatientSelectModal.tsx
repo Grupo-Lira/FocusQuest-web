@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { Button } from "./Button";
 import { Card } from "./Card";
@@ -17,7 +18,7 @@ export function PatientSelectModal({ isOpen, onSelect, onCancel }: Props) {
   const [selectedId, setSelectedId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");
-  
+
   const [isSelectOpen, setIsSelectOpen] = useState(false);
   const selectRef = useRef<HTMLDivElement>(null);
 
@@ -60,9 +61,7 @@ export function PatientSelectModal({ isOpen, onSelect, onCancel }: Props) {
   if (!isOpen) return null;
 
   const selectedPaciente = pacientes.find((p) => p.id === selectedId);
-  const displayValue = selectedPaciente
-    ? selectedPaciente.nome
-    : "Selecione...";
+  const displayValue = selectedPaciente ? selectedPaciente.nome : "Selecione...";
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm">
@@ -73,7 +72,15 @@ export function PatientSelectModal({ isOpen, onSelect, onCancel }: Props) {
           ) : error ? (
             <p className="text-red-500 text-sm">{error}</p>
           ) : pacientes.length === 0 ? (
-            <p className="text-[var(--text)]">Nenhum paciente encontrado</p>
+            <div className="flex flex-col items-center gap-2 text-center">
+              <p className="text-[var(--text)]">Crie uma ficha de paciente</p>
+              <Link
+                href="/fichas"
+                className="text-[#FF6A00] underline font-medium hover:text-[#e55d00]"
+              >
+                Criar Ficha de Paciente
+              </Link>
+            </div>
           ) : (
             <div className="relative flex flex-col gap-1" ref={selectRef}>
               <button
@@ -81,17 +88,24 @@ export function PatientSelectModal({ isOpen, onSelect, onCancel }: Props) {
                 onClick={() => setIsSelectOpen(!isSelectOpen)}
                 className="w-full py-1 border-b border-gray-300 bg-transparent text-left outline-none focus:border-[#FF6A00] transition-colors flex justify-between items-center"
               >
-                <span className={`text-[16px] ${!selectedId ? 'text-gray-400' : 'text-[var(--text)]'}`}>
+                <span
+                  className={`text-[16px] ${!selectedId ? "text-gray-400" : "text-[var(--text)]"}`}
+                >
                   {displayValue}
                 </span>
-                
-                <svg 
-                  className={`w-4 h-4 text-[#FF6A00] transition-transform duration-200 ${isSelectOpen ? 'rotate-180' : ''}`} 
-                  fill="none" 
-                  stroke="currentColor" 
+
+                <svg
+                  className={`w-4 h-4 text-[#FF6A00] transition-transform duration-200 ${isSelectOpen ? "rotate-180" : ""}`}
+                  fill="none"
+                  stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </button>
 
@@ -106,7 +120,7 @@ export function PatientSelectModal({ isOpen, onSelect, onCancel }: Props) {
                   >
                     Selecione...
                   </div>
-                  
+
                   {pacientes.map((paciente) => (
                     <div
                       key={paciente.id}
@@ -115,25 +129,30 @@ export function PatientSelectModal({ isOpen, onSelect, onCancel }: Props) {
                         setIsSelectOpen(false);
                       }}
                       className={`px-4 py-3 cursor-pointer text-sm flex items-center justify-between transition-colors ${
-                        selectedId === paciente.id 
-                          ? 'bg-orange-50 text-[#FF6A00] font-medium border-l-2 border-[#FF6A00]' 
-                          : 'text-[var(--text)] hover:bg-gray-50'
+                        selectedId === paciente.id
+                          ? "bg-orange-50 text-[#FF6A00] font-medium border-l-2 border-[#FF6A00]"
+                          : "text-[var(--text)] hover:bg-gray-50"
                       }`}
                     >
                       <span>{paciente.nome}</span>
                       {paciente.rg && (
-                        <span className="text-xs text-gray-400 ml-2">RG: {paciente.rg}</span>
+                        <span className="text-xs text-gray-400 ml-2">
+                          RG: {paciente.rg}
+                        </span>
                       )}
                     </div>
                   ))}
                 </div>
               )}
             </div>
-
           )}
-          
+
           <div className="flex gap-4 justify-center mt-4">
-            <Button text="Cancelar" onClick={onCancel} className="px-6 py-2.5 bg-gray-200 text-gray-700" />
+            <Button
+              text="Cancelar"
+              onClick={onCancel}
+              className="px-6 py-2.5 bg-gray-200 text-gray-700"
+            />
             <Button
               text="Iniciar"
               type="submit"
