@@ -42,6 +42,9 @@ const TD_CLASS = "text-[var(--text)] w-[250px] text-left pl-3 py-2.5" as const;
 
 const findPlanet = (id: number) => {
   const planet = PLANETS.find((item) => item.id === id);
+  if (planet === undefined) {
+    console.error(`Planeta com ID ${id} não encontrado.`);
+  }
   return planet;
 };
 
@@ -59,13 +62,13 @@ const PlanetGroup = ({
   planetIds,
 }: {
   label: string;
-  planetIds: ReadonlyArray<{ id: number }>;
+  planetIds: ReadonlyArray<number>;
 }) => {
   return (
     <div className="flex flex-col gap-3">
       <p className={TH_CLASS}>{label}</p>
       <div className="flex flex-wrap gap-3">
-        {planetIds.map(({ id }) => {
+        {planetIds.map((id) => {
           const planet = findPlanet(id);
           if (planet === undefined) return null;
           return <PlanetCard key={id} planet={planet} />;
