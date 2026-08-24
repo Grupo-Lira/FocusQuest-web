@@ -152,7 +152,7 @@ export function GameScreen() {
   };
 
   const handlePatientSelectCancel = () => {
-    window.location.href = "/fichas";
+    window.location.href = "/menu";
   };
 
   const onCloseSettings = async () => {

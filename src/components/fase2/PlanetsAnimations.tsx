@@ -13,7 +13,7 @@ type Props = {
 };
 
 const TRANSITION = { duration: 2, ease: "easeInOut" } as const;
-const EXIT_VARIANT = { opacity: 0 } as const;
+const EXIT_VARIANT = { opacity: 0, transition: { duration: 0.3 } } as const;
 
 export function PlanetsAnimation({ activePlanet }: Props) {
   if (activePlanet === null) return null;
