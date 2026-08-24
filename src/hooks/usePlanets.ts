@@ -11,7 +11,7 @@ const planets = [
 ];
 
 const roundConfig: { [key: number]: string[] } = {
-  1: ["blue-green", "pink", "purple"], 
+  1: ["blue-green", "pink", "purple"],
   2: ["gray", "blue", "green"],
 };
 
@@ -26,6 +26,13 @@ export function usePlanets() {
   const [activePlanets, setActivePlanets] = useState<PlanetInstance[]>([]);
   const appearedPlanetsRef = useRef<string[]>([]);
   const planetCountRef = useRef(0);
+
+  const timeoutsRef = useRef<NodeJS.Timeout[]>([]);
+
+  const clearAllTimeouts = () => {
+    timeoutsRef.current.forEach(clearTimeout);
+    timeoutsRef.current = [];
+  };
 
   const removeActivePlanetBySrc = (src: string) => {
     setActivePlanets((prev) => prev.filter((p) => p.src !== src));
@@ -55,9 +62,10 @@ export function usePlanets() {
     appearedPlanetsRef.current.push(planetToShow.id);
     planetCountRef.current += 1; // remove após 2s
 
-    setTimeout(() => {
+    const removeId = setTimeout(() => {
       removeActivePlanetBySrc(planetToShow.src);
-    }, 2000); // log final quando completar os 3
+    }, 2000);
+    timeoutsRef.current.push(removeId);
 
     if (planetCountRef.current === 3) {
       console.log("Planetas que apareceram:", appearedPlanetsRef.current);
@@ -67,6 +75,7 @@ export function usePlanets() {
   // --- 💫 NOVO: controla o tempo das aparições ---
   const startGame = (currentRound: number) => {
     // limpa tudo
+    clearAllTimeouts();
     setActivePlanets([]);
     appearedPlanetsRef.current = [];
     planetCountRef.current = 0; // Pega os planetas definidos para o round atual
@@ -82,21 +91,21 @@ export function usePlanets() {
     for (const [index, time] of schedule.entries()) {
       const planetIdToShow = planetsForThisRound[index];
       if (planetIdToShow) {
-        setTimeout(() => {
+        const spawnId = setTimeout(() => {
           triggerSpecificPlanet(planetIdToShow);
         }, time);
+        timeoutsRef.current.push(spawnId);
       }
     } // log final após 10s
 
-    setTimeout(() => {
-      console.log(
-        `Fim do round ${currentRound}. Planetas mostrados:`,
-        appearedPlanetsRef.current
-      );
+    const endId = setTimeout(() => {
+      console.log(`Fim do round ${currentRound}.`);
     }, 10000);
+    timeoutsRef.current.push(endId);
   };
 
   const resetPlanets = () => {
+    clearAllTimeouts();
     appearedPlanetsRef.current = [];
     planetCountRef.current = 0;
     setActivePlanets([]);

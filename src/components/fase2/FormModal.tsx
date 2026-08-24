@@ -2,6 +2,7 @@ import Image from "next/image";
 import { PlanetaResposta } from "@/app/fase/2/GameScreen";
 import { Button } from "../Button";
 import { Card } from "../Card";
+import { ControleEnum } from "@/constants/fase2ControleJogo";
 
 type Planet = {
   id: number;
@@ -11,7 +12,9 @@ type Planet = {
 
 type Props = {
   readonly onClose: () => void;
+  readonly onClick: (planetaId: number) => void;
   readonly planetasSelecionados: PlanetaResposta[];
+  readonly controleSelecionado: ControleEnum;
 };
 
 const PLANETS: ReadonlyArray<Planet> = [
@@ -58,31 +61,52 @@ const PlanetCard = ({
   );
 };
 
-export function FormModal({ onClose, planetasSelecionados }: Props) {
+export function FormModal({
+  onClose,
+  onClick,
+  planetasSelecionados,
+  controleSelecionado,
+}: Props) {
   const isDisabled = planetasSelecionados.length < MIN_ANSWERS_REQUIRED;
   const buttons = <Button text="Continuar" onClick={onClose} disabled={isDisabled} />;
+  const instructionText = {
+    [ControleEnum.CONTROLE_ARDUINO]: (
+      <p className="text-xl text-[#4a4a4a] font-orbitron text-center">
+        Vote utilizando o painel com os botões dos planetas que você viu aparecer durante
+        o jogo.
+      </p>
+    ),
+    [ControleEnum.CONTROLE_MOUSE]: (
+      <p className="text-xl text-[#4a4a4a] font-orbitron text-center">
+        Utilizando o mouse, clique na imagem dos planetas que você viu aparecer durante o
+        jogo.
+      </p>
+    ),
+  }[controleSelecionado];
 
   return (
     <Card title="Quais planetas apareceram durante o jogo?" buttons={buttons}>
       <div className="flex flex-col gap-8">
-        <div className="flex flex-col items-center">
-          <p className="text-xl text-[#4a4a4a] font-orbitron text-center">
-            Vote utilizando o painel com os botões dos planetas que você viu aparecer
-            durante o jogo.
-          </p>
-        </div>
+        <div className="flex flex-col items-center">{instructionText}</div>
         <div className="grid grid-cols-3 gap-4 justify-items-center px-24">
           {PLANETS.map((planet, index) => {
             const selection = planetasSelecionados?.find(
               (answer) => answer.planeta === planet.id
             );
             return (
-              <PlanetCard
-                key={planet.id}
-                planet={planet}
-                selection={selection}
-                index={index}
-              />
+              <button
+                key={`planet-button-${planet.id}`}
+                type="button"
+                aria-label={`Selecionar Planeta ${planet.name}`}
+                onClick={() => onClick(planet.id)}
+              >
+                <PlanetCard
+                  key={planet.id}
+                  planet={planet}
+                  selection={selection}
+                  index={index}
+                />
+              </button>
             );
           })}
         </div>

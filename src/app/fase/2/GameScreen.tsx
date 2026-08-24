@@ -1,25 +1,27 @@
 "use client";
 
-import { AnimatePresence } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
 import { AnimatedElement } from "@/components/AnimatedElements/AnimatedElement";
+import { Card } from "@/components/Card";
 import { NavbarGame } from "@/components/NavbarGame";
+import { PatientSelectModal } from "@/components/PatientSelectModal";
 import { SettingsButton } from "@/components/SettingsButton";
 import { SettingsModal } from "@/components/SettingsModal";
 import { Metricas } from "@/components/SuccessScreen";
 import { Clouds } from "@/components/fase2/Clouds";
+import { ControlSelectModal } from "@/components/fase2/ControlSelectModal";
 import { GameOverlay } from "@/components/fase2/GameOverlay";
 import { PlanetsAnimation } from "@/components/fase2/PlanetsAnimations";
 import { StarsField } from "@/components/fase2/StarsField";
 import { animatedElementsFase2 } from "@/config/gameConfig";
+import { ControleEnum, executarPorTipoDeControle } from "@/constants/fase2ControleJogo";
 import { stars } from "@/constants/fase2Stars";
 import { useAudio } from "@/context/AudioContext";
 import { useGameContext } from "@/context/GameContext";
 import { usePatient } from "@/context/PatientContext";
 import { usePlanets } from "@/hooks/usePlanets";
 import { useSocketIO } from "@/hooks/useWebSocket";
-import { PatientSelectModal } from "@/components/PatientSelectModal";
-
+import { AnimatePresence } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 export type PlanetaResposta = {
   planeta: number;
   correto: boolean;
@@ -29,6 +31,7 @@ const ROUND_TIME_SECONDS = 15;
 const STAR_PICK_INTERVAL_MS = 2000;
 const SHINING_DURATION_MS = 10000;
 const FIRST_ROUND = 1;
+const ROUND_1_NOTICE_SECONDS = 10;
 const NAVBAR_LABEL = "ENCONTRE E FIXE OS OLHOS NO ALVO BRILHANDO" as const;
 
 const pickRandomIndex = (total: number, lastIndex: number | null) => {
@@ -41,11 +44,17 @@ export function GameScreen() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showFormModal, setShowFormModal] = useState(false);
+  const [isControlSelectOpen, setIsControlSelectOpen] = useState(false);
+  const [showRound1Notice, setShowRound1Notice] = useState(false);
+  const [round1NoticeSeconds, setRound1NoticeSeconds] = useState(ROUND_1_NOTICE_SECONDS);
   const [shiningStar, setShiningStar] = useState<string | null>(null);
   const [data, setData] = useState<Metricas | undefined>(undefined);
   const [planetasSelecionados, setPlanetasSelecionados] = useState<PlanetaResposta[]>([]);
   const [currentRound, setCurrentRound] = useState(FIRST_ROUND);
   const [isPatientSelectOpen, setIsPatientSelectOpen] = useState(true);
+  const [controleSelecionado, setControleSelecionado] = useState<ControleEnum>(
+    ControleEnum.CONTROLE_MOUSE
+  );
 
   const lastIndexRef = useRef<number | null>(null);
 
@@ -72,7 +81,11 @@ export function GameScreen() {
     startGame(currentRound);
 
     console.log("FASE 2 - usuarioId sendo enviado:", selectedPacienteId);
-    socket?.emit("iniciar_fase2", { fase: 2, usuarioId: selectedPacienteId });
+    socket?.emit("iniciar_fase2", {
+      fase: 2,
+      usuarioId: selectedPacienteId,
+      controleJogo: controleSelecionado,
+    });
   };
 
   const advanceToNextRound = () => {
@@ -109,11 +122,44 @@ export function GameScreen() {
   const handlePatientSelect = (pacienteId: string) => {
     setSelectedPacienteId(pacienteId);
     setIsPatientSelectOpen(false);
+    setIsControlSelectOpen(true);
+  };
+
+  const handleControlSelect = (controle: ControleEnum) => {
+    setControleSelecionado(controle);
+    setIsControlSelectOpen(false);
   };
 
   const handlePatientSelectCancel = () => {
     window.location.href = "/menu";
   };
+
+  const handleClickPlaneta = (planetaId: number) => {
+    socket?.emit("click_planeta_selecionado", {
+      planetaId: planetaId,
+    });
+  };
+
+  useEffect(() => {
+    if (showRound1Notice === false) return;
+
+    setRound1NoticeSeconds(ROUND_1_NOTICE_SECONDS);
+
+    const intervalId = window.setInterval(() => {
+      setRound1NoticeSeconds((currentSeconds) => {
+        if (currentSeconds <= 1) {
+          window.clearInterval(intervalId);
+          setShowRound1Notice(false);
+          handleCloseForm();
+          return 0;
+        }
+
+        return currentSeconds - 1;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(intervalId);
+  }, [showRound1Notice]);
 
   useEffect(() => {
     if (isGameActive === false) return;
@@ -142,8 +188,16 @@ export function GameScreen() {
     setShowFormModal(true);
 
     if (socket !== null && isConnected === true) {
-      console.debug("Tempo esgotado. Emitindo 'aguardando_iot' para o backend.");
-      socket.emit("aguardando_iot");
+      executarPorTipoDeControle(controleSelecionado, {
+        [ControleEnum.CONTROLE_ARDUINO]: () => {
+          console.debug("Tempo esgotado. Emitindo 'aguardando_iot' para o backend.");
+          socket.emit("aguardando_iot");
+        },
+        [ControleEnum.CONTROLE_MOUSE]: () => {
+          console.debug("Tempo esgotado. Emitindo 'aguardando_mouse' para o backend.");
+          socket.emit("aguardando_mouse");
+        },
+      });
     }
   }, [timeLeft, setIsPaused, setIsGameActive, socket, isConnected]);
 
@@ -167,8 +221,22 @@ export function GameScreen() {
       setData(response);
     };
 
+    const handleRodada1Finalizada = () => {
+      console.debug("Rodada 1 concluída.");
+      setShowFormModal(false);
+      setRound1NoticeSeconds(ROUND_1_NOTICE_SECONDS);
+      setShowRound1Notice(true);
+    };
+
     socket.on("resposta_planeta", handlePlanetaResponse);
     socket.on("fase_atual_finalizada", handleFaseConcluida);
+    socket.on("fase_2_rodada_1_finalizada", handleRodada1Finalizada);
+
+    return () => {
+      socket.off("resposta_planeta", handlePlanetaResponse);
+      socket.off("fase_atual_finalizada", handleFaseConcluida);
+      socket.off("fase_2_rodada_1_finalizada", handleRodada1Finalizada);
+    };
   }, [socket]);
 
   if (isModalOpen === true) {
@@ -186,6 +254,10 @@ export function GameScreen() {
         onSelect={handlePatientSelect}
         onCancel={handlePatientSelectCancel}
       />
+
+      {isControlSelectOpen === true ? (
+        <ControlSelectModal onSelect={handleControlSelect} />
+      ) : null}
       <Clouds />
 
       <div className="flex justify-center mt-6 z-20">
@@ -197,12 +269,32 @@ export function GameScreen() {
         showSuccessModal={showSuccessModal}
         data={data}
         planetasSelecionados={planetasSelecionados}
+        controleSelecionado={controleSelecionado}
         showFormModal={showFormModal}
         onStart={handleStartGame}
         onCloseForm={handleCloseForm}
+        onClickPlaneta={handleClickPlaneta}
       />
 
       <SettingsButton onClick={onOpenSettings} />
+
+      {showRound1Notice === true ? (
+        <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center px-4">
+          <Card title="Atenção">
+            <div className="flex flex-col items-center gap-4 text-center">
+              <p className="text-xl text-[#4a4a4a] font-orbitron">
+                A rodada 1 terminou. A rodada 2 vai começar em breve.
+              </p>
+              <p className="text-lg text-[#4a4a4a] font-orbitron">
+                Preste atenção na próxima rodada.
+              </p>
+              <p className="text-2xl text-[var(--primary)] font-orbitron">
+                Fechando em {round1NoticeSeconds}s
+              </p>
+            </div>
+          </Card>
+        </div>
+      ) : null}
 
       <StarsField shiningStar={shiningStar} />
 
