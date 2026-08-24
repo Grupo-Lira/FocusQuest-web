@@ -43,9 +43,16 @@ const buildFase3Results = (data: Metricas | undefined) => {
   const totalComissao = data?.total_comissao ?? 0;
   const totalOmissao = data?.total_omissao ?? 0;
   return [
-    { id: 3, name: "🎯 Acertos", score: `${totalAcertos}` },
-    { id: 4, name: "❌ Demorou para focar", score: `${totalOmissao} vezes` },
-    { id: 5, name: "❌ Distrações", score: `${totalComissao} distrações` },
+    {
+      id: 4,
+      name: "❌ Demorou para focar",
+      score: `${totalOmissao} ${totalOmissao === 1 ? "vez" : "vezes"}`,
+    },
+    {
+      id: 5,
+      name: "❌ Distrações",
+      score: `${totalComissao} ${totalComissao === 1 ? "distração" : "distrações"}`,
+    },
   ];
 };
 

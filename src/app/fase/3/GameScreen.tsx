@@ -123,6 +123,17 @@ export function GameScreen() {
     return fase3;
   };
 
+  const pausePhase3 = () => {
+    socket?.emit("fase_3_pause");
+    stopTracking();
+  };
+
+  const resumePhase3 = async () => {
+    socket?.emit("fase_3_resume");
+    await startTracking(false, false);
+    startAudio();
+  };
+
   const handleStartGame = async () => {
     if (!selectedPacienteId) {
       alert("Por favor, selecione um paciente na ficha antes de iniciar a fase.");
@@ -151,20 +162,29 @@ export function GameScreen() {
 
     setIsGameActive(true);
     setAudioGameStarted(true);
+    setIsPaused(false);
     startAudio();
   };
 
   const onCloseSettings = async () => {
     setIsModalOpen(false);
     setIsPaused(false);
-    await startTracking(false, false);
-    startAudio();
+    await resumePhase3();
   };
 
   const onOpenSettings = () => {
     setIsModalOpen(true);
     setIsPaused(true);
-    stopTracking();
+    pausePhase3();
+  };
+
+  const onNavbarPauseToggle = async (nextPaused: boolean) => {
+    if (nextPaused === true) {
+      pausePhase3();
+      return;
+    }
+
+    await resumePhase3();
   };
 
   useEffect(() => {
@@ -184,6 +204,7 @@ export function GameScreen() {
     };
   }, [socket]);
 
+  //Trigger para contador de TEMPO finalizado.
   useEffect(() => {
     if (timeLeft !== 0) return;
     socket?.emit("fase_3_tempo_excedido");
@@ -267,7 +288,7 @@ export function GameScreen() {
   return (
     <div className="fase3-container relative w-full h-screen overflow-hidden">
       <div className="flex justify-center mt-6 relative z-11">
-        <NavbarGame label={NAVBAR_LABEL} />
+        <NavbarGame label={NAVBAR_LABEL} onPauseToggle={onNavbarPauseToggle} />
       </div>
 
       <div>

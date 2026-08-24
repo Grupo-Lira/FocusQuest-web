@@ -20,6 +20,8 @@ import { useGameContext } from "@/context/GameContext";
 import { usePatient } from "@/context/PatientContext";
 import { usePlanets } from "@/hooks/usePlanets";
 import { useSocketIO } from "@/hooks/useWebSocket";
+import { PatientSelectModal } from "@/components/PatientSelectModal";
+
 import { AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 export type PlanetaResposta = {
@@ -52,6 +54,7 @@ export function GameScreen() {
   const [planetasSelecionados, setPlanetasSelecionados] = useState<PlanetaResposta[]>([]);
   const [currentRound, setCurrentRound] = useState(FIRST_ROUND);
   const [isPatientSelectOpen, setIsPatientSelectOpen] = useState(true);
+
   const [controleSelecionado, setControleSelecionado] = useState<ControleEnum>(
     ControleEnum.CONTROLE_MOUSE
   );
@@ -122,6 +125,7 @@ export function GameScreen() {
   const handlePatientSelect = (pacienteId: string) => {
     setSelectedPacienteId(pacienteId);
     setIsPatientSelectOpen(false);
+
     setIsControlSelectOpen(true);
   };
 
@@ -254,7 +258,7 @@ export function GameScreen() {
         onSelect={handlePatientSelect}
         onCancel={handlePatientSelectCancel}
       />
-
+      
       {isControlSelectOpen === true ? (
         <ControlSelectModal onSelect={handleControlSelect} />
       ) : null}
