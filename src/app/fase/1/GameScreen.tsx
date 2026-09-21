@@ -1,340 +1,364 @@
 "use client";
 
 import { Bolt } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { OverlayInstruction } from "@/components/Calibration/OverlayInstruction";
-import { AnimatedElement } from "@/components/AnimatedElements/AnimatedElement";
-import { NavbarGame } from "@/components/NavbarGame";
-import { SettingsModal } from "@/components/SettingsModal";
-import { Star } from "@/components/Star";
-import { Metricas, SuccessScreen } from "@/components/SuccessScreen";
-import { Thermometer } from "@/components/Thermometer";
-import { TimeOut } from "@/components/TimeOut";
 import { PatientSelectModal } from "@/components/PatientSelectModal";
-import { animatedElements } from "@/config/gameConfig";
+import { SettingsModal } from "@/components/SettingsModal";
+import { NavbarGame } from "@/components/NavbarGame";
+import { Metricas, SuccessScreen } from "@/components/SuccessScreen";
+import { TimeOut } from "@/components/TimeOut";
+import { FocusSector } from "@/components/fase1/FocusSector";
+import { SpaceEncounters } from "@/components/fase1/SpaceEncounters";
+import styles from "@/components/fase1/phaseOne.module.css";
+import { buildPhaseOneTargets, type PhaseOneTarget } from "@/constants/fase1Targets";
 import { fase1Steps } from "@/constants/steps";
 import { useAudio } from "@/context/AudioContext";
-import { GazeData, useEyeTracking } from "@/context/EyeTrackingContext";
+import { useEyeTracking } from "@/context/EyeTrackingContext";
 import { useGameContext } from "@/context/GameContext";
 import { usePatient } from "@/context/PatientContext";
+import { usePhaseOneGaze } from "@/hooks/usePhaseOneGaze";
 import { useSocketIO } from "@/hooks/useWebSocket";
-import { useGameLogic } from "./useGameLogic";
 
-type TargetConfig = {
-  id: number;
-  x_max: string;
-  x_min: string;
-  y_max: string;
-  y_min: string;
-};
-
-const TOLERANCE_X = 0.15;
-const TOLERANCE_Y = 0.15;
-const START_TRACKING_DELAY_MS = 500;
-const GAZE_EMIT_INTERVAL_MS = 1000;
+type Stage = "intro" | "starting" | "running" | "finished" | "interrupted";
+type TargetEvent = { fase?: number; alvo: PhaseOneTarget | number; motivo_termino?: string };
+type FinishEvent = { fase?: number; metricas?: Metricas; motivo?: string };
 const NAVBAR_LABEL = "ENCONTRE E FIXE OS OLHOS NOS 5 ALVOS DURANTE 5 SEGUNDOS" as const;
-const TIME_EXCEEDED_REASON = "TEMPO_FASE_EXCEDIDO" as const;
 
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const getTargetWithBackendHitbox = (
+  receivedTarget: TargetEvent["alvo"],
+  localTarget: PhaseOneTarget,
+): PhaseOneTarget | null => {
+  if (!receivedTarget || typeof receivedTarget !== "object") return null;
 
-const computeRelativeCoordinates = (
-  container: HTMLDivElement,
-  relativeLeft: number,
-  relativeTop: number
-) => {
-  const rect = container.getBoundingClientRect();
-  const centerX = rect.left + (rect.width * relativeLeft) / 100;
-  const centerY = rect.top + (rect.height * relativeTop) / 100;
-  const normalizedX = centerX / window.innerWidth;
-  const normalizedY = centerY / window.innerHeight;
-
-  return {
-    x_min: Math.max(0, normalizedX - TOLERANCE_X),
-    x_max: Math.min(1, normalizedX + TOLERANCE_X),
-    y_min: Math.max(0, normalizedY - TOLERANCE_Y),
-    y_max: Math.min(1, normalizedY + TOLERANCE_Y),
+  const coordinates = {
+    x_min: Number(receivedTarget.x_min),
+    x_max: Number(receivedTarget.x_max),
+    y_min: Number(receivedTarget.y_min),
+    y_max: Number(receivedTarget.y_max),
   };
-};
-
-const normalizeGaze = (value: number, max: number) => {
-  const clamped = Math.max(0, Math.min(1, value / max));
-  return clamped;
-};
-
-const hasGazeChanged = (current: GazeData, last: GazeData | null) => {
-  if (last === null) return true;
-  return (
-    current.x !== last.x || current.y !== last.y || current.timestamp !== last.timestamp
-  );
+  if (!Object.values(coordinates).every(Number.isFinite)) return null;
+  if (coordinates.x_min < 0 || coordinates.x_max > 1 ||
+      coordinates.y_min < 0 || coordinates.y_max > 1 ||
+      coordinates.x_min >= coordinates.x_max || coordinates.y_min >= coordinates.y_max) {
+    return null;
+  }
+  return { ...localTarget, ...coordinates };
 };
 
 export function GameScreen() {
-  const starsContainerRef = useRef<HTMLDivElement>(null);
-  const lastSentGazeRef = useRef<GazeData | null>(null);
-  const lastGazeRef = useRef<GazeData | null>(null);
-
-  const { stars, level, handleHit, handleError, handleRemove } = useGameLogic();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isTimeUpModalOpen, setIsTimeUpModalOpen] = useState(false);
-  const [successModalData, setSuccessModalData] = useState<Metricas | null>(null);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [shiningStars, setShiningStars] = useState<number[]>([]);
+  const playFieldRef = useRef<HTMLDivElement>(null);
+  const mountedRef = useRef(false);
+  const stageRef = useRef<Stage>("intro");
+  const targetsRef = useRef<PhaseOneTarget[]>([]);
+  const completedRef = useRef<number[]>([]);
+  const timedOutRef = useRef(false);
+  const startingRef = useRef(false);
+  const [stage, setStage] = useState<Stage>("intro");
+  const [target, setTarget] = useState<PhaseOneTarget | null>(null);
+  const [notice, setNotice] = useState("");
+  const [error, setError] = useState("");
   const [isPatientSelectOpen, setIsPatientSelectOpen] = useState(true);
-
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [resuming, setResuming] = useState(false);
+  const [result, setResult] = useState<Metricas | undefined>();
   const {
-    isPaused,
-    setIsPaused,
-    setIsGameActive,
-    audioGameStarted,
-    setAudioGameStarted,
-    isGameActive,
-    timeLeft,
+    isPaused, setIsPaused, setIsGameActive, setAudioGameStarted,
+    timeLeft, setTimeLeft, setPhase, setHits, setErrors,
   } = useGameContext();
-  const { stopTracking, isWebGazerLoaded, startTracking, lastGazeData, isTracking } =
-    useEyeTracking();
-  const { startAudio } = useAudio();
+  const { stopTracking, isWebGazerLoaded, startTracking, lastGazeData, isTracking } = useEyeTracking();
+  const { startAudio, pauseAudio } = useAudio();
   const { socket, isConnected } = useSocketIO();
   const { selectedPacienteId, setSelectedPacienteId } = usePatient();
+  // Tracking callbacks change with provider state; cleanup uses the latest one.
+  const trackingRef = useRef({ stopTracking, pauseAudio });
+  useEffect(() => { trackingRef.current = { stopTracking, pauseAudio }; }, [stopTracking, pauseAudio]);
 
-  const turnOnStar = (target: TargetConfig) => {
-    setShiningStars((prev) => {
-      if (prev.includes(target.id) === true) return prev;
-      return [...prev, target.id];
-    });
-  };
+  const feedback = usePhaseOneGaze({
+    socket, target, gaze: lastGazeData,
+    enabled: stage === "running" && !isPaused && isTracking && isConnected,
+  });
 
-  const turnOffStar = (target: TargetConfig) => {
-    handleRemove(target.id);
-  };
-
-  const buildTargetsConfig = () => {
-    const container = starsContainerRef.current;
-    if (container === null) return [];
-
-    const configs = stars.map((star) => {
-      const coords = computeRelativeCoordinates(container, star.left, star.top);
-      return { id: star.id, ...coords };
-    });
-    return configs;
-  };
-
-  const handleStartGame = async () => {
-    if (isWebGazerLoaded === true) {
-      console.debug("Iniciando rastreamento ocular...");
-      await wait(START_TRACKING_DELAY_MS);
-      await startTracking(false, false);
-    } else {
-      console.warn("Web gazer ainda não está carregado!");
-    }
-
-    if (isConnected === true && socket !== null && stars.length > 0) {
-      console.debug("Enviando configuração dos alvos para o servidor...");
-      const targetsConfig = buildTargetsConfig();
-
-      if (targetsConfig.length > 0) {
-        console.debug("EMITINDO evento: fase_1_alvos_configuracao", targetsConfig.length);
-        console.log("FASE 1 - usuarioId sendo enviado:", selectedPacienteId);
-        socket.emit("iniciar_fase1", {
-          fase1: targetsConfig,
-          usuarioId: selectedPacienteId,
-        });
-      }
-    }
-
-    setIsGameActive(true);
-    setAudioGameStarted(true);
-    startAudio();
-  };
-
-  const handlePatientSelect = (pacienteId: string) => {
-    setSelectedPacienteId(pacienteId);
-    setIsPatientSelectOpen(false);
-  };
-
-  const handlePatientSelectCancel = () => {
-    window.location.href = "/menu";
-  };
-
-  const onCloseSettings = async () => {
-    setIsModalOpen(false);
+  useEffect(() => {
+    mountedRef.current = true;
+    setPhase(1);
+    setTimeLeft(60);
+    setHits(0);
+    setErrors(0);
+    setIsGameActive(false);
+    setAudioGameStarted(false);
     setIsPaused(false);
-    await startTracking(false, false);
-    startAudio();
-  };
-
-  const onOpenSettings = () => {
-    setIsModalOpen(true);
-    setIsPaused(true);
-    stopTracking();
-  };
-
-  useEffect(() => {
-    if (timeLeft !== 0) return;
-    socket?.emit("fase_1_tempo_excedido");
-    stopTracking();
-    setIsTimeUpModalOpen(true);
-    setIsPaused(true);
-  }, [timeLeft]);
+    return () => {
+      mountedRef.current = false;
+      setIsGameActive(false);
+      setAudioGameStarted(false);
+      trackingRef.current.stopTracking();
+      trackingRef.current.pauseAudio();
+    };
+  }, [setPhase, setTimeLeft, setHits, setErrors, setIsGameActive, setAudioGameStarted, setIsPaused]);
 
   useEffect(() => {
-    if (socket === null) return;
-
-    socket.on("fase1_iniciada", (data) => {
-      console.debug("Fase iniciada:", data);
-      turnOnStar(data.alvo);
-    });
-
-    socket.on("brilhar_estrela", (data) => {
-      console.debug("Destaque Estrela:", data);
-      turnOnStar(data.alvo);
-    });
-
-    socket.on("gaze_status", (data) => {
-      console.debug("Status do gaze:", data);
-    });
-
-    socket.on("alvo_fase1_concluido", (data) => {
-      console.debug("Alvo finalizado, apagando:", data);
-      turnOffStar(data.alvo);
-    });
-
-    socket.on("experimento_concluido", (data) => {
-      console.debug("Experimento concluído:", data);
-    });
-
-    socket.on("fase_concluida", (data) => {
-      console.debug("Fase concluída:", data);
-      setIsPaused(true);
-      stopTracking();
-      setSuccessModalData(data?.metricas);
-
-      const shouldShowSuccess = timeLeft !== 0 && data?.motivo !== TIME_EXCEEDED_REASON;
-      if (shouldShowSuccess === true) {
-        setShowSuccessModal(true);
+    if (!socket) return;
+    const activateTarget = (data: TargetEvent) => {
+      if (data.fase !== undefined && data.fase !== 1) return;
+      if (stageRef.current !== "starting" && stageRef.current !== "running") return;
+      const id = typeof data.alvo === "number" ? data.alvo : data.alvo?.id;
+      const next = targetsRef.current.find((item) => item.id === Number(id));
+      if (!next || completedRef.current.includes(next.id)) return;
+      // The backend returns the expanded hitbox. The visual outline must use
+      // exactly that rectangle; never fall back to a different local geometry.
+      const synchronizedTarget = getTargetWithBackendHitbox(data.alvo, next);
+      if (!synchronizedTarget) {
+        setError("A missão recebeu uma área de foco inválida. Reinicie para tentar novamente.");
+        return;
       }
-    });
-
-    return () => {
-      socket.off("fase_iniciada");
-      socket.off("gaze_status");
-      socket.off("fase_atual_finalizada");
-      socket.off("experimento_concluido");
-      socket.off("alvo_fase1_concluido");
-      socket.off("fase_concluida");
+      setTarget(synchronizedTarget);
+      if (stageRef.current === "starting") {
+        stageRef.current = "running";
+        setStage("running");
+        setIsGameActive(true);
+        setAudioGameStarted(true);
+        startAudio();
+      }
     };
-  }, [socket]);
+    const completeTarget = (data: TargetEvent) => {
+      if (data.fase !== undefined && data.fase !== 1) return;
+      if (stageRef.current !== "running" || data.motivo_termino !== "FOCOU") return;
+      const id = Number(typeof data.alvo === "number" ? data.alvo : data.alvo?.id);
+      if (!targetsRef.current.some((item) => item.id === id) || completedRef.current.includes(id)) return;
+      completedRef.current = [...completedRef.current, id];
+      setHits(completedRef.current.length);
+      setTarget((current) => current?.id === id ? null : current);
+      setNotice("Estrela conquistada! " + completedRef.current.length + " de 5");
+    };
+    const finish = (data: FinishEvent) => {
+      if (data.fase !== undefined && data.fase !== 1) return;
+      if (stageRef.current !== "running" && stageRef.current !== "finished") return;
+      if (data.motivo === "TEMPO_FASE_EXCEDIDO" || data.motivo === "TEMPO") timedOutRef.current = true;
+      stageRef.current = "finished";
+      setStage("finished");
+      setResult(data.metricas);
+      setTarget(null);
+      setSettingsOpen(false);
+      setIsGameActive(false);
+      setIsPaused(true);
+      trackingRef.current.stopTracking();
+      trackingRef.current.pauseAudio();
+    };
+    const disconnect = () => {
+      if (stageRef.current !== "running" && stageRef.current !== "starting") return;
+      stageRef.current = "interrupted";
+      setStage("interrupted");
+      setSettingsOpen(false);
+      setError("A conexão com a missão foi perdida. Reinicie para começar uma nova tentativa.");
+      setIsGameActive(false);
+      setIsPaused(true);
+      trackingRef.current.stopTracking();
+      trackingRef.current.pauseAudio();
+    };
+    socket.on("fase1_iniciada", activateTarget);
+    socket.on("brilhar_estrela", activateTarget);
+    socket.on("alvo_fase1_concluido", completeTarget);
+    socket.on("fase_concluida", finish);
+    socket.on("disconnect", disconnect);
+    return () => {
+      socket.off("fase1_iniciada", activateTarget);
+      socket.off("brilhar_estrela", activateTarget);
+      socket.off("alvo_fase1_concluido", completeTarget);
+      socket.off("fase_concluida", finish);
+      socket.off("disconnect", disconnect);
+    };
+  }, [socket, setAudioGameStarted, setHits, setIsGameActive, setIsPaused, startAudio]);
 
   useEffect(() => {
-    lastGazeRef.current = lastGazeData;
-  }, [lastGazeData]);
+    if (stage !== "starting") return;
+    const timer = window.setTimeout(() => {
+      if (stageRef.current !== "starting") return;
+      stageRef.current = "interrupted";
+      setStage("interrupted");
+      setError("Não recebemos a confirmação de início. Reinicie para tentar novamente.");
+      trackingRef.current.stopTracking();
+      socket?.disconnect();
+    }, 15000);
+    return () => window.clearTimeout(timer);
+  }, [stage, socket]);
 
   useEffect(() => {
-    if (isConnected === false || socket === null) return;
-    if (isTracking === false || isPaused === true) return;
+    if (timeLeft !== 0 || stageRef.current !== "running" || timedOutRef.current) return;
+    timedOutRef.current = true;
+    stageRef.current = "finished";
+    setStage("finished");
+    setTarget(null);
+    setSettingsOpen(false);
+    setIsGameActive(false);
+    setIsPaused(true);
+    trackingRef.current.stopTracking();
+    trackingRef.current.pauseAudio();
+    socket?.emit("fase_1_tempo_excedido");
+  }, [timeLeft, socket, setIsGameActive, setIsPaused]);
 
-    const interval = setInterval(() => {
-      const gaze = lastGazeRef.current;
-      if (gaze === null || socket.connected === false) return;
+  useEffect(() => {
+    if (!notice || isPaused) return;
+    const timer = window.setTimeout(() => setNotice(""), 1800);
+    return () => window.clearTimeout(timer);
+  }, [notice, isPaused]);
 
-      const normalizedX = normalizeGaze(gaze.x, window.innerWidth);
-      const normalizedY = normalizeGaze(gaze.y, window.innerHeight);
-      const isNewData = hasGazeChanged(gaze, lastSentGazeRef.current);
-
-      if (isNewData === false) return;
-
-      socket.emit("gaze_data_fase1", {
-        x: normalizedX,
-        y: normalizedY,
-        rawX: gaze.x,
-        rawY: gaze.y,
-        timestamp: gaze.timestamp,
-      });
-      lastSentGazeRef.current = { ...gaze };
-    }, GAZE_EMIT_INTERVAL_MS);
-
-    return () => {
-      console.debug("Parando emissão de gaze data...");
-      clearInterval(interval);
+  useEffect(() => {
+    const pauseWhenHidden = () => {
+      if (!document.hidden || stageRef.current !== "running") return;
+      setIsPaused(true);
+      trackingRef.current.stopTracking();
+      trackingRef.current.pauseAudio();
     };
-  }, [isConnected, socket, isTracking, isPaused]);
+    document.addEventListener("visibilitychange", pauseWhenHidden);
+    return () => document.removeEventListener("visibilitychange", pauseWhenHidden);
+  }, [setIsPaused]);
 
-  if (isModalOpen === true) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <SettingsModal isStoppedGame={true} onClick={onCloseSettings} />
-      </div>
-    );
-  }
+  const start = async () => {
+    if (startingRef.current || stageRef.current !== "intro") return;
+    if (!selectedPacienteId) {
+      setError("Selecione um paciente para iniciar a missão.");
+      return;
+    }
+    if (!socket?.connected) {
+      setError("Aguarde a conexão com a missão.");
+      return;
+    }
+    if (!isWebGazerLoaded) {
+      setError("Aguarde o visor ocular carregar.");
+      return;
+    }
+    if (!playFieldRef.current) return;
+    startingRef.current = true;
+    setError("");
+    stageRef.current = "starting";
+    setStage("starting");
+    try {
+      const ready = isTracking || await startTracking(false, false);
+      if (!mountedRef.current || stageRef.current !== "starting") {
+        // A delayed camera response must not keep capture running after exit.
+        if (ready) await globalThis.webgazer?.pause();
+        trackingRef.current.stopTracking();
+        return;
+      }
+      if (!ready || !socket.connected || !playFieldRef.current) {
+        stageRef.current = "intro";
+        setStage("intro");
+        setError(!ready ? "Não conseguimos ligar o visor. Verifique a permissão da câmera e tente novamente."
+          : "Aguarde a conexão para começar.");
+        trackingRef.current.stopTracking();
+        return;
+      }
+      const rect = playFieldRef.current.getBoundingClientRect();
+      targetsRef.current = buildPhaseOneTargets(rect, window.innerWidth, window.innerHeight);
+      setTimeLeft(60);
+      setIsPaused(false);
+      socket.emit("iniciar_fase1", { fase1: targetsRef.current, usuarioId: selectedPacienteId });
+    } finally {
+      startingRef.current = false;
+    }
+  };
 
-  const successData = successModalData === null ? undefined : successModalData;
+  const pause = () => {
+    if (stageRef.current !== "running") return;
+    setIsPaused(true);
+    stopTracking();
+    pauseAudio();
+  };
+  const resume = async () => {
+    if (resuming || stageRef.current !== "running" || !socket?.connected) return;
+    setResuming(true);
+    setError("");
+    try {
+      const ready = await startTracking(false, false);
+      if (!mountedRef.current || stageRef.current !== "running") {
+        if (ready) await globalThis.webgazer?.pause();
+        trackingRef.current.stopTracking();
+        return;
+      }
+      if (!ready) {
+        setError("Verifique a câmera para continuar a missão.");
+        setIsPaused(true);
+        return;
+      }
+      setIsPaused(false);
+      startAudio();
+    } finally {
+      if (mountedRef.current) setResuming(false);
+    }
+  };
+
+  const handleNavbarPauseToggle = (nextPaused: boolean) => {
+    if (nextPaused) {
+      pause();
+      return;
+    }
+    void resume();
+  };
+
+  const handleOpenSettings = () => {
+    pause();
+    setSettingsOpen(true);
+  };
+
+  const handleCloseSettings = () => {
+    setSettingsOpen(false);
+    void resume();
+  };
 
   return (
-    <div className="fase1 relative w-full h-screen overflow-hidden">
-      <PatientSelectModal
-        isOpen={isPatientSelectOpen}
-        onSelect={handlePatientSelect}
-        onCancel={handlePatientSelectCancel}
-      />
-
+    <div className={styles.screen}>
       <div className="flex justify-center mt-6 z-20">
-        <NavbarGame label={NAVBAR_LABEL} />
+        <NavbarGame label={NAVBAR_LABEL} onPauseToggle={handleNavbarPauseToggle} />
       </div>
-
-      <div className="absolute top-15 ml-6 z-20">
-        <Thermometer level={level} />
-      </div>
-
-      {audioGameStarted === false ? (
-        <OverlayInstruction onComplete={handleStartGame} steps={fase1Steps} />
-      ) : null}
-
-      {isTimeUpModalOpen === true ? (
-        <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
-          <TimeOut data={successData} />
-        </div>
-      ) : null}
-
-      {showSuccessModal === true ? (
-        <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
-          <SuccessScreen fase={2} data={successData} />
-        </div>
-      ) : null}
 
       <button
         type="button"
         aria-label="Open settings"
         className="bg-[var(--primary)] z-20 w-11 h-11 rounded-full absolute flex items-center justify-center button-glow transition-all duration-300 top-9 right-9"
-        onClick={onOpenSettings}
+        onClick={handleOpenSettings}
       >
         <Bolt color="white" />
       </button>
 
-      <div className="h-[70%] w-[100%] ml-32 relative" ref={starsContainerRef}>
-        {stars.map((star) => (
-          <Star
-            key={star.id}
-            top={star.top}
-            left={star.left}
-            onRemove={() => handleHit(star.id)}
-            onError={handleError}
-            isShining={shiningStars.includes(star.id)}
-          />
-        ))}
-      </div>
+      <div ref={playFieldRef} className={styles.playField} aria-hidden="true" />
+      {stage === "running" && <SpaceEncounters paused={isPaused} target={target} />}
+      {target && stage === "running" && <FocusSector key={target.id} target={target} {...feedback} />}
+      {notice && stage === "running" && <div role="status" className={styles.notice}>{notice}</div>}
 
-      <div className="h-screen w-screen relative">
-        {isGameActive === true
-          ? animatedElements.map((item) => (
-              <AnimatedElement
-                key={item.id}
-                id={item.id}
-                src={item.src}
-                duration={item.duration}
-                isPaused={isPaused}
-              />
-            ))
-          : null}
-      </div>
+      <PatientSelectModal isOpen={isPatientSelectOpen}
+        onSelect={(id) => { setSelectedPacienteId(id); setIsPatientSelectOpen(false); }}
+        onCancel={() => { window.location.href = "/menu"; }} />
+
+      {!isPatientSelectOpen && (stage === "intro" || stage === "starting") && (
+        <>
+          <OverlayInstruction onComplete={start} steps={fase1Steps} />
+          {(error || !isConnected || !isWebGazerLoaded) && (
+            <div className={styles.guideStatus} role={error ? "alert" : "status"}>
+              {error || (!isConnected ? "Conectando à missão…" : "Aguardando o visor…")}
+            </div>
+          )}
+        </>
+      )}
+
+      {stage === "running" && isPaused && !settingsOpen && (
+        <div className={styles.overlay}><div className={styles.intro}>
+          <h2>Missão pausada</h2><p>Quando estiver pronto, volte a olhar para a estrela.</p>
+          {error && <p role="alert" className={styles.error}>{error}</p>}
+          <button type="button" className={styles.primaryButton} onClick={resume} disabled={resuming}>{resuming ? "Ligando o visor…" : "Continuar missão"}</button>
+          <Link href="/menu" className={styles.secondaryButton}>Voltar ao menu</Link>
+        </div></div>
+      )}
+      {settingsOpen && <div className={styles.overlay}><SettingsModal isStoppedGame onClick={handleCloseSettings} /></div>}
+      {stage === "interrupted" && <div className={styles.overlay}><div className={styles.intro}>
+        <h2>Vamos reconectar a missão</h2><p role="alert">{error}</p>
+        <button type="button" className={styles.primaryButton} onClick={() => window.location.reload()}>Reiniciar missão</button>
+        <Link href="/menu" className={styles.secondaryButton}>Voltar ao menu</Link>
+      </div></div>}
+      {stage === "finished" && <div className={styles.overlay}>
+        {timedOutRef.current ? <TimeOut data={result} /> : <SuccessScreen fase={2} data={result} />}
+      </div>}
     </div>
   );
 }

@@ -99,6 +99,11 @@ Logo, uma build concluída não comprova que lint e TypeScript estejam corretos.
 as verificações separadamente. Erros de parsing ou compilação do módulo ainda podem
 impedir a build mesmo com essas flags.
 
+Na validação da nova fase 1, a build encontrou o import duplicado preexistente de
+`PatientSelectModal` em `src/app/fase/2/GameScreen.tsx`, que impede o parsing dessa
+rota. A rota da fase 1 compilou e foi exercitada separadamente no servidor de
+desenvolvimento.
+
 O uso de `next/font/google` pode exigir acesso às fontes durante o processo de build,
 dependendo do cache e do comportamento da versão do Next.
 
@@ -166,6 +171,28 @@ Até existir uma suíte, registre validações manuais proporcionais à alteraç
 - fase 2: duas rodadas e ambos os controles;
 - fase 3: alternância, pause/resume, timeout e resultado;
 - navegação: `Link`, hard reload e retorno ao menu.
+
+### Validação da nova dinâmica da fase 1
+
+Foi realizada uma verificação pontual em Chromium/Puppeteer com WebGazer, câmera,
+paciente e servidor Socket.IO simulados localmente, sem bancos ou produção:
+
+- caixas visuais iguais às transmitidas em 1366×768, 768×1024 e 390×844;
+- detecção de olhar dentro/fora, descarte de samples antigos e emissão em 1 Hz;
+- pausa/retomada do contador e envio, sem limpar a calibração;
+- carga limitada a 95% até o evento de conclusão real;
+- cinco conquistas, duplicação de eventos e transição para resultado;
+- câmera negada sem início do experimento;
+- desconexão sem retomada de experimento antigo;
+- timeout emitido uma vez e motivo `TEMPO` sem contar conquista.
+- três trajetórias de visitantes, congelamento durante a pausa e movimento reduzido.
+
+Essa verificação não equivale a uma suíte permanente nem valida precisão ocular.
+Antes de utilizar com participantes, testar câmera real após calibração, regiões de
+canto/centro, conforto das distrações e navegação. Comparações com resultados de
+versões anteriores devem considerar que a área aceita de foco foi ampliada.
+O dwell do backend durante pausas/lacunas tem a limitação descrita em
+[docs/EYE_TRACKING.md](docs/EYE_TRACKING.md).
 
 ## Docker
 

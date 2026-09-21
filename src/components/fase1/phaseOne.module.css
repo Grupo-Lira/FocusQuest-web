@@ -1,0 +1,131 @@
+.screen {
+  position: relative;
+  height: 100dvh;
+  overflow: hidden;
+  isolation: isolate;
+  color: #fff;
+  background: linear-gradient(135deg, #080e36db, #19103599), url('/img/planetas/planet1.png') center / cover;
+}
+
+.screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 100%, #627bdc38, transparent 65%);
+}
+
+.eyebrow { color: #b7c6ff; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; }
+
+.playField { position: absolute; top: 112px; bottom: 80px; left: 24px; right: 24px; }
+.sector {
+  position: fixed;
+  box-sizing: border-box;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px dashed #ffe8a85c;
+  border-radius: 26px;
+  /* The outline communicates the generous hitbox without masking the scene. */
+  background: radial-gradient(ellipse at center, #ffe39a0d, transparent 72%);
+  box-shadow: inset 0 0 42px #ffe39a08, 0 0 14px #ffe39a0b;
+  color: #ffe9b5;
+  transition: border-color .2s, background-color .2s, box-shadow .2s;
+  animation: sectorArrive .45s ease-out both;
+  pointer-events: none;
+}
+.focused {
+  color: #96ffe2;
+  border-color: #96ffe28c;
+  box-shadow: inset 0 0 45px #41edb50b, 0 0 18px #64ffce1c;
+  background: radial-gradient(ellipse at center, #64ffce0d, transparent 72%);
+}
+.starCore { position: relative; width: clamp(58px, 8vh, 82px); aspect-ratio: 1; flex-shrink: 0; }
+.star { position: absolute; inset: 0; width: 100%; height: 100%; filter: drop-shadow(0 0 10px #ffde696e); animation: starFloat 3s ease-in-out infinite; }
+.focusCaption { width: min(90%, 360px); text-align: center; font-size: clamp(11px, 1.25vw, 15px); }
+.focusCaption small { display: block; font-size: 10px; color: #e1e7f6; margin-top: 6px; }
+.notice { position: absolute; bottom: 66px; left: 50%; transform: translateX(-50%); z-index: 25; max-width: 90%; padding: 8px 18px; border-radius: 18px; background: #dbfff0; color: #105c48; font-weight: 600; text-align: center; animation: noticeArrive .3s ease-out both; pointer-events: none; }
+.overlay { position: absolute; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center; padding: 24px; overflow-y: auto; background: #060b24db; backdrop-filter: blur(6px); }
+.intro { width: min(800px, 100%); margin: auto; padding: clamp(20px, 4vw, 40px); background: #171e43; border: 1px solid #8193d655; border-radius: 28px; text-align: center; box-shadow: 0 24px 90px #0005; }
+.introHero { display: flex; justify-content: center; align-items: center; gap: 24px; text-align: left; margin-bottom: 24px; }
+.introHero img { width: clamp(64px, 14vw, 110px); height: 130px; object-fit: contain; }
+.intro h1, .intro h2 { font-size: clamp(22px, 3vw, 32px); font-weight: 700; margin-bottom: 10px; }
+.intro p { color: #d4dcf5; }
+.instructions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+.instruction { padding: 16px 12px; border-radius: 18px; background: #ffffff09; border: 1px solid #ffffff15; }
+.instruction b { display: block; color: #ffe39a; margin-bottom: 6px; }
+.instruction p { font-size: 13px; }
+.primaryButton, .secondaryButton { display: inline-flex; justify-content: center; align-items: center; gap: 8px; padding: 12px 22px; border-radius: 14px; font-weight: 700; cursor: pointer; margin: 6px; }
+.primaryButton { background: #ffd978; color: #292139; }
+.primaryButton:disabled { opacity: .55; cursor: wait; }
+.secondaryButton { border: 1px solid #ffffff40; color: #fff; }
+.error { color: #ffcfbd !important; margin: 14px 0; }
+.guideStatus { position: absolute; left: 50%; bottom: 11%; z-index: 55; transform: translateX(-50%); max-width: min(90%, 620px); padding: 8px 16px; border-radius: 999px; background: #171e43e8; border: 1px solid #ffffff2e; color: #ffe8b0; font-size: 12px; text-align: center; box-shadow: 0 8px 28px #0005; }
+.encounters { position: absolute; inset: 0; z-index: 4; overflow: hidden; pointer-events: none; }
+.actor { position: absolute; top: var(--lane); left: 0; width: clamp(60px, 9vw, 112px); opacity: 0; animation-duration: var(--duration); animation-fill-mode: both; animation-timing-function: linear; }
+.actor.ship { width: clamp(74px, 8vw, 112px); }
+.actor.meteor { width: clamp(156px, 17vw, 230px); }
+.actor.visitor { width: clamp(56px, 7vw, 92px); }
+.sprite { position: relative; filter: drop-shadow(0 6px 12px #02051a80); transform: scaleX(var(--direction)); }
+.sprite img { display: block; width: 100%; height: auto; }
+.ship { animation-name: shipEncounter; }
+.ship .sprite { animation: shipHover 1.8s ease-in-out infinite; }
+.ship .trail { position: absolute; top: 65%; left: 24%; width: 54%; height: 60px; background: linear-gradient(#87fff357, transparent); clip-path: polygon(25% 0, 75% 0, 100% 100%, 0 100%); }
+.meteor { animation-name: meteorEncounter; }
+/* meteoro.png já contém a cauda e deve ser tratado como uma única composição. */
+.meteor .trail { display: none; }
+.visitor { animation-name: visitorEncounter; }
+.encounters[data-paused='true'] * { animation-play-state: paused !important; }
+
+@keyframes sectorArrive { from { opacity: 0; } to { opacity: 1; } }
+@keyframes starFloat {
+  0%, 100% { transform: translateY(0) rotate(-3deg) scale(1); }
+  50% { transform: translateY(-7px) rotate(3deg) scale(1.04); }
+}
+@keyframes noticeArrive { from { opacity: 0; margin-bottom: -8px; } to { opacity: 1; margin-bottom: 0; } }
+@keyframes shipHover { 50% { margin-top: -9px; rotate: -5deg; } }
+@keyframes shipEncounter {
+  0% { transform: translate(var(--entry), -40%) scale(var(--depth)); opacity: 0; }
+  15% { opacity: 1; }
+  35% { transform: translate(var(--approach), -80%) scale(var(--depth)) rotate(8deg); }
+  58% { transform: translate(var(--approach), -50%) scale(var(--depth)) rotate(-6deg); }
+  85% { opacity: 1; }
+  100% { transform: translate(var(--exit), -160%) scale(.6) rotate(12deg); opacity: 0; }
+}
+@keyframes meteorEncounter {
+  0% { transform: translate(var(--entry), -100%) scale(.4) rotate(-18deg); opacity: 0; }
+  18% { opacity: .9; }
+  65% { transform: translate(var(--departure), -10%) scale(var(--depth)) rotate(10deg); opacity: 1; }
+  100% { transform: translate(var(--exit), 20%) scale(.5) rotate(35deg); opacity: 0; }
+}
+@keyframes visitorEncounter {
+  0% { transform: translate(var(--entry), 10%) scale(.5) rotate(-25deg); opacity: 0; }
+  25% { transform: translate(var(--approach), -50%) scale(var(--depth)) rotate(12deg); opacity: 1; }
+  40% { transform: translate(var(--approach), -70%) scale(var(--depth)) rotate(-12deg); }
+  60% { transform: translate(var(--approach), -45%) scale(var(--depth)) rotate(8deg); opacity: 1; }
+  100% { transform: translate(var(--entry), 15%) scale(.4) rotate(-30deg); opacity: 0; }
+}
+
+@media (max-width: 640px) {
+  .eyebrow { font-size: 8px; }
+  .playField { left: 12px; right: 12px; top: 98px; }
+  .instructions { grid-template-columns: 1fr; gap: 8px; }
+  .instruction { padding: 10px; }
+  .introHero { gap: 12px; }
+}
+@media (max-height: 650px) {
+  .playField { top: 90px; bottom: 60px; }
+  .sector { gap: 3px; }
+  .starCore { width: 50px; }
+  .focusCaption { font-size: 10px; }
+  .focusCaption small { display: none; }
+  .notice { bottom: 48px; font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sector, .star, .notice, .ship .sprite { animation: none; }
+  .actor { animation: none; display: none; }
+  .sector { transition: none; }
+}

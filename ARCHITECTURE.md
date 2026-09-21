@@ -106,8 +106,8 @@ Mantém `phase`, `hits`, `errors`, `timeLeft`, `isPaused`, `isGameActive` e
 3. O contador para quando a fase está inativa, pausada ou chega a zero.
 
 Como o provider pertence ao layout raiz, seus valores podem sobreviver a uma
-navegação com `Link`. Somente as fases 2 e 3 definem explicitamente `phase`; contagem,
-placar e flags não possuem um reset central entre rotas.
+navegação com `Link`. A fase 1 define `phase=1` e reinicia timer, placar e flags ao
+montar. As fases 2 e 3 também definem `phase`, mas não há reset central entre rotas.
 
 ### PatientContext
 
@@ -180,14 +180,39 @@ consumidor. Não o trate como caminho ativo sem confirmar uma nova integração.
 
 ### Fase 1
 
-`GameScreen` seleciona o paciente, inicia o WebGazer, calcula caixas normalizadas
-para cinco estrelas e emite `iniciar_fase1`. Depois envia apenas novos samples de
-gaze, no máximo uma vez por segundo. O backend informa qual estrela deve brilhar e
-quando um alvo foi concluído.
+`GameScreen` seleciona o paciente e apresenta o `OverlayInstruction` compartilhado,
+com o astronauta e o carrossel de instruções da fase. Só inicia o contador após
+`fase1_iniciada`, com câmera pronta e conexão ativa. O início tem
+timeout de 15 segundos; uma desconexão exige nova tentativa porque o backend limpa
+o experimento associado ao socket.
 
-O componente `Star` contém um polling ocular local desativado e renderiza apenas um
-`FixedStar`. Por isso, não se deve presumir que seu `useStarBehavior` seja a fonte
-atual de conclusão dos alvos.
+`constants/fase1Targets.ts` define cinco regiões: superior esquerda, inferior
+direita, centro, superior direita e inferior esquerda. Os cantos usam caixas de
+38% × 40% do campo útil e o centro usa 40% × 42%; cada caixa permanece centralizada
+na sua zona para manter os alvos separados.
+Somente o alvo indicado pelo backend é exibido, e o servidor avalia apenas essa
+região.
+
+`FocusSector` desenha a própria caixa enviada ao backend, a estrela e o feedback de
+entrada do olhar. `usePhaseOneGaze` envia samples novos em 1 Hz e só muda a cor do
+quadrante após receber `fase1_foco_status` do servidor; a UI nunca substitui a
+decisão de conclusão do backend.
+Somente `alvo_fase1_concluido` com motivo `FOCOU` incrementa a constelação. A próxima
+região aparece imediatamente; a confirmação anterior permanece por 1,8 segundo no
+rodapé, sem atrasar o alvo que o servidor já ativou.
+
+`SpaceEncounters` agenda um visitante por vez com intervalos, tamanhos, direção e
+trajetórias variados. OVNI, meteoro e ET reutilizam imagens existentes; ficam abaixo
+da área-alvo. Componentes e CSS Module em `components/fase1/` são exclusivos desta
+fase. `AnimatedElement`, `Star`, `FixedStar` e `useGameLogic` antigo não fazem parte
+do novo fluxo da fase 1; os componentes compartilhados não foram alterados.
+Com `prefers-reduced-motion`, os encontros são ocultados e o pulso da estrela é
+desativado. Considere essa preferência ao comparar condições do experimento.
+
+Pause/configurações e aba oculta suspendem timer, música, animações e envio ocular.
+O unmount pausa tracking e música e desativa o jogo. Isso não equivale a encerrar a
+câmera física nem a pausar o dwell do backend; consulte as limitações em
+[docs/EYE_TRACKING.md](docs/EYE_TRACKING.md).
 
 ### Fase 2
 
@@ -206,9 +231,8 @@ resume são enviados ao backend e também pausam/retomam o WebGazer.
 ## Componentes e estilo
 
 Componentes de formulário, cards, navegação, modais, feedback e resultados ficam na
-raiz de `src/components`. `Calibration/` e `fase2/` concentram componentes exclusivos
-desses fluxos. Não há pasta específica para componentes das fases 1 e 3; sua
-orquestração fica nos respectivos `GameScreen`.
+raiz de `src/components`. `Calibration/`, `fase1/` e `fase2/` concentram componentes
+exclusivos desses fluxos. A orquestração das fases fica nos respectivos `GameScreen`.
 
 Tailwind concentra a maior parte do layout. `globals.css` define cores, fundos das
 fases, radar, termômetro e animações menores. `AnimatedElements.css` contém keyframes

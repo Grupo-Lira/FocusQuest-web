@@ -168,11 +168,12 @@ reiniciar zera índice, cargas, logs e transições antes de abrir novamente a m
 
 ### Fase 1
 
-A fase chama `startTracking(false, false)`, removendo os mouse listeners. As caixas
-dos cinco alvos são calculadas a partir do centro visual de cada estrela e
-normalizadas pelo viewport.
+A fase chama `startTracking(false, false)`, removendo os mouse listeners. As cinco
+caixas são definidas em `constants/fase1Targets.ts`: quatro cantos com 38% × 40% e
+um centro com 40% × 42%. Cada caixa fica centralizada em sua zona, deixando espaço
+entre os alvos. Só uma região é exibida de cada vez.
 
-Cada caixa possui tolerância de 0,15 em X e Y:
+No início, o campo é medido com `getBoundingClientRect` e convertido para o viewport:
 
 ```ts
 {
@@ -184,8 +185,14 @@ Cada caixa possui tolerância de 0,15 em X e Y:
 }
 ```
 
-O último gaze é lido a cada 1.000 ms. Um sample só é enviado quando difere do último
-sample transmitido:
+`FocusSector` usa a mesma caixa normalizada enviada ao backend, incluindo o contorno
+retangular visível. Não existe uma tolerância invisível adicional. As caixas
+permanecem fixas em proporção ao viewport durante a tentativa, mesmo ao redimensionar;
+assim, desenho e backend não passam a usar limites diferentes. Para grandes mudanças
+de tamanho/orientação, reinicie e calibre novamente para avaliar a precisão ocular.
+
+`usePhaseOneGaze` lê o último gaze a cada 1.000 ms. Só envia timestamps novos, finitos
+em X/Y, posteriores à ativação/retomada e com idade máxima de 1.500 ms:
 
 ```ts
 {
@@ -197,8 +204,26 @@ sample transmitido:
 }
 ```
 
-O backend decide brilho e conclusão dos alvos. O polling ocular existente em
-`Star.tsx` está desativado e não deve ser confundido com o envio real.
+Não há barra nem cronômetro visual na estrela. O quadrante só muda para a cor de foco
+quando o backend emite `FOCANDO`; `DESFOCADO` remove o realce imediatamente. Não há
+classificação visual baseada apenas nas coordenadas locais nem conclusão local.
+
+O backend decide a conclusão. `DWELL_REQUIRED_MS` é 5.000 ms e o handler emite
+`fase1_foco_status` a cada amostra processada. O status `FOCANDO` inclui o tempo de
+foco calculado no servidor; `DESFOCADO` confirma perda na primeira amostra fora da
+caixa. A UI usa apenas o estado autoritativo para realçar ou apagar o quadrante. Ela
+não conclui o alvo localmente.
+
+Cada caixa enviada pela fase 1 é normalizada no backend com limite em `[0,1]`, sem
+expansão. O backend devolve a mesma caixa avaliada e o frontend desenha esses limites,
+garantindo que a linha pontilhada e a hitbox sejam coincidentes.
+
+A pausa da interface continua sendo local na fase 1; não há evento de pause/resume
+do backend. Ausência total de amostras não cria um heartbeat: nesse caso o último
+status confirmado permanece até que uma nova amostra permita confirmar retorno ou
+perda. Não envie gaze falso para tentar corrigir o contador.
+
+`Star.tsx` e seu polling legado não são consumidores do novo fluxo da fase 1.
 
 ### Fase 2
 

@@ -46,7 +46,7 @@ O hook acompanha `connect`, `connect_error` e `disconnect`. No unmount, chama
 
 ## Fase 1
 
-Origem: `src/app/fase/1/GameScreen.tsx`.
+Origem: `src/app/fase/1/GameScreen.tsx` e `src/hooks/usePhaseOneGaze.ts`.
 
 ### Frontend -> Backend
 
@@ -68,8 +68,11 @@ Origem: `src/app/fase/1/GameScreen.tsx`.
 }
 ```
 
-Embora o tipo local declare as coordenadas como `string`, o construtor atual devolve
-números normalizados. Essa divergência deve ser tratada ao tipar o contrato.
+As coordenadas são números normalizados. As cinco caixas representam quatro regiões
+de canto e uma central; só a caixa ativa é desenhada e avaliada. A geometria visual
+usa exatamente a configuração transmitida. O envio ocular mantém 1 Hz, descarta
+samples duplicados/antigos/inválidos e para quando a fase não está em execução,
+está pausada, sem conexão ou sem tracking.
 
 ### Backend -> Frontend
 
@@ -77,20 +80,31 @@ números normalizados. Essa divergência deve ser tratada ao tipar o contrato.
 | ----------------------- | ------------------------------ | ------------------------------------------------- |
 | `fase1_iniciada`        | `data.alvo`                    | Acende o alvo informado.                          |
 | `brilhar_estrela`       | `data.alvo`                    | Acende o alvo informado.                          |
-| `gaze_status`           | Nenhum campo                   | Apenas log de diagnóstico.                        |
-| `alvo_fase1_concluido`  | `data.alvo`                    | Remove o alvo.                                    |
-| `experimento_concluido` | Nenhum campo                   | Apenas log de diagnóstico.                        |
+| `fase1_foco_status`     | `data.status` | Ativa ou remove o realce do quadrante conforme o backend. |
+| `alvo_fase1_concluido`  | `data.alvo`, `data.motivo_termino` | Conquista a estrela somente com motivo `FOCOU`. |
 | `fase_concluida`        | `data.metricas`, `data.motivo` | Pausa tracking e abre resultado quando aplicável. |
 
-O formato completo de `alvo`, `gaze_status`, `experimento_concluido` e campos extras
-de `fase_concluida` não é determinado pelo frontend.
+Inspeção do backend local confirmou que `alvo` normalmente tem o formato
+`TargetConfig`, mas na conclusão pode ser o índice numérico. `motivo_termino` é
+`FOCOU` ou `TEMPO`. `fase_concluida` inclui `fase: 1` e `metricas`, sem `motivo` no
+caminho atual; o frontend guarda explicitamente o timeout local para distinguir os
+resultados. Eventos com `fase` diferente de 1 são ignorados.
+
+O backend local não emite `gaze_status` nem `experimento_concluido` na fase 1. Os
+listeners antigos de diagnóstico foram removidos. `FOCANDO` ativa o realce do
+quadrante; `DESFOCADO` remove o realce imediatamente. A conclusão continua dependendo
+de `alvo_fase1_concluido` com motivo `FOCOU`.
+
+Cada caixa retornada pelo backend é a mesma caixa normalizada e avaliada pelo servidor;
+o frontend desenha esses limites sem aplicar fallback ou expansão local.
 
 ### Cleanup conhecido
 
-O efeito registra `fase1_iniciada` e `brilhar_estrela`, mas o cleanup tenta remover
-`fase_iniciada` e não remove `brilhar_estrela`. Os listeners também são registrados
-com callbacks anônimos. Corrigir isso exige preservar o mesmo nome e a mesma
-referência de handler no `off`.
+Todos os listeners usam handlers com cleanup simétrico por evento e referência.
+`disconnect` interrompe uma tentativa ativa, pausa tracking/música e oferece
+reinício explícito. A reconexão do transporte não retoma automaticamente um
+experimento que o backend já limpou. O contador começa após `fase1_iniciada`; falta
+de confirmação por 15 segundos interrompe a preparação e desconecta a tentativa.
 
 ## Fase 2
 

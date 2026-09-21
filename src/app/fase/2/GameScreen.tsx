@@ -20,7 +20,6 @@ import { useGameContext } from "@/context/GameContext";
 import { usePatient } from "@/context/PatientContext";
 import { usePlanets } from "@/hooks/usePlanets";
 import { useSocketIO } from "@/hooks/useWebSocket";
-import { PatientSelectModal } from "@/components/PatientSelectModal";
 
 import { AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
@@ -258,7 +257,7 @@ export function GameScreen() {
         onSelect={handlePatientSelect}
         onCancel={handlePatientSelectCancel}
       />
-      
+
       {isControlSelectOpen === true ? (
         <ControlSelectModal onSelect={handleControlSelect} />
       ) : null}
