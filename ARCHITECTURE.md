@@ -55,7 +55,7 @@ cliente.
 | `/signin` | Cadastro seguido de login | `POST /auth/register`, `POST /auth/login` | Não |
 | `/apresentation` | Apresentação e configurações iniciais | Não | Não |
 | `/menu` | Seleção de fase e navegação | Perfil pela navbar | Não |
-| `/calibration` | Calibração por nove estrelas | Não | WebGazer local; não envia ao backend |
+| `/calibration` | Calibração guiada por nove regiões, cinco cliques por região | Não | WebGazer local; não envia ao backend |
 | `/fase/1` | Cinco alvos com gaze | Lista pacientes | Socket.IO e WebGazer |
 | `/fase/2` | Memória visual em duas rodadas | Lista pacientes | Socket.IO; sem WebGazer |
 | `/fase/3` | Atenção alternada estrela/radar | Não | Socket.IO e WebGazer |

@@ -19,7 +19,7 @@ interface EyeTrackingContextType {
   isTracking: boolean;
   isPaused: boolean;
   error: string | null;
-  startTracking: (trackWithMouse: boolean, isTutorial: boolean) => Promise<void>;
+  startTracking: (trackWithMouse: boolean, isTutorial: boolean) => Promise<boolean>;
   stopTracking: () => void;
   fullStopTracking: () => void;
   lastGazeData: GazeData | null;
@@ -63,10 +63,11 @@ export function EyeTrackingProvider({ children }: EyeTrackingProviderProps) {
     async (trackWithMouse: boolean, isTutorial: boolean) => {
       console.log(`isPaused: ${isPaused}`);
       console.log(`isWebGazerLoaded: ${isWebGazerLoaded}`);
+      setError(null);
 
       if (!isWebGazerLoaded) {
         setError("WebGazer not loaded yet.");
-        return;
+        return false;
       }
 
       if (!hasPermission) {
@@ -77,44 +78,51 @@ export function EyeTrackingProvider({ children }: EyeTrackingProviderProps) {
           setHasPermission(false);
           setError("Permissão de câmera negada.");
           console.error(e);
-          return;
+          return false;
         }
       }
 
-      if (isPaused) {
-        await globalThis.webgazer.resume();
-        if (!trackWithMouse) {
-          await globalThis.webgazer.removeMouseEventListeners();
-        }
-        if (isTutorial) await globalThis.webgazer.clearData();
-        setIsPaused(false);
-      } else {
-        console.log("Caiu no if do beggin");
-        if (isTutorial) {
-          await globalThis.webgazer.clearData();
+      try {
+        if (isPaused) {
+          await globalThis.webgazer.resume();
+          if (!trackWithMouse) {
+            await globalThis.webgazer.removeMouseEventListeners();
+          }
+          if (isTutorial) await globalThis.webgazer.clearData();
+          setIsPaused(false);
+        } else {
+          console.log("Caiu no if do beggin");
+          if (isTutorial) {
+            await globalThis.webgazer.clearData();
+          }
+
+          await globalThis.webgazer
+            .setRegression("weightedRidge")
+            .setTracker("TFFacemesh")
+            .saveDataAcrossSessions(true) //Em prod podemos deixar true para salvar a calibração no navegador para próximos usos
+            .showVideo(false) // Ocultar vídeo
+            .showFaceOverlay(false) // Ocultar overlay da face
+            .showFaceFeedbackBox(false) // Ocultar caixa de feedback
+            .applyKalmanFilter(true)
+            .setGazeListener((data: any) => {
+              updateGazeData(data);
+            });
+
+          await globalThis.webgazer.showPredictionPoints(true);
+          await globalThis.webgazer.begin();
+
+          if (!trackWithMouse) {
+            await globalThis.webgazer.removeMouseEventListeners();
+          }
         }
 
-        await globalThis.webgazer
-          .setRegression("weightedRidge")
-          .setTracker("TFFacemesh")
-          .saveDataAcrossSessions(true) //Em prod podemos deixar true para salvar a calibração no navegador para próximos usos
-          .showVideo(false) // Ocultar vídeo
-          .showFaceOverlay(false) // Ocultar overlay da face
-          .showFaceFeedbackBox(false) // Ocultar caixa de feedback
-          .applyKalmanFilter(true)
-          .setGazeListener((data: any) => {
-            updateGazeData(data);
-          });
-
-        await globalThis.webgazer.showPredictionPoints(true);
-        await globalThis.webgazer.begin();
-
-        if (!trackWithMouse) {
-          await globalThis.webgazer.removeMouseEventListeners();
-        }
+        setIsTracking(true);
+        return true;
+      } catch (e) {
+        setError("Não foi possível iniciar o rastreamento ocular.");
+        console.error(e);
+        return false;
       }
-
-      setIsTracking(true);
     },
     [isWebGazerLoaded, isPaused, hasPermission, updateGazeData]
   );

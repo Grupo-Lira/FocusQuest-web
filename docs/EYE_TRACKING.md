@@ -38,8 +38,8 @@ como não carregado durante toda a sessão.
 Ao iniciar uma sessão nova, o contexto encadeia:
 
 ```text
-setRegression("ridge")
-setTracker("clmtrackr")
+setRegression("weightedRidge")
+setTracker("TFFacemesh")
 saveDataAcrossSessions(true)
 showVideo(false)
 showFaceOverlay(false)
@@ -86,6 +86,11 @@ e se todos os tracks são encerrados ao sair do experimento.
 
 ### `startTracking(trackWithMouse, isTutorial)`
 
+Devolve `Promise<boolean>`: `true` somente após iniciar ou retomar o WebGazer; `false`
+quando o script não está disponível, a câmera é negada ou uma operação do WebGazer
+falha. A calibração usa esse retorno para liberar o primeiro alvo apenas quando o
+visor está pronto.
+
 Se o contexto está pausado:
 
 1. chama `webgazer.resume()`;
@@ -116,7 +121,7 @@ no código atual. Também não há um cleanup do provider que a execute automati
 
 ## Calibração
 
-A rota `/calibration` apresenta instruções e nove estrelas nas posições:
+A rota `/calibration` apresenta uma rota guiada por nove regiões nas posições:
 
 ```text
 topo:     esquerda, centro, direita
@@ -124,7 +129,12 @@ centro:   esquerda, centro, direita
 inferior: esquerda, centro, direita
 ```
 
-Cada estrela precisa ser clicada cinco vezes, totalizando 45 cliques. O início usa:
+Cada estrela precisa ser clicada cinco vezes, totalizando 45 cliques. Apenas uma
+estrela-alvo é interativa por vez. A rota começa no centro e percorre as regiões no
+sentido horário, enquanto o cabeçalho exibe região atual, cinco cargas e um mapa
+compacto da constelação.
+
+O início usa:
 
 ```ts
 startTracking(true, true)
@@ -146,14 +156,13 @@ As estatísticas são impressas no console e não são enviadas ao backend nem
 persistidas pela aplicação. A persistência útil fica sob responsabilidade interna do
 WebGazer.
 
-`StarCalibration` possui uma função `checkGazePosition`, com resolução fixa de
-1560x1024, mas nenhum efeito ou callback fornece gaze a ela. No fluxo atual, a
-calibração avança pelo clique; o olhar é usado apenas no modelo do WebGazer e no log
-comparativo da página.
+O componente `CalibrationTarget` não decide a conclusão pelo gaze. No fluxo atual,
+a calibração avança por cinco cliques reais em cada alvo; o olhar é usado pelo modelo
+do WebGazer e no log comparativo da página. Não use clique programático, não impeça
+a propagação do click e não remova os mouse listeners durante essa etapa.
 
-O array de estrelas é criado no escopo do módulo e seu `totalHits` é mutado. O botão
-de reiniciar zera o estado da página, mas não esses contadores. Uma alteração futura
-deve considerar esse comportamento para não terminar com uma tela sem estrelas.
+O progresso é mantido no estado da página, sem mutar os alvos constantes. O botão de
+reiniciar zera índice, cargas, logs e transições antes de abrir novamente a missão.
 
 ## Uso nas fases
 
@@ -240,9 +249,11 @@ scroll, fullscreen e redimensionamento.
 - instancia `FaceMesh`;
 - configura `locateFile`;
 - referencia `/mediapipe/face_mesh`;
-- usa o tracker `TFFacemesh` no working tree.
+- configura paths para os assets locais do tracker WebGazer.
 
-Assim, não há dependência runtime confirmada desses paths. O arquivo
+O tracker atual do WebGazer é `TFFacemesh`, mas a origem dos assets necessários é
+controlada pelo script externo; não há dependência runtime confirmada do diretório
+local. O arquivo
 `face_mesh_solution_simd_wasm_bin.data` está vazio. Antes de remover ou reativar
 esses assets, confirme o tracker escolhido e como o script do WebGazer resolve seus
 modelos.
@@ -282,8 +293,7 @@ listener. Hard reloads ocultam parte desse risco porque recriam toda a página.
 - Ausência de fallback/retry para o CDN.
 - Stream explícito de `getUserMedia` sem cleanup.
 - `fullStopTracking` sem uso.
-- Calibração orientada a clique, com callback visual de gaze desconectado.
-- Reinício da calibração não reseta o array global de hits.
+- Calibração orientada a clique; o gaze não é um bloqueio visual da sequência.
 - Assets Face Mesh locais sem consumidor.
 - Resoluções fixas em código auxiliar.
 - Não há testes automatizados para câmera ou gaze.

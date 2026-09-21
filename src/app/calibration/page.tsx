@@ -1,13 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { MouseEvent, useCallback, useEffect, useRef, useState } from "react";
+import { CalibrationCoach, CalibrationCoachState } from "@/components/Calibration/CalibrationCoach";
+import { CalibrationTarget } from "@/components/Calibration/CalibrationTarget";
 import { NavbarCalibration } from "@/components/Calibration/NavbarCalibration";
-import { OverlayInstruction } from "@/components/Calibration/OverlayInstruction";
-import { StarCalibration } from "@/components/Calibration/StarCalibration";
 import { SuccessScreen } from "@/components/Calibration/SuccessScreen";
 import { SettingsModal } from "@/components/SettingsModal";
-import { stars } from "@/constants/calibrationStar";
-import { steps } from "@/constants/steps";
+import {
+  calibrationTargets,
+  CLICKS_PER_CALIBRATION_TARGET,
+} from "@/constants/calibrationStar";
 import { useEyeTracking } from "@/context/EyeTrackingContext";
 
 type ClickData = {
@@ -20,13 +22,12 @@ type ClickData = {
   distance?: number;
 };
 
-const MAX_HITS_PER_STAR = 5;
-const MAX_TOTAL_HITS = stars.length * MAX_HITS_PER_STAR;
-const START_DELAY_MS = 100;
+type CalibrationStage = "intro" | "preparing" | "active" | "error" | "transition";
+
+const TARGET_TRANSITION_MS = 1800;
 
 const calculateDistance = (x1: number, y1: number, x2: number, y2: number) => {
-  const distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-  return distance;
+  return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 };
 
 const getClickPrecisionLabel = (distance: number) => {
@@ -61,12 +62,10 @@ const logClickDetails = (clickData: ClickData) => {
   if (distance === undefined) {
     console.log("WebGazer não forneceu dados de gaze");
   } else {
-    const precision = getClickPrecisionLabel(distance);
     console.log("Distância:", distance.toFixed(2), "pixels");
-    console.log("Precisão:", precision);
+    console.log("Precisão:", getClickPrecisionLabel(distance));
   }
   console.log("=================");
-  console.table([clickData]);
 };
 
 const logCalibrationStats = (clickLog: ClickData[]) => {
@@ -74,6 +73,7 @@ const logCalibrationStats = (clickLog: ClickData[]) => {
   const validLogs = clickLog.filter((log) => log.distance !== undefined);
 
   if (validLogs.length === 0) {
+    console.log("Nenhum clique teve dados de gaze disponíveis.");
     console.log("========================================");
     return;
   }
@@ -82,133 +82,199 @@ const logCalibrationStats = (clickLog: ClickData[]) => {
   const avgDistance = distances.reduce((sum, value) => sum + value, 0) / distances.length;
   const minDistance = Math.min(...distances);
   const maxDistance = Math.max(...distances);
-  const precision = getOverallPrecisionLabel(avgDistance);
 
   console.log("Total de cliques registrados:", clickLog.length);
   console.log("Cliques com dados de gaze:", validLogs.length);
   console.log("Distância média:", avgDistance.toFixed(2), "pixels");
   console.log("Menor distância:", minDistance.toFixed(2), "pixels");
   console.log("Maior distância:", maxDistance.toFixed(2), "pixels");
-  console.log("Precisão geral:", precision);
+  console.log("Precisão geral:", getOverallPrecisionLabel(avgDistance));
   console.log("========================================");
 };
 
-const incrementStarHit = (starId: string) => {
-  const starIndex = stars.findIndex((star) => star.id === starId);
-  if (starIndex === -1) return;
-  stars[starIndex].totalHits += 1;
+const getCoachState = (stage: CalibrationStage): CalibrationCoachState | null => {
+  if (stage === "active") return null;
+  return stage;
 };
 
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 export default function CalibrationPage() {
-  const [showInstructions, setShowInstructions] = useState(true);
+  const [stage, setStage] = useState<CalibrationStage>("intro");
   const [successModalVisible, setSuccessModalVisible] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [hits, setHits] = useState(0);
-  const [clickLog, setClickLog] = useState<ClickData[]>([]);
-  const { isWebGazerLoaded, startTracking, stopTracking, lastGazeData } =
-    useEyeTracking();
+  const [currentTargetIndex, setCurrentTargetIndex] = useState(0);
+  const [clicksOnTarget, setClicksOnTarget] = useState(0);
+  const [completedTargets, setCompletedTargets] = useState(0);
+  const [shouldResumeAfterSettings, setShouldResumeAfterSettings] = useState(false);
 
-  const logClick = useCallback(
-    (event: React.MouseEvent, element: string) => {
-      const clickX = event.clientX;
-      const clickY = event.clientY;
-      const gazeX = lastGazeData === null ? null : lastGazeData.x;
-      const gazeY = lastGazeData === null ? null : lastGazeData.y;
-      const distance = computeDistance(clickX, clickY, gazeX, gazeY);
+  const targetClicksRef = useRef(0);
+  const clickLogRef = useRef<ClickData[]>([]);
+  const transitionTimeoutRef = useRef<number | null>(null);
+  const isStartingTrackingRef = useRef(false);
 
-      const clickData: ClickData = {
-        clickX,
-        clickY,
-        gazeX,
-        gazeY,
-        timestamp: Date.now(),
-        element,
-        distance,
-      };
+  const {
+    isWebGazerLoaded,
+    isTracking,
+    error,
+    startTracking,
+    stopTracking,
+    lastGazeData,
+  } = useEyeTracking();
 
-      setClickLog((prev) => [...prev, clickData]);
-      logClickDetails(clickData);
-    },
-    [lastGazeData]
-  );
+  const currentTarget = calibrationTargets[currentTargetIndex];
+  const coachState = getCoachState(stage);
 
-  const handleStarClick = (event: React.MouseEvent, starId: string) => {
-    logClick(event, `star-${starId}`);
-    setHits((prev) => prev + 1);
-    incrementStarHit(starId);
-  };
+  const clearTransitionTimeout = useCallback(() => {
+    if (transitionTimeoutRef.current === null) return;
+    window.clearTimeout(transitionTimeoutRef.current);
+    transitionTimeoutRef.current = null;
+  }, []);
+
+  useEffect(() => {
+    return clearTransitionTimeout;
+  }, [clearTransitionTimeout]);
 
   const handleStartCalibration = async () => {
-    setShowInstructions(false);
-    await wait(START_DELAY_MS);
+    if (isStartingTrackingRef.current) return;
 
-    if (isWebGazerLoaded === false) {
-      console.warn("WebGazer não está carregado ainda");
+    isStartingTrackingRef.current = true;
+    setStage("preparing");
+    try {
+      const didStartTracking = await startTracking(true, true);
+      setStage(didStartTracking ? "active" : "error");
+    } finally {
+      isStartingTrackingRef.current = false;
+    }
+  };
+
+  const advanceTarget = useCallback(() => {
+    const nextCompletedTargets = currentTargetIndex + 1;
+    setCompletedTargets(nextCompletedTargets);
+
+    if (nextCompletedTargets === calibrationTargets.length) {
+      stopTracking();
+      logCalibrationStats(clickLogRef.current);
+      setSuccessModalVisible(true);
+      transitionTimeoutRef.current = null;
       return;
     }
 
-    console.log("Iniciando rastreamento ocular...");
-    await startTracking(true, true);
+    targetClicksRef.current = 0;
+    setClicksOnTarget(0);
+    setCurrentTargetIndex((currentIndex) => currentIndex + 1);
+    setStage("active");
+    transitionTimeoutRef.current = null;
+  }, [currentTargetIndex, stopTracking]);
+
+  const handleTargetClick = (event: MouseEvent<HTMLButtonElement>) => {
+    if (stage !== "active" || currentTarget === undefined) return;
+
+    const clickX = event.clientX;
+    const clickY = event.clientY;
+    const gazeX = lastGazeData?.x ?? null;
+    const gazeY = lastGazeData?.y ?? null;
+    const clickData: ClickData = {
+      clickX,
+      clickY,
+      gazeX,
+      gazeY,
+      timestamp: Date.now(),
+      element: `star-${currentTarget.id}`,
+      distance: computeDistance(clickX, clickY, gazeX, gazeY),
+    };
+
+    clickLogRef.current = [...clickLogRef.current, clickData];
+    logClickDetails(clickData);
+
+    const nextClicksOnTarget = targetClicksRef.current + 1;
+    targetClicksRef.current = nextClicksOnTarget;
+    setClicksOnTarget(nextClicksOnTarget);
+
+    if (nextClicksOnTarget !== CLICKS_PER_CALIBRATION_TARGET) return;
+
+    setStage("transition");
+    clearTransitionTimeout();
+    transitionTimeoutRef.current = window.setTimeout(advanceTarget, TARGET_TRANSITION_MS);
   };
 
-  const handleRestart = () => {
+  const resetCalibrationProgress = () => {
+    clearTransitionTimeout();
+    targetClicksRef.current = 0;
+    clickLogRef.current = [];
+    setCurrentTargetIndex(0);
+    setClicksOnTarget(0);
+    setCompletedTargets(0);
     setSuccessModalVisible(false);
-    setShowInstructions(true);
-    setHits(0);
-    setClickLog([]);
+    setShouldResumeAfterSettings(false);
+    setStage("intro");
   };
 
-  const onCloseSettings = () => setIsModalVisible(false);
-  const onOpenSettings = () => setIsModalVisible(true);
+  const onOpenSettings = async () => {
+    if (stage === "active" && isTracking) {
+      await stopTracking();
+      setShouldResumeAfterSettings(true);
+    }
+    setIsModalVisible(true);
+  };
 
-  useEffect(() => {
-    if (hits < MAX_TOTAL_HITS) return;
-    if (successModalVisible === true) return;
+  const onCloseSettings = async () => {
+    setIsModalVisible(false);
 
-    console.log("Calibração concluída com", hits, "hits");
-    stopTracking();
-    setSuccessModalVisible(true);
-    logCalibrationStats(clickLog);
-  }, [hits, successModalVisible, clickLog, stopTracking]);
+    if (shouldResumeAfterSettings === false) return;
 
-  const activeStars = stars.filter((star) => star.totalHits < MAX_HITS_PER_STAR);
+    if (isStartingTrackingRef.current) return;
+
+    isStartingTrackingRef.current = true;
+    setStage("preparing");
+    try {
+      const didResumeTracking = await startTracking(true, false);
+      setShouldResumeAfterSettings(false);
+      setStage(didResumeTracking ? "active" : "error");
+    } finally {
+      isStartingTrackingRef.current = false;
+    }
+  };
 
   if (isModalVisible === true) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex min-h-screen items-center justify-center">
         <SettingsModal isStoppedGame={true} onClick={onCloseSettings} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col text-white">
-      <div className="min-h-screen flex flex-col text-white">
-        {showInstructions === true ? (
-          <OverlayInstruction onComplete={handleStartCalibration} steps={steps} />
-        ) : null}
+    <div className="calibration-space min-h-screen overflow-hidden text-white">
+      <NavbarCalibration
+        setIsModalOpen={onOpenSettings}
+        currentTarget={currentTargetIndex}
+        totalTargets={calibrationTargets.length}
+        clicksOnTarget={clicksOnTarget}
+        clicksRequired={CLICKS_PER_CALIBRATION_TARGET}
+      />
 
-        <NavbarCalibration setIsModalOpen={onOpenSettings} />
+      <main className="relative h-[calc(100vh-94px)] min-h-[520px] overflow-hidden">
+        {currentTarget === undefined || stage === "intro" || stage === "preparing" || stage === "error" ? null : (
+          <CalibrationTarget
+            target={currentTarget}
+            clicks={clicksOnTarget}
+            clicksRequired={CLICKS_PER_CALIBRATION_TARGET}
+            isTransitioning={stage === "transition"}
+            onClick={handleTargetClick}
+          />
+        )}
 
-        <div className="flex-1 relative overflow-hidden">
-          {activeStars.map((star) => (
-            <StarCalibration
-              key={star.id}
-              top={star.top}
-              left={star.left}
-              onHit={() => {}}
-              onError={() => console.error("Erro com estrela", star.id)}
-              onClick={(event: React.MouseEvent) => handleStarClick(event, star.id)}
-            />
-          ))}
-        </div>
+        {coachState === null ? null : (
+          <CalibrationCoach
+            state={coachState}
+            isWebGazerLoaded={isWebGazerLoaded}
+            error={error}
+            completedTargets={completedTargets}
+            onStart={handleStartCalibration}
+          />
+        )}
 
-        {successModalVisible === true ? (
-          <SuccessScreen onRestart={handleRestart} />
-        ) : null}
-      </div>
+        {successModalVisible === true ? <SuccessScreen onRestart={resetCalibrationProgress} /> : null}
+      </main>
     </div>
   );
 }
