@@ -20,9 +20,10 @@ export function CalibrationTarget({
 }: Props) {
   const charges = Array.from({ length: clicksRequired }, (_, index) => index < clicks);
   const remainingClicks = clicksRequired - clicks;
+  const edgeInset = "3.5rem";
   const positionStyle = {
-    top: `${target.top}%`,
-    left: `${target.left}%`,
+    top: `clamp(${edgeInset}, ${target.top}%, calc(100% - ${edgeInset}))`,
+    left: `clamp(${edgeInset}, ${target.left}%, calc(100% - ${edgeInset}))`,
   };
 
   return (

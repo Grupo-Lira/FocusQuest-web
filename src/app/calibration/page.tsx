@@ -243,7 +243,7 @@ export default function CalibrationPage() {
   }
 
   return (
-    <div className="calibration-space min-h-screen overflow-hidden text-white">
+    <div className="calibration-space flex h-[100dvh] min-h-0 flex-col overflow-hidden text-white">
       <NavbarCalibration
         setIsModalOpen={onOpenSettings}
         currentTarget={currentTargetIndex}
@@ -252,7 +252,7 @@ export default function CalibrationPage() {
         clicksRequired={CLICKS_PER_CALIBRATION_TARGET}
       />
 
-      <main className="relative h-[calc(100vh-94px)] min-h-[520px] overflow-hidden">
+      <main className="relative min-h-0 flex-1 overflow-hidden">
         {currentTarget === undefined || stage === "intro" || stage === "preparing" || stage === "error" ? null : (
           <CalibrationTarget
             target={currentTarget}
