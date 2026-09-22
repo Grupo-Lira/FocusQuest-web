@@ -1,7 +1,10 @@
 "use client";
 
 import { MouseEvent, useCallback, useEffect, useRef, useState } from "react";
-import { CalibrationCoach, CalibrationCoachState } from "@/components/Calibration/CalibrationCoach";
+import {
+  CalibrationCoach,
+  CalibrationCoachState,
+} from "@/components/Calibration/CalibrationCoach";
 import { CalibrationTarget } from "@/components/Calibration/CalibrationTarget";
 import { NavbarCalibration } from "@/components/Calibration/NavbarCalibration";
 import { SuccessScreen } from "@/components/Calibration/SuccessScreen";
@@ -24,7 +27,9 @@ type ClickData = {
 
 type CalibrationStage = "intro" | "preparing" | "active" | "error" | "transition";
 
-const TARGET_TRANSITION_MS = 1800;
+const TARGET_TRANSITION_MS = 350;
+const COACH_TRANSITION_MS = 4500;
+const HALF_CALIBRATION_TARGET = Math.ceil(calibrationTargets.length / 2);
 
 const calculateDistance = (x1: number, y1: number, x2: number, y2: number) => {
   return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
@@ -121,7 +126,13 @@ export default function CalibrationPage() {
   } = useEyeTracking();
 
   const currentTarget = calibrationTargets[currentTargetIndex];
-  const coachState = getCoachState(stage);
+  const completedTargetsDuringTransition = currentTargetIndex + 1;
+  const shouldShowTransitionCoach =
+    stage !== "transition" ||
+    completedTargetsDuringTransition === HALF_CALIBRATION_TARGET;
+  const coachState = shouldShowTransitionCoach ? getCoachState(stage) : null;
+  const coachProgress =
+    stage === "transition" ? completedTargetsDuringTransition : completedTargets;
 
   const clearTransitionTimeout = useCallback(() => {
     if (transitionTimeoutRef.current === null) return;
@@ -193,7 +204,11 @@ export default function CalibrationPage() {
 
     setStage("transition");
     clearTransitionTimeout();
-    transitionTimeoutRef.current = window.setTimeout(advanceTarget, TARGET_TRANSITION_MS);
+    const transitionDuration =
+      currentTargetIndex + 1 === HALF_CALIBRATION_TARGET
+        ? COACH_TRANSITION_MS
+        : TARGET_TRANSITION_MS;
+    transitionTimeoutRef.current = window.setTimeout(advanceTarget, transitionDuration);
   };
 
   const resetCalibrationProgress = () => {
@@ -253,7 +268,10 @@ export default function CalibrationPage() {
       />
 
       <main className="relative min-h-0 flex-1 overflow-hidden">
-        {currentTarget === undefined || stage === "intro" || stage === "preparing" || stage === "error" ? null : (
+        {currentTarget === undefined ||
+        stage === "intro" ||
+        stage === "preparing" ||
+        stage === "error" ? null : (
           <CalibrationTarget
             target={currentTarget}
             clicks={clicksOnTarget}
@@ -268,12 +286,14 @@ export default function CalibrationPage() {
             state={coachState}
             isWebGazerLoaded={isWebGazerLoaded}
             error={error}
-            completedTargets={completedTargets}
+            completedTargets={coachProgress}
             onStart={handleStartCalibration}
           />
         )}
 
-        {successModalVisible === true ? <SuccessScreen onRestart={resetCalibrationProgress} /> : null}
+        {successModalVisible === true ? (
+          <SuccessScreen onRestart={resetCalibrationProgress} />
+        ) : null}
       </main>
     </div>
   );
