@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
+import { useT } from "@/i18n/client";
 
 type Level = {
   id: number;
@@ -56,6 +57,7 @@ const getLightIcon = (disabled: boolean) => {
 };
 
 const LevelMarker = ({ level }: { level: Level }) => {
+  const t = useT();
   // const borderClass = getBorderClass(level.disabled);
   // const badgeBgClass = getBadgeBackgroundClass(level.disabled);
   // const lightIcon = getLightIcon(level.disabled);
@@ -63,7 +65,7 @@ const LevelMarker = ({ level }: { level: Level }) => {
   const badgeBgClass = getBadgeBackgroundClass(false);
   const lightIcon = getLightIcon(false);
 
-  const alt = `Planeta ${level.id}`;
+  const alt = t("Planeta {id}", { id: level.id });
 
   return (
     <Link href={level.href}>

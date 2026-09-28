@@ -7,6 +7,7 @@ import { GameProvider } from "@/context/GameContext";
 import { PatientProvider } from "@/context/PatientContext";
 import { ToastProvider } from "@/context/ToastContext";
 import { TrainingModeProvider } from "@/context/TrainingModeContext";
+import { LanguageSync } from "@/i18n/client";
 import "./globals.css";
 
 type Props = {
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: Readonly<Props>) {
         <Script src={WEBGAZER_SCRIPT_URL} strategy="beforeInteractive" />
       </head>
       <body className={bodyClassName}>
+        <LanguageSync />
         <ToastProvider>
           <EyeTrackingProvider>
             <GameProvider>

@@ -1,5 +1,7 @@
+import { T } from "@/i18n/client";
 import { SettingsButton } from "../SettingsButton";
 import { calibrationTargets } from "@/constants/calibrationStar";
+import { useT } from "@/i18n/client";
 
 type Props = Readonly<{
   setIsModalOpen: (isOpen: boolean) => void;
@@ -18,6 +20,7 @@ export function NavbarCalibration({
   clicksOnTarget = 0,
   clicksRequired = 5,
 }: Props) {
+  const t = useT();
   const onOpenSettings = () => setIsModalOpen(true);
   const charges = Array.from({ length: clicksRequired }, (_, index) => index < clicksOnTarget);
   const getMapTargetClass = (targetIndex: number) => {
@@ -31,18 +34,18 @@ export function NavbarCalibration({
       <div className="flex min-h-[70px] w-full max-w-4xl flex-wrap items-center justify-center gap-x-8 gap-y-2 rounded-3xl bg-[var(--white)] px-5 py-3 shadow-lg md:rounded-full md:px-7">
         <div className="flex flex-col items-center gap-1 text-center">
           <p id="calibration-target-instruction" className="font-semibold font-orbitron text-[var(--primary)]">
-            {INSTRUCTION_LABEL}
+            {t(INSTRUCTION_LABEL)}
           </p>
           <p className="text-xs font-semibold text-[var(--text)]">
-            Região {Math.min(currentTarget + 1, totalTargets)} de {totalTargets}
+            <T text="Região" />{" "}{Math.min(currentTarget + 1, totalTargets)} <T text="de" />{" "}{totalTargets}
           </p>
         </div>
 
         <div className="flex items-center gap-2 rounded-full bg-[#FFF4E6] px-3 py-1.5">
           <span className="text-xs font-bold text-[var(--text)]">
-            Energia {clicksOnTarget}/{clicksRequired}
+            <T text="Energia" />{" "}{clicksOnTarget}/{clicksRequired}
           </span>
-          <span className="flex gap-1" aria-label={`${clicksOnTarget} de ${clicksRequired} cargas preenchidas`}>
+          <span className="flex gap-1" aria-label={t("{count} de {total} cargas preenchidas", { count: clicksOnTarget, total: clicksRequired })}>
             {charges.map((isCharged, index) => (
               <span
                 key={index}
@@ -57,7 +60,7 @@ export function NavbarCalibration({
 
         <div
           className="grid grid-cols-3 gap-1 rounded-xl bg-[#07152A] px-2 py-1.5"
-          aria-label={`Mapa estelar: ${currentTarget} de ${totalTargets} regiões concluídas`}
+          aria-label={t("Mapa estelar: {count} de {total} regiões concluídas", { count: currentTarget, total: totalTargets })}
         >
           {calibrationTargets.map((target, targetIndex) => (
             <span

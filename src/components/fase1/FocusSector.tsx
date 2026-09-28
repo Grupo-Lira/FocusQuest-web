@@ -1,5 +1,6 @@
 "use client";
 
+import { T, useT } from "@/i18n/client";
 import Image from "next/image";
 import type { PhaseOneTarget } from "@/constants/fase1Targets";
 import styles from "./phaseOne.module.css";
@@ -11,13 +12,14 @@ type Props = {
 };
 
 export function FocusSector({ target, isInside, hasSignal }: Props) {
+  const t = useT();
   const message = !hasSignal ? "Vamos encontrar seu olhar"
     : !isInside ? "Aguardando o visor confirmar seu olhar"
     : "Isso! Mantenha o olhar na estrela";
 
   return (
     <section
-      aria-label="Área de foco da estrela atual"
+      aria-label={t("Área de foco da estrela atual")}
       className={`${styles.sector} ${isInside ? styles.focused : ""}`}
       style={{
         left: `${target.x_min * 100}%`, top: `${target.y_min * 100}%`,
@@ -26,11 +28,11 @@ export function FocusSector({ target, isInside, hasSignal }: Props) {
       }}
     >
       <div className={styles.starCore} aria-hidden="true">
-        <Image src="/img/star.svg" width={80} height={80} alt="Estrela alvo" className={styles.star} priority />
+        <Image src="/img/star.svg" width={80} height={80} alt={t("Estrela alvo")} className={styles.star} priority />
       </div>
       <div className={styles.focusCaption}>
-        <p role="status">{message}</p>
-        <small>Olhe por 5 segundos • não precisa clicar</small>
+        <p role="status">{t(message)}</p>
+        <small><T text="Olhe por 5 segundos • não precisa clicar" /></small>
       </div>
     </section>
   );

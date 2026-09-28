@@ -1,3 +1,4 @@
+import { T, useT } from "@/i18n/client";
 import { MoreVertical, Download } from "lucide-react";
 import { useState } from "react";
 import { DeleteConfirmModal } from "@/components/DeleteConfirmModal";
@@ -27,12 +28,13 @@ const HEADERS = [
 ] as const;
 
 const TableHeader = () => {
+  const t = useT();
   const cells = HEADERS.map((header) => (
     <th
       key={header.label}
       className="font-orbitron font-semibold text-lg text-[var(--primary)] text-left pl-3 py-2 whitespace-nowrap"
     >
-      {header.label}
+      {t(header.label)}
     </th>
   ));
 
@@ -55,6 +57,7 @@ const ActionsDropdown = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const { showSuccess, showError } = useToast();
+  const t = useT();
 
   const handleDownloadRelatorio = async () => {
     console.log("🔥 Botão de download clicado! Record ID:", recordId);
@@ -127,15 +130,14 @@ const ActionsDropdown = ({
               window.location.href = `/fichas/editar/${recordId}`;
             }}
           >
-            Editar
-          </button>
+            <T text="Editar" /></button>
           <button
             type="button"
             className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"
             onClick={handleDownloadRelatorio}
             disabled={isDownloading}
           >
-            {isDownloading ? "Baixando..." : "Baixar Relatório"}
+            {t(isDownloading ? "Baixando..." : "Baixar Relatório")}
           </button>
           <button
             type="button"
@@ -145,8 +147,7 @@ const ActionsDropdown = ({
               setIsOpen(false);
             }}
           >
-            Deletar
-          </button>
+            <T text="Deletar" /></button>
         </div>
       )}
       <DeleteConfirmModal
@@ -212,8 +213,7 @@ export function RecordsTable({
         </div>
 
         <p className="text-[var(--text)] font-medium text-lg animate-pulse tracking-wide">
-          Carregando pacientes...
-        </p>
+          <T text="Carregando pacientes..." /></p>
       </div>
     );
   }
@@ -221,7 +221,7 @@ export function RecordsTable({
   if (records.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-8">
-        <p className="text-[var(--text)]">Nenhum registro encontrado</p>
+        <p className="text-[var(--text)]"><T text="Nenhum registro encontrado" /></p>
       </div>
     );
   }

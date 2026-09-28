@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { StepProps } from "@/constants/steps";
 import { Button } from "../Button";
+import { useT } from "@/i18n/client";
 
 type Props = {
   readonly onComplete: () => void;
@@ -25,6 +26,7 @@ const getPrevButtonClass = (currentIndex: number) => {
 };
 
 export function OverlayInstruction({ onComplete, steps }: Props) {
+  const t = useT();
   const [currentStep, setCurrentStep] = useState(steps[0]);
 
   if (currentStep === undefined) return null;
@@ -47,7 +49,7 @@ export function OverlayInstruction({ onComplete, steps }: Props) {
       <div className="bg-[var(--white)] p-16 rounded-4xl shadow w-[85%] flex justify-center text-[var(--primary)] flex-col gap-10 mb-[12%] h-[300px]">
         <div className="flex items-center gap-10 flex-col max-w-[70%]">
           <p className="text-4xl font-semibold font-orbitron uppercase">
-            {currentStep.description}
+            {t(currentStep.description)}
           </p>
           <div className="flex">
             <button type="button" onClick={onPrev} className={prevButtonClass}>
@@ -67,7 +69,7 @@ export function OverlayInstruction({ onComplete, steps }: Props) {
       </div>
       <Image
         src="/img/astronauta.svg"
-        alt="Astronauta"
+        alt={t("Astronauta")}
         width={400}
         height={700}
         className="absolute bottom-0 right-30 w-40 sm:w-60 md:w-80 lg:w-[500px] xl:w-[350px] h-auto"

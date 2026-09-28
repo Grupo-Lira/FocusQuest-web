@@ -4,19 +4,20 @@ import { Button } from "./Button";
 import { Card } from "./Card";
 import { ResultsTable } from "./ResultsTable";
 import { Metricas } from "./SuccessScreen";
+import { useT } from "@/i18n/client";
 
 type Props = {
   readonly data?: Metricas;
 };
 
-const buildResults = (data: Metricas | undefined) => {
+const buildResults = (data: Metricas | undefined, t: ReturnType<typeof useT>) => {
   const totalAcertos = data?.total_acertos ?? 0;
   const totalComissao = data?.total_comissao ?? 0;
   const totalOmissao = data?.total_omissao ?? 0;
   return [
-    { id: 3, name: "🎯 Acertos", score: `${totalAcertos} de 5 alvos` },
-    { id: 4, name: "❌ Demorou para focar", score: `${totalComissao} vezes` },
-    { id: 5, name: "❌ Distrações", score: `${totalOmissao} distrações` },
+    { id: 3, name: "🎯 Acertos", score: t("{count} de 5 alvos", { count: totalAcertos }) },
+    { id: 4, name: "❌ Demorou para focar", score: t("{count} vezes", { count: totalComissao }) },
+    { id: 5, name: "❌ Distrações", score: t("{count} distrações", { count: totalOmissao }) },
   ];
 };
 
@@ -34,10 +35,11 @@ const redirectToMenu = () => {
 };
 
 export function TimeOut({ data }: Props) {
+  const t = useT();
   const [resultsOpen, setResultsOpen] = useState(false);
 
   const onOpenResults = () => setResultsOpen(true);
-  const results = buildResults(data);
+  const results = buildResults(data, t);
   const title = getTitle(resultsOpen);
 
   const buttons =
@@ -61,7 +63,7 @@ export function TimeOut({ data }: Props) {
               src="/img/sad.png"
               height={296}
               width={200}
-              alt="Personagem de tempo esgotado"
+              alt={t("Personagem de tempo esgotado")}
             />
           )}
         </div>

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { CalibrationTarget as CalibrationTargetData } from "@/constants/calibrationStar";
+import { useT } from "@/i18n/client";
 
 type Props = {
   readonly target: CalibrationTargetData;
@@ -18,6 +19,7 @@ export function CalibrationTarget({
   isTransitioning,
   onClick,
 }: Props) {
+  const t = useT();
   const charges = Array.from({ length: clicksRequired }, (_, index) => index < clicks);
   const remainingClicks = clicksRequired - clicks;
   const edgeInset = "3.5rem";
@@ -29,7 +31,7 @@ export function CalibrationTarget({
   return (
     <button
       type="button"
-      aria-label={`Estrela de calibração no ${target.label}. ${clicks} de ${clicksRequired} cliques concluídos.`}
+      aria-label={t("Estrela de calibração no {region}. {count} de {total} cliques concluídos.", { region: t(target.label), count: clicks, total: clicksRequired })}
       aria-describedby="calibration-target-instruction"
       disabled={isTransitioning}
       onClick={onClick}
@@ -60,8 +62,8 @@ export function CalibrationTarget({
 
       <span className="sr-only">
         {remainingClicks === 0
-          ? "Estrela energizada."
-          : `Faltam ${remainingClicks} ${remainingClicks === 1 ? "clique" : "cliques"}.`}
+          ? t("Estrela energizada.")
+          : t(remainingClicks === 1 ? "Falta {count} clique." : "Faltam {count} cliques.", { count: remainingClicks })}
       </span>
     </button>
   );

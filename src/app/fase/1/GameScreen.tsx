@@ -1,5 +1,6 @@
 "use client";
 
+import { T, useT } from "@/i18n/client";
 import { Bolt } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -49,6 +50,7 @@ const getTargetWithBackendHitbox = (
 };
 
 export function GameScreen() {
+  const t = useT();
   const playFieldRef = useRef<HTMLDivElement>(null);
   const mountedRef = useRef(false);
   const stageRef = useRef<Stage>("intro");
@@ -58,7 +60,7 @@ export function GameScreen() {
   const startingRef = useRef(false);
   const [stage, setStage] = useState<Stage>("intro");
   const [target, setTarget] = useState<PhaseOneTarget | null>(null);
-  const [notice, setNotice] = useState("");
+  const [notice, setNotice] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [isPatientSelectOpen, setIsPatientSelectOpen] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -133,7 +135,7 @@ export function GameScreen() {
       completedRef.current = [...completedRef.current, id];
       setHits(completedRef.current.length);
       setTarget((current) => current?.id === id ? null : current);
-      setNotice("Estrela conquistada! " + completedRef.current.length + " de 5");
+      setNotice(completedRef.current.length);
     };
     const finish = (data: FinishEvent) => {
       if (data.fase !== undefined && data.fase !== 1) return;
@@ -203,8 +205,8 @@ export function GameScreen() {
   }, [timeLeft, socket, setIsGameActive, setIsPaused]);
 
   useEffect(() => {
-    if (!notice || isPaused) return;
-    const timer = window.setTimeout(() => setNotice(""), 1800);
+    if (notice === null || isPaused) return;
+    const timer = window.setTimeout(() => setNotice(null), 1800);
     return () => window.clearTimeout(timer);
   }, [notice, isPaused]);
 
@@ -319,7 +321,7 @@ export function GameScreen() {
 
       <button
         type="button"
-        aria-label="Open settings"
+        aria-label={t("Configurações")}
         className="bg-[var(--primary)] z-20 w-11 h-11 rounded-full absolute flex items-center justify-center button-glow transition-all duration-300 top-9 right-9"
         onClick={handleOpenSettings}
       >
@@ -329,7 +331,7 @@ export function GameScreen() {
       <div ref={playFieldRef} className={styles.playField} aria-hidden="true" />
       {stage === "running" && <SpaceEncounters paused={isPaused} target={target} />}
       {target && stage === "running" && <FocusSector key={target.id} target={target} {...feedback} />}
-      {notice && stage === "running" && <div role="status" className={styles.notice}>{notice}</div>}
+      {notice !== null && stage === "running" && <div role="status" className={styles.notice}>{t("Estrela conquistada! {count} de 5", { count: notice })}</div>}
 
       <PatientSelectModal isOpen={isPatientSelectOpen}
         onSelect={(id) => { setSelectedPacienteId(id); setIsPatientSelectOpen(false); }}
@@ -340,7 +342,7 @@ export function GameScreen() {
           <OverlayInstruction onComplete={start} steps={fase1Steps} />
           {(error || !isConnected || !isWebGazerLoaded) && (
             <div className={styles.guideStatus} role={error ? "alert" : "status"}>
-              {error || (!isConnected ? "Conectando à missão…" : "Aguardando o visor…")}
+              {t(error || (!isConnected ? "Conectando à missão…" : "Aguardando o visor…"))}
             </div>
           )}
         </>
@@ -348,17 +350,17 @@ export function GameScreen() {
 
       {stage === "running" && isPaused && !settingsOpen && (
         <div className={styles.overlay}><div className={styles.intro}>
-          <h2>Missão pausada</h2><p>Quando estiver pronto, volte a olhar para a estrela.</p>
-          {error && <p role="alert" className={styles.error}>{error}</p>}
+          <h2><T text="Missão pausada" /></h2><p><T text="Quando estiver pronto, volte a olhar para a estrela." /></p>
+          {error && <p role="alert" className={styles.error}>{t(error)}</p>}
           <button type="button" className={styles.primaryButton} onClick={resume} disabled={resuming}>{resuming ? "Ligando o visor…" : "Continuar missão"}</button>
-          <Link href="/menu" className={styles.secondaryButton}>Voltar ao menu</Link>
+          <Link href="/menu" className={styles.secondaryButton}><T text="Voltar ao menu" /></Link>
         </div></div>
       )}
       {settingsOpen && <div className={styles.overlay}><SettingsModal isStoppedGame onClick={handleCloseSettings} /></div>}
       {stage === "interrupted" && <div className={styles.overlay}><div className={styles.intro}>
-        <h2>Vamos reconectar a missão</h2><p role="alert">{error}</p>
-        <button type="button" className={styles.primaryButton} onClick={() => window.location.reload()}>Reiniciar missão</button>
-        <Link href="/menu" className={styles.secondaryButton}>Voltar ao menu</Link>
+        <h2><T text="Vamos reconectar a missão" /></h2><p role="alert">{t(error)}</p>
+        <button type="button" className={styles.primaryButton} onClick={() => window.location.reload()}><T text="Reiniciar missão" /></button>
+        <Link href="/menu" className={styles.secondaryButton}><T text="Voltar ao menu" /></Link>
       </div></div>}
       {stage === "finished" && <div className={styles.overlay}>
         {timedOutRef.current && !isTrainingMode ? <TimeOut data={result} /> : <SuccessScreen fase={2} faseAtual={1} data={result} experimentoId={experimentId} timedOut={timedOutRef.current} />}

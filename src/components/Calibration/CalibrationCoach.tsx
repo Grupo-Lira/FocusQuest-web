@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { Button } from "../Button";
+import { useT } from "@/i18n/client";
 
 export type CalibrationCoachState = "intro" | "preparing" | "error" | "transition";
 
@@ -17,7 +18,6 @@ const getCoachCopy = (
   state: CalibrationCoachState,
   isWebGazerLoaded: boolean,
   error: string | null,
-  completedTargets: number
 ) => {
   if (state === "preparing") {
     return {
@@ -38,7 +38,7 @@ const getCoachCopy = (
   if (state === "transition") {
     return {
       title: "Setor energizado!",
-      description: `Você já mapeou ${completedTargets} de 9 regiões. Prepare os olhos para a próxima estrela.`,
+      description: "Você já mapeou {count} de 9 regiões. Prepare os olhos para a próxima estrela.",
     };
   }
 
@@ -70,7 +70,8 @@ export function CalibrationCoach({
   completedTargets = 0,
   onStart,
 }: Props) {
-  const copy = getCoachCopy(state, isWebGazerLoaded, error, completedTargets);
+  const t = useT();
+  const copy = getCoachCopy(state, isWebGazerLoaded, error);
   const isTransition = state === "transition";
   const isPreparing = state === "preparing";
   const canStart = state === "error" || (state === "intro" && isWebGazerLoaded);
@@ -88,10 +89,10 @@ export function CalibrationCoach({
 
         <div className="relative z-10 max-w-2xl space-y-5 md:pr-40">
           <p className="font-orbitron text-2xl font-semibold text-[var(--primary)] md:text-4xl">
-            {copy.title}
+            {t(copy.title)}
           </p>
           <p className="text-lg font-semibold leading-relaxed text-[var(--text)] md:text-xl">
-            {copy.description}
+            {t(copy.description, { count: completedTargets })}
           </p>
 
           {isTransition ? null : (
@@ -107,7 +108,7 @@ export function CalibrationCoach({
 
         <Image
           src="/img/astronauta.svg"
-          alt="Astronauta guiando a calibração"
+          alt={t("Astronauta guiando a calibração")}
           width={250}
           height={390}
           className="calibration-coach__astronaut relative z-10 mt-5 h-auto w-32 md:absolute md:bottom-0 md:right-4 md:mt-0 md:w-44"

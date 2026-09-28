@@ -1,3 +1,4 @@
+import { T, useT } from "@/i18n/client";
 import { FormInput } from "@/components/FormInput";
 import { RadioGroup } from "@/components/RadioGroup";
 import { formatDate } from "@/utils/dateUtils";
@@ -44,6 +45,7 @@ export function PacienteForm({
   onDelete,
   isDeleting = false,
 }: Props) {
+  const t = useT();
   const applyDateMask = (value: string) => {
     const numbers = value.replace(/\D/g, "");
     if (numbers.length <= 2) return numbers;
@@ -93,21 +95,21 @@ export function PacienteForm({
                 name="nome"
                 value={form.nome}
                 onChange={onChangeField("nome")}
-                placeholder="Editar nome"
+                placeholder={t("Editar nome")}
                 className="text-2xl font-orbitron text-[var(--primary)] font-semibold bg-transparent outline-none placeholder:text-[var(--primary)] w-auto"
               />
               <PenIcon color="var(--primary)" />
             </div>
 
             <div className="flex items-center gap-2 text-[var(--text)]">
-              <span className="text-lg">Data da Avaliação:</span>
+              <span className="text-lg"><T text="Data da Avaliação:" /></span>
               <div className="flex items-center gap-2 border-b border-transparent focus-within:border-gray-200 pb-1">
                 <input
                   type="text"
                   name="dataAvaliacao"
                   value={formatDate(form.dataAvaliacao)}
                   onChange={onChangeField("dataAvaliacao")}
-                  placeholder="DD/MM/AAAA"
+                  placeholder={t("DD/MM/AAAA")}
                   className="font-bold text-lg bg-transparent outline-none w-[130px] text-[var(--text)] uppercase"
                 />
                 <PenIcon color="var(--primary)" />
@@ -122,8 +124,7 @@ export function PacienteForm({
             disabled={isDeleting}
             className="bg-red-600 hover:bg-red-700 h-fit text-white font-medium px-8 py-2.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Deletar
-          </button>
+            <T text="Deletar" /></button>
         )}
       </div>
 
@@ -139,8 +140,7 @@ export function PacienteForm({
 
         <div className="flex flex-col gap-1">
           <span className="text-[var(--primary)] font-orbitron uppercase font-semibold text-xs tracking-wide mb-1">
-            Sexo
-          </span>
+            <T text="Sexo" /></span>
           <div className="flex gap-4">
             <RadioGroup
               label="M"
@@ -193,7 +193,7 @@ export function PacienteForm({
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-          {error}
+          {t(error)}
         </div>
       )}
     </form>

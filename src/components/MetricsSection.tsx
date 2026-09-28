@@ -1,5 +1,6 @@
 "use client";
 
+import { T, useT } from "@/i18n/client";
 import { useState } from "react";
 import { Clock, Activity, X, AlertTriangle } from "lucide-react";
 import { Metricas } from "@/types/paciente.types";
@@ -10,6 +11,7 @@ interface MetricsSectionProps {
 }
 
 export function MetricsSection({ metricas, onObservacoesChange }: MetricsSectionProps) {
+  const t = useT();
   const {
     tempoReacao,
     variabilidadeTemporalRespostas,
@@ -34,15 +36,14 @@ export function MetricsSection({ metricas, onObservacoesChange }: MetricsSection
       {/* Título */}
       <div className="flex flex-col items-center justify-center mb-8">
         <h3 className="text-2xl font-orbitron text-[var(--primary)] font-semibold uppercase tracking-wider mb-4">
-          Métricas
-        </h3>
+          <T text="Métricas" /></h3>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6">
         <div className="flex flex-col items-center text-center">
           <div className="flex items-center gap-2 text-gray-500 text-sm mb-1">
             <Clock size={16} />
-            <span>TEMPO DE REAÇÃO</span>
+            <span><T text="TEMPO DE REAÇÃO" /></span>
           </div>
           <div className="text-3xl font-semibold font-orbitron text-gray-800">
             {tempoReacao ?? "-"}
@@ -52,7 +53,7 @@ export function MetricsSection({ metricas, onObservacoesChange }: MetricsSection
         <div className="flex flex-col items-center text-start">
           <div className="flex gap-2 text-gray-500 text-sm mb-1">
             <Activity size={16} />
-            <span className="whitespace-nowrap">VARIABILIDADE TEMPORAL</span>
+            <span className="whitespace-nowrap"><T text="VARIABILIDADE TEMPORAL" /></span>
           </div>
           <div className="text-3xl font-semibold font-orbitron text-gray-800">
             {variabilidadeTemporalRespostas ?? "-"}
@@ -63,7 +64,7 @@ export function MetricsSection({ metricas, onObservacoesChange }: MetricsSection
         <div className="flex flex-col items-center text-center">
           <div className="flex items-center gap-2 text-red-500 text-sm mb-1">
             <X size={16} />
-            <span>ERROS DE OMISSÃO</span>
+            <span><T text="ERROS DE OMISSÃO" /></span>
           </div>
           <div className="text-3xl font-semibold font-orbitron text-red-500">
             {errosOmissao ?? "-"}
@@ -74,7 +75,7 @@ export function MetricsSection({ metricas, onObservacoesChange }: MetricsSection
         <div className="flex flex-col items-center text-center">
           <div className="flex items-center gap-2 text-red-500 text-sm mb-1">
             <AlertTriangle size={16} />
-            <span>ERROS DE COMISSÃO</span>
+            <span><T text="ERROS DE COMISSÃO" /></span>
           </div>
           <div className="text-3xl font-semibold font-orbitron text-red-500">
             {errosComissao ?? "-"}
@@ -85,8 +86,7 @@ export function MetricsSection({ metricas, onObservacoesChange }: MetricsSection
       {/* Observações durante o jogo button */}
       <div className="flex justify-center mb-8">
         <button className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium border border-gray-300">
-          Observações durante o jogo
-        </button>
+          <T text="Observações durante o jogo" /></button>
       </div>
 
       {/* Seção de Observações e Gráfico */}
@@ -97,23 +97,21 @@ export function MetricsSection({ metricas, onObservacoesChange }: MetricsSection
           <div>
             <div className="flex items-center gap-2 mb-2">
               <h4 className="text-[var(--primary)] font-orbitron uppercase font-semibold text-sm tracking-wide">
-                Observações
-              </h4>
+                <T text="Observações" /></h4>
               <div
                 className="w-5 h-5 rounded-full bg-orange-400 text-white flex items-center justify-center text-xs cursor-help relative group"
-                title="Campo para anotações feitas pelo profissional durante o jogo"
+                title={t("Campo para anotações feitas pelo profissional durante o jogo")}
               >
                 ℹ{/* Tooltip customizado */}
                 <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-                  Campo para anotações feitas pelo profissional durante o jogo
-                  <span className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-800"></span>
+                  <T text="Campo para anotações feitas pelo profissional durante o jogo" /><span className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-800"></span>
                 </span>
               </div>
             </div>
             <textarea
               value={observacoesEdit}
               onChange={handleObservacoesChange}
-              placeholder="Digite as observações..."
+              placeholder={t("Digite as observações...")}
               className="w-full h-32 p-3 border border-gray-200 rounded-lg resize-none text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)]"
             />
           </div>
@@ -121,8 +119,7 @@ export function MetricsSection({ metricas, onObservacoesChange }: MetricsSection
           {/* Observações por IA */}
           <div>
             <h4 className="text-[var(--primary)] font-orbitron uppercase font-semibold text-sm tracking-wide mb-2">
-              Observações por IA
-            </h4>
+              <T text="Observações por IA" /></h4>
             <div className="space-y-2">
               {[...Array(5)].map((_, i) => (
                 <div key={i} className="border-b border-gray-200 h-6"></div>
@@ -134,8 +131,7 @@ export function MetricsSection({ metricas, onObservacoesChange }: MetricsSection
         {/* Lado direito - Gráfico Comparativo */}
         <div>
           <h4 className="text-[var(--primary)] font-orbitron uppercase font-semibold text-sm tracking-wide mb-4 text-center">
-            Comparação por Faixa Etária
-          </h4>
+            <T text="Comparação por Faixa Etária" /></h4>
 
           {Array.isArray(dadosComparativos) && dadosComparativos.length > 0 ? (
             <ComparisonChart
@@ -145,8 +141,7 @@ export function MetricsSection({ metricas, onObservacoesChange }: MetricsSection
             />
           ) : (
             <div className="h-48 flex items-center justify-center text-gray-400 text-sm">
-              Dados comparativos não disponíveis
-            </div>
+              <T text="Dados comparativos não disponíveis" /></div>
           )}
         </div>
       </div>
@@ -220,16 +215,13 @@ export function ComparisonChart({ dados, acertos, idadePaciente }: ComparisonCha
     <div className="relative w-full max-w-md mx-auto bg-white p-5 rounded-xl shadow-sm border border-slate-100 font-sans">
       <div className="flex justify-between items-center mb-5">
         <div className="text-[11px] text-slate-800 font-extrabold uppercase tracking-wide">
-          Desempenho Comparativo
-        </div>
+          <T text="Desempenho Comparativo" /></div>
         <div className="flex gap-3 text-[10px] font-semibold">
           <div className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-sm bg-[#FF7A00]"></span> Média
-          </div>
+            <span className="w-2 h-2 rounded-sm bg-[#FF7A00]"></span> <T text="Média" /></div>
           {acertos !== undefined && (
             <div className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-sm bg-[#00C48C]"></span> Paciente
-            </div>
+              <span className="w-2 h-2 rounded-sm bg-[#00C48C]"></span> <T text="Paciente" /></div>
           )}
         </div>
       </div>
@@ -308,8 +300,7 @@ export function ComparisonChart({ dados, acertos, idadePaciente }: ComparisonCha
                   textAnchor="middle"
                   fontWeight="900"
                 >
-                  VOCÊ
-                </text>
+                  <T text="VOCÊ" /></text>
                 <circle
                   cx="0"
                   cy="0"
@@ -328,13 +319,11 @@ export function ComparisonChart({ dados, acertos, idadePaciente }: ComparisonCha
       <div className="flex justify-between ml-[33px] pt-2 border-t border-slate-100">
         {dados.map((d, i) => (
           <span key={i} className="text-[10px] text-slate-500 font-bold">
-            {d.idade}a
-          </span>
+            {d.idade}<T text="a" /></span>
         ))}
       </div>
       <div className="text-center mt-2 text-[9px] text-slate-400 font-extrabold uppercase tracking-wider">
-        Faixa Etária (Anos)
-      </div>
+        <T text="Faixa Etária (Anos)" /></div>
     </div>
   );
 }

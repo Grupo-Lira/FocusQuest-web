@@ -1,5 +1,6 @@
 "use client";
 
+import { T, useT } from "@/i18n/client";
 import { Dumbbell, Info } from "lucide-react";
 import { useState } from "react";
 import { useTrainingMode } from "@/context/TrainingModeContext";
@@ -8,6 +9,7 @@ const TRAINING_MODE_DESCRIPTION =
   "Neste modo, a IA não analisa a sessão. Ao fim de cada fase, o profissional registra um feedback e uma nota de 0 a 5 para a performance da criança.";
 
 export function TrainingModeToggle() {
+  const t = useT();
   const { isTrainingMode, setIsTrainingMode } = useTrainingMode();
   const [isNoticeOpen, setIsNoticeOpen] = useState(false);
 
@@ -24,8 +26,8 @@ export function TrainingModeToggle() {
           type="button"
           role="switch"
           aria-checked={isTrainingMode}
-          aria-label="Alternar modo de treinamento"
-          title="Neste modo, a IA não analisa a sessão. Ao fim de cada fase, o profissional registra um feedback e uma nota de 0 a 5 para a performance da criança."
+          aria-label={t("Alternar modo de treinamento")}
+          title={t(TRAINING_MODE_DESCRIPTION)}
           onClick={handleToggle}
           className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold transition duration-300 ${
             isTrainingMode
@@ -34,7 +36,7 @@ export function TrainingModeToggle() {
           }`}
         >
           <Dumbbell size={18} />
-          <span>Treinamento</span>
+          <span><T text="Treinamento" /></span>
           <Info size={16} aria-hidden="true" />
           <span
             aria-hidden="true"
@@ -62,16 +64,14 @@ export function TrainingModeToggle() {
           <div className="w-full max-w-md rounded-2xl bg-white p-6 text-center shadow-xl">
             <Dumbbell className="mx-auto mb-3 text-green-600" size={32} />
             <h2 id="training-mode-notice-title" className="text-xl font-bold text-gray-800">
-              Modo de treinamento ativado
-            </h2>
-            <p className="mt-3 text-sm leading-relaxed text-gray-600">{TRAINING_MODE_DESCRIPTION}</p>
+              <T text="Modo de treinamento ativado" /></h2>
+            <p className="mt-3 text-sm leading-relaxed text-gray-600">{t(TRAINING_MODE_DESCRIPTION)}</p>
             <button
               type="button"
               onClick={() => setIsNoticeOpen(false)}
               className="mt-5 rounded-full bg-[var(--primary)] px-5 py-2 text-sm font-semibold text-white transition hover:brightness-95"
             >
-              Entendi
-            </button>
+              <T text="Entendi" /></button>
           </div>
         </div>
       )}

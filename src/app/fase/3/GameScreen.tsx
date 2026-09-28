@@ -16,6 +16,7 @@ import { useGameContext } from "@/context/GameContext";
 import { usePatient } from "@/context/PatientContext";
 import { useTrainingMode } from "@/context/TrainingModeContext";
 import { useSocketIO } from "@/hooks/useWebSocket";
+import { useT } from "@/i18n/client";
 
 type Fase3BoundingBox = {
   x_min: number;
@@ -88,6 +89,7 @@ const isRadarTarget = (alvo: string | undefined) => {
 };
 
 export function GameScreen() {
+  const t = useT();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successData, setSuccessData] = useState<Phase3SuccessPayload | null>(null);
@@ -139,7 +141,7 @@ export function GameScreen() {
 
   const handleStartGame = async () => {
     if (!selectedPacienteId) {
-      alert("Por favor, selecione um paciente na ficha antes de iniciar a fase.");
+      alert(t("Por favor, selecione um paciente na ficha antes de iniciar a fase."));
       window.location.href = "/fichas";
       return;
     }
@@ -321,7 +323,7 @@ export function GameScreen() {
 
       <button
         type="button"
-        aria-label="Open settings"
+        aria-label={t("Configurações")}
         className="bg-[var(--primary)] z-20 w-11 h-11 rounded-full absolute flex items-center justify-center button-glow transition-all duration-300 top-9 right-9"
         onClick={onOpenSettings}
       >

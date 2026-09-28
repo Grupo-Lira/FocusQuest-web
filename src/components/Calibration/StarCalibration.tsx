@@ -3,6 +3,7 @@
 import clsx from "clsx";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
+import { useT } from "@/i18n/client";
 
 type IrisPosition = {
   x: number;
@@ -33,6 +34,7 @@ const isGazeInside = (position: IrisPosition, left: number, top: number) => {
 };
 
 export function StarCalibration({ top, left, onHit, onError, onClick }: Props) {
+  const t = useT();
   const [isBeingLookedAt, setIsBeingLookedAt] = useState(false);
   const [hasBeenHit, setHasBeenHit] = useState(false);
   const [visible, setVisible] = useState(true);
@@ -89,7 +91,7 @@ export function StarCalibration({ top, left, onHit, onError, onClick }: Props) {
       <Image
         width={50}
         height={50}
-        alt="Estrela de calibração"
+        alt={t("Estrela de calibração")}
         src="/img/star.svg"
         className={imageClass}
       />

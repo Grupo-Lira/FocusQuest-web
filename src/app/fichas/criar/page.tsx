@@ -57,11 +57,8 @@ export default function CriarFichaPage() {
             form={form}
             setForm={setForm}
             onSubmit={onSubmit}
-            onCancel={onCancel}
-            isLoading={isLoading}
             error={error}
             formId="paciente-form"
-            submitButtonText="Adicionar"
           />
 
           <div className="flex gap-4 justify-end pt-8 w-full">

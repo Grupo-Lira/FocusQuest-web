@@ -1,5 +1,6 @@
 "use client";
 
+import { T } from "@/i18n/client";
 import { AnimatedElement } from "@/components/AnimatedElements/AnimatedElement";
 import { Card } from "@/components/Card";
 import { NavbarGame } from "@/components/NavbarGame";
@@ -293,14 +294,11 @@ export function GameScreen() {
           <Card title="Atenção">
             <div className="flex flex-col items-center gap-4 text-center">
               <p className="text-xl text-[#4a4a4a] font-orbitron">
-                A rodada 1 terminou. A rodada 2 vai começar em breve.
-              </p>
+                <T text="A rodada 1 terminou. A rodada 2 vai começar em breve." /></p>
               <p className="text-lg text-[#4a4a4a] font-orbitron">
-                Preste atenção na próxima rodada.
-              </p>
+                <T text="Preste atenção na próxima rodada." /></p>
               <p className="text-2xl text-[var(--primary)] font-orbitron">
-                Fechando em {round1NoticeSeconds}s
-              </p>
+                <T text="Fechando em" />{" "}{round1NoticeSeconds}<T text="s" /></p>
             </div>
           </Card>
         </div>

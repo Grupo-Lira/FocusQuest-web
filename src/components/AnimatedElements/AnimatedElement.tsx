@@ -38,5 +38,5 @@ export const AnimatedElement = ({ src, duration, id, isPaused }: Props) => {
     animation: `${animationName} ${duration}s linear infinite ${direction}`,
   };
 
-  return <img src={src} alt="elemento animado" className={className} style={style} />;
+  return <img src={src} alt="" className={className} style={style} />;
 };
