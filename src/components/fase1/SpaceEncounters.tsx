@@ -10,7 +10,12 @@ type Encounter = {
   kind: "ship" | "meteor" | "visitor";
   duration: number;
   lane: number;
-  reverse: boolean;
+  side: "left" | "right";
+  entry: string;
+  approach: string;
+  departure: string;
+  exit: string;
+  direction: 1 | -1;
   scale: number;
 };
 
@@ -20,6 +25,45 @@ const ASSETS = {
   visitor: "/img/distracoes/et.png",
 };
 const KINDS: Encounter["kind"][] = ["ship", "meteor", "visitor"];
+
+const getOppositePath = (target: PhaseOneTarget | null): Pick<Encounter, "side" | "lane" | "entry" | "approach" | "departure" | "exit" | "direction"> => {
+  const centerX = target ? (target.x_min + target.x_max) / 2 : 0.5;
+  const centerY = target ? (target.y_min + target.y_max) / 2 : 0.5;
+  const side = centerX < 0.5 ? "right" : centerX > 0.5 ? "left" : Math.random() > 0.5 ? "right" : "left";
+  const lane = centerY < 0.5
+    ? 80 + Math.random() * 5
+    : centerY > 0.5
+      ? 10 + Math.random() * 5
+      : Math.random() > 0.5 ? 80 + Math.random() * 5 : 10 + Math.random() * 5;
+
+  // Keep the entire route beyond the target's nearest horizontal edge. This
+  // leaves the distraction visible while preserving a clear opposite side.
+  if (side === "right") {
+    const targetEdge = target ? target.x_max * 100 : 50;
+    const approach = Math.min(78, Math.max(58, targetEdge + 8));
+    return {
+      side,
+      lane,
+      entry: "110vw",
+      approach: `${approach}vw`,
+      departure: `${Math.min(92, approach + 12)}vw`,
+      exit: "110vw",
+      direction: -1 as const,
+    };
+  }
+
+  const targetEdge = target ? target.x_min * 100 : 50;
+  const approach = Math.max(4, Math.min(34, targetEdge - 30));
+  return {
+    side,
+    lane,
+    entry: "-360px",
+    approach: `${approach}vw`,
+    departure: `${Math.max(4, approach - 12)}vw`,
+    exit: "-360px",
+    direction: 1 as const,
+  };
+};
 
 export function SpaceEncounters({ paused, target }: {
   readonly paused: boolean;
@@ -48,11 +92,8 @@ export function SpaceEncounters({ paused, target }: {
       const kind = choices[Math.floor(Math.random() * choices.length)];
       const duration = kind === "meteor" ? 3800 + Math.random() * 1200 : 6000 + Math.random() * 1800;
       const active = currentTarget.current;
-      // Prefer the opposite edge, with the target always painted above the encounter.
-      const lane = active && (active.y_min + active.y_max) / 2 > 0.55
-        ? 20 + Math.random() * 8 : 80 + Math.random() * 7;
-      setEncounter({ id: clock.current, kind, duration, lane,
-        reverse: Math.random() > 0.5, scale: 0.75 + Math.random() * 0.4 });
+      const path = getOppositePath(active);
+      setEncounter({ id: clock.current, kind, duration, ...path, scale: 1 + Math.random() * 0.35 });
       previousKind.current = kind;
       endsAt.current = clock.current + duration;
       nextEncounterAt.current = endsAt.current + 2300 + Math.random() * 2500;
@@ -67,11 +108,11 @@ export function SpaceEncounters({ paused, target }: {
           style={{
             "--lane": `${encounter.lane}%`, "--duration": `${encounter.duration}ms`,
             "--depth": encounter.scale,
-            "--entry": encounter.reverse ? "110vw" : "-160px",
-            "--approach": encounter.reverse ? "68vw" : "20vw",
-            "--departure": encounter.reverse ? "25vw" : "68vw",
-            "--exit": encounter.reverse ? "-160px" : "110vw",
-            "--direction": encounter.reverse ? -1 : 1,
+            "--entry": encounter.entry,
+            "--approach": encounter.approach,
+            "--departure": encounter.departure,
+            "--exit": encounter.exit,
+            "--direction": encounter.direction,
           } as CSSProperties}>
           <span className={styles.trail} />
           <div className={styles.sprite}>
