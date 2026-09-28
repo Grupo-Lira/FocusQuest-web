@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { ProfileEditModal } from "./ProfileEditModal";
+import { TrainingModeToggle } from "./TrainingModeToggle";
 
 type NavLinkItem = {
   id: number;
@@ -73,8 +74,12 @@ export function Navbar() {
       */}
       <div className="bg-[var(--white)] px-4 py-2 flex items-center w-fit rounded-full gap-12 shadow-sm border border-gray-100">
         {/* Reduzimos o gap entre os links de 5 para 2 */}
-        <div className="flex gap-2">
-          {LINKS.map((link) => (
+        <div className="flex items-center gap-2">
+          {LINKS.slice(0, 3).map((link) => (
+            <NavLink key={link.id} link={link} isActive={pathname === link.href} />
+          ))}
+          <TrainingModeToggle />
+          {LINKS.slice(3).map((link) => (
             <NavLink key={link.id} link={link} isActive={pathname === link.href} />
           ))}
         </div>

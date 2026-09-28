@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useGameContext } from "@/context/GameContext";
+import { useTrainingMode } from "@/context/TrainingModeContext";
 import { formatTime } from "@/utils/dateUtils";
 
 type Props = {
@@ -18,6 +19,7 @@ const PauseToggleIcon = ({ isPaused }: { isPaused: boolean }) => {
 
 export function NavbarGame({ label, onPauseToggle }: Props) {
   const { timeLeft, setIsPaused, isPaused } = useGameContext();
+  const { isTrainingMode } = useTrainingMode();
 
   const onTogglePause = () => {
     const nextPaused = !isPaused;
@@ -30,6 +32,11 @@ export function NavbarGame({ label, onPauseToggle }: Props) {
     <div className="bg-[var(--white)] px-4 py-2 flex w-fit rounded-full gap-40">
       <div className="flex gap-5 items-center">
         <p className="font-semibold font-orbitron text-[var(--primary)]">{label}</p>
+        {isTrainingMode ? (
+          <span className="rounded-full bg-green-600 px-3 py-1 text-xs font-bold text-white">
+            TREINAMENTO ON
+          </span>
+        ) : null}
       </div>
       <div className="flex items-center gap-1.5 pl-4 pb-2 rounded-full font-semibold bg-[var(--white)] text-[var(--primary)] inner-shadow">
         <p className="pt-2">{formattedTime}</p>

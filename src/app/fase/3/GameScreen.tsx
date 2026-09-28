@@ -14,6 +14,7 @@ import { useAudio } from "@/context/AudioContext";
 import { GazeData, useEyeTracking } from "@/context/EyeTrackingContext";
 import { useGameContext } from "@/context/GameContext";
 import { usePatient } from "@/context/PatientContext";
+import { useTrainingMode } from "@/context/TrainingModeContext";
 import { useSocketIO } from "@/hooks/useWebSocket";
 
 type Fase3BoundingBox = {
@@ -27,6 +28,7 @@ type Phase3SuccessPayload = {
   metricas?: Metricas | null;
   avaliacao_final?: string | null;
   avaliacao_score?: number | null;
+  experimento_id?: string;
   [key: string]: unknown;
 };
 
@@ -105,6 +107,7 @@ export function GameScreen() {
   const { startAudio } = useAudio();
   const { socket, isConnected } = useSocketIO();
   const { selectedPacienteId } = usePatient();
+  const { isTrainingMode } = useTrainingMode();
   const { stopTracking, isWebGazerLoaded, startTracking, lastGazeData, isTracking } =
     useEyeTracking();
 
@@ -156,6 +159,7 @@ export function GameScreen() {
           usuarioId: selectedPacienteId,
           alvoInicialNome: "ESTRELA",
           fase3,
+          modoTreinamento: isTrainingMode,
         });
       }
     }
@@ -303,7 +307,9 @@ export function GameScreen() {
       {showSuccessModal === true ? (
         <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
           <SuccessScreen
-            fase={1}
+            fase={4}
+            faseAtual={3}
+            experimentoId={successData?.experimento_id ?? null}
             data={successModalData ?? successData?.metricas ?? undefined}
             ai={{
               avaliacao_final: successData?.avaliacao_final ?? null,

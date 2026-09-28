@@ -52,7 +52,7 @@ Origem: `src/app/fase/1/GameScreen.tsx` e `src/hooks/usePhaseOneGaze.ts`.
 
 | Evento                  | Payload conhecido                              | Finalidade                                            |
 | ----------------------- | ---------------------------------------------- | ----------------------------------------------------- |
-| `iniciar_fase1`         | `{ fase1: TargetConfig[], usuarioId: string }` | Inicia a fase com paciente e caixas dos cinco alvos.  |
+| `iniciar_fase1`         | `{ fase1: TargetConfig[], usuarioId: string, modoTreinamento: boolean }` | Inicia a fase com paciente e caixas dos cinco alvos.  |
 | `gaze_data_fase1`       | `{ x, y, rawX, rawY, timestamp }`              | Envia novo sample de gaze, no máximo a cada 1.000 ms. |
 | `fase_1_tempo_excedido` | Sem payload                                    | Informa que o timer local chegou a zero.              |
 
@@ -82,7 +82,7 @@ está pausada, sem conexão ou sem tracking.
 | `brilhar_estrela`       | `data.alvo`                    | Acende o alvo informado.                          |
 | `fase1_foco_status`     | `data.status` | Ativa ou remove o realce do quadrante conforme o backend. |
 | `alvo_fase1_concluido`  | `data.alvo`, `data.motivo_termino` | Conquista a estrela somente com motivo `FOCOU`. |
-| `fase_concluida`        | `data.metricas`, `data.motivo` | Pausa tracking e abre resultado quando aplicável. |
+| `fase_concluida`        | `data.metricas`, `data.experimento_id`, `data.motivo` | Pausa tracking e abre resultado quando aplicável. |
 
 Inspeção do backend local confirmou que `alvo` normalmente tem o formato
 `TargetConfig`, mas na conclusão pode ser o índice numérico. `motivo_termino` é
@@ -114,7 +114,7 @@ Origem: `src/app/fase/2/GameScreen.tsx`.
 
 | Evento                      | Payload conhecido                      | Finalidade                                                   |
 | --------------------------- | -------------------------------------- | ------------------------------------------------------------ |
-| `iniciar_fase2`             | `{ fase: 2, usuarioId, controleJogo }` | Inicia a fase e informa paciente/controle.                   |
+| `iniciar_fase2`             | `{ fase: 2, usuarioId, controleJogo, modoTreinamento: boolean }` | Inicia a fase e informa paciente/controle.                   |
 | `click_planeta_selecionado` | `{ planetaId: number }`                | Envia seleção feita pelo mouse.                              |
 | `aguardando_iot`            | Sem payload                            | Informa fim do timer e espera respostas do controle externo. |
 | `aguardando_mouse`          | Sem payload                            | Informa fim do timer e espera respostas por mouse.           |
@@ -154,7 +154,7 @@ Origem: `src/app/fase/3/GameScreen.tsx`.
 
 | Evento                  | Payload conhecido                                                 | Finalidade                                  |
 | ----------------------- | ----------------------------------------------------------------- | ------------------------------------------- |
-| `iniciar_fase3`         | `{ usuarioId, alvoInicialNome: "ESTRELA", fase3: BoundingBox[] }` | Inicia a alternância entre estrela e radar. |
+| `iniciar_fase3`         | `{ usuarioId, alvoInicialNome: "ESTRELA", fase3: BoundingBox[], modoTreinamento: boolean }` | Inicia a alternância entre estrela e radar. |
 | `gaze_data_fase3`       | `{ x, y, timestamp, larguraTela }`                                | Envia novo sample, no máximo a cada 250 ms. |
 | `fase_3_pause`          | Sem payload                                                       | Pausa a fase no backend.                    |
 | `fase_3_resume`         | Sem payload                                                       | Retoma a fase no backend.                   |

@@ -18,6 +18,7 @@ import { stars } from "@/constants/fase2Stars";
 import { useAudio } from "@/context/AudioContext";
 import { useGameContext } from "@/context/GameContext";
 import { usePatient } from "@/context/PatientContext";
+import { useTrainingMode } from "@/context/TrainingModeContext";
 import { usePlanets } from "@/hooks/usePlanets";
 import { useSocketIO } from "@/hooks/useWebSocket";
 
@@ -27,6 +28,7 @@ export type PlanetaResposta = {
   planeta: number;
   correto: boolean;
 };
+type Fase2Metricas = Metricas & { experimento_id?: string };
 
 const ROUND_TIME_SECONDS = 15;
 const STAR_PICK_INTERVAL_MS = 2000;
@@ -49,7 +51,8 @@ export function GameScreen() {
   const [showRound1Notice, setShowRound1Notice] = useState(false);
   const [round1NoticeSeconds, setRound1NoticeSeconds] = useState(ROUND_1_NOTICE_SECONDS);
   const [shiningStar, setShiningStar] = useState<string | null>(null);
-  const [data, setData] = useState<Metricas | undefined>(undefined);
+  const [data, setData] = useState<Fase2Metricas | undefined>(undefined);
+  const [experimentId, setExperimentId] = useState<string | null>(null);
   const [planetasSelecionados, setPlanetasSelecionados] = useState<PlanetaResposta[]>([]);
   const [currentRound, setCurrentRound] = useState(FIRST_ROUND);
   const [isPatientSelectOpen, setIsPatientSelectOpen] = useState(true);
@@ -75,6 +78,7 @@ export function GameScreen() {
   const { activePlanets, startGame, resetPlanets } = usePlanets();
   const { socket, isConnected } = useSocketIO();
   const { selectedPacienteId, setSelectedPacienteId } = usePatient();
+  const { isTrainingMode } = useTrainingMode();
 
   const handleStartGame = () => {
     setIsGameActive(true);
@@ -87,6 +91,7 @@ export function GameScreen() {
       fase: 2,
       usuarioId: selectedPacienteId,
       controleJogo: controleSelecionado,
+      modoTreinamento: isTrainingMode,
     });
   };
 
@@ -219,9 +224,10 @@ export function GameScreen() {
       setPlanetasSelecionados((prev) => [...prev, response]);
     };
 
-    const handleFaseConcluida = (response: Metricas) => {
+    const handleFaseConcluida = (response: Fase2Metricas) => {
       console.debug("Fase concluída. Métricas recebidas:", response);
       setData(response);
+      setExperimentId(response.experimento_id ?? null);
     };
 
     const handleRodada1Finalizada = () => {
@@ -273,6 +279,7 @@ export function GameScreen() {
         data={data}
         planetasSelecionados={planetasSelecionados}
         controleSelecionado={controleSelecionado}
+        experimentoId={experimentId}
         showFormModal={showFormModal}
         onStart={handleStartGame}
         onCloseForm={handleCloseForm}

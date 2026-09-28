@@ -1,8 +1,13 @@
+"use client";
+
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { Star } from "lucide-react";
+import { useState } from "react";
 import { Button } from "./Button";
 import { Card } from "./Card";
 import { ResultsTable } from "./ResultsTable";
+import { salvarFeedbackProfissional } from "@/services/estatisticas.service";
+import { useTrainingMode } from "@/context/TrainingModeContext";
 
 export type Metricas = {
   tempo_reacao_medio_ms: number;
@@ -16,8 +21,11 @@ export type Metricas = {
 
 type Props = {
   readonly fase: number;
+  readonly faseAtual?: number;
   readonly data?: Metricas;
+  readonly experimentoId?: string | null;
   readonly ai?: { avaliacao_final?: string | null; avaliacao_score?: number | null };
+  readonly timedOut?: boolean;
 };
 
 const FINAL_PHASE = 4;
@@ -39,20 +47,11 @@ const buildFase2Results = (data: Metricas | undefined) => {
 };
 
 const buildFase3Results = (data: Metricas | undefined) => {
-  const totalAcertos = data?.total_acertos ?? 0;
   const totalComissao = data?.total_comissao ?? 0;
   const totalOmissao = data?.total_omissao ?? 0;
   return [
-    {
-      id: 4,
-      name: "❌ Demorou para focar",
-      score: `${totalOmissao} ${totalOmissao === 1 ? "vez" : "vezes"}`,
-    },
-    {
-      id: 5,
-      name: "❌ Distrações",
-      score: `${totalComissao} ${totalComissao === 1 ? "distração" : "distrações"}`,
-    },
+    { id: 4, name: "❌ Demorou para focar", score: `${totalOmissao} ${totalOmissao === 1 ? "vez" : "vezes"}` },
+    { id: 5, name: "❌ Distrações", score: `${totalComissao} ${totalComissao === 1 ? "distração" : "distrações"}` },
   ];
 };
 
@@ -62,21 +61,12 @@ const getResultsForPhase = (fase: number, data: Metricas | undefined) => {
   return buildFase1Results(data);
 };
 
-const getNextHref = (fase: number) => {
-  if (fase === FINAL_PHASE) return "/menu";
-  return `/fase/${fase}`;
+const getNextHref = (fase: number) => (fase === FINAL_PHASE ? "/menu" : `/fase/${fase}`);
+const getNextButtonLabel = (fase: number) => (fase === FINAL_PHASE ? "Continuar" : "Próximo Nível");
+const getCardTitle = (resultsOpen: boolean, timedOut: boolean) => {
+  if (resultsOpen) return "Resultados";
+  return timedOut ? "O Tempo Acabou!" : "Missão Cumprida!";
 };
-
-const getNextButtonLabel = (fase: number) => {
-  if (fase === FINAL_PHASE) return "Continuar";
-  return "Próximo Nível";
-};
-
-const getCardTitle = (resultsOpen: boolean) => {
-  if (resultsOpen === true) return "Resultados";
-  return "Missão Cumprida!";
-};
-
 const redirectToMenu = () => {
   globalThis.location.href = "/menu";
 };
@@ -89,66 +79,84 @@ const getPerformanceLabel = (score: number | null | undefined) => {
   return "Acima do esperado";
 };
 
-export function SuccessScreen({ fase, data, ai }: Props) {
+export function SuccessScreen({ fase, faseAtual, data, experimentoId, ai, timedOut = false }: Props) {
+  const { isTrainingMode } = useTrainingMode();
   const [resultsOpen, setResultsOpen] = useState(false);
+  const [feedback, setFeedback] = useState("");
+  const [nota, setNota] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    console.debug("Métricas recebidas no SuccessScreen:", data);
-  }, [data]);
-
-  const onNextPhase = () => {
-    globalThis.location.href = getNextHref(fase);
-  };
-
-  const onOpenResults = () => setResultsOpen(true);
-
-  const title = getCardTitle(resultsOpen);
+  const trainingFeedbackEnabled = isTrainingMode && Boolean(experimentoId) && Boolean(faseAtual);
+  const canContinue = !trainingFeedbackEnabled || saved;
   const results = getResultsForPhase(fase, data);
 
-  const buttons =
-    resultsOpen === true ? (
-      <div className="flex gap-4">
-        <Button text={getNextButtonLabel(fase)} onClick={onNextPhase} />
-        <Button text="Menu Ínicial" onClick={redirectToMenu} />
-      </div>
-    ) : (
-      <Button text="Ver Resultados" onClick={onOpenResults} />
-    );
+  const saveFeedback = async () => {
+    if (!experimentoId || !faseAtual || nota === null) return;
+    setSaving(true);
+    setError("");
+    try {
+      await salvarFeedbackProfissional({
+        fase: faseAtual,
+        experimentoId,
+        feedbackProfissional: feedback,
+        notaDoProfissional: nota,
+        modoTreinamento: true,
+      });
+      setSaved(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível salvar o feedback.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const buttons = resultsOpen ? (
+    <div className="flex gap-4">
+      <Button text={getNextButtonLabel(fase)} onClick={() => { globalThis.location.href = getNextHref(fase); }} disabled={!canContinue} />
+      <Button text="Menu Inicial" onClick={redirectToMenu} disabled={!canContinue} />
+    </div>
+  ) : (
+    <Button text="Ver Resultados" onClick={() => setResultsOpen(true)} />
+  );
 
   return (
-    <Card title={title} buttons={buttons}>
+    <Card title={getCardTitle(resultsOpen, timedOut)} buttons={buttons}>
       <div className="flex flex-col gap-4">
         <div className="flex flex-col items-center">
-          {resultsOpen === true ? (
+          {resultsOpen ? (
             <>
               <ResultsTable results={results} data={data} fase={fase} />
               {ai?.avaliacao_score !== null && ai?.avaliacao_score !== undefined ? (
                 <div className="mt-4 text-center">
                   <div className="font-semibold">Resultado da Avaliação</div>
-                  <div className="mt-2 text-lg font-semibold">
-                    {getPerformanceLabel(ai.avaliacao_score) ?? "—"}
+                  <div className="mt-2 text-lg font-semibold">{getPerformanceLabel(ai.avaliacao_score) ?? "—"}</div>
+                  {ai.avaliacao_final ? <div className="mt-1 text-sm text-gray-600">Classificação: {ai.avaliacao_final}</div> : null}
+                  <div className="mt-1 text-sm text-gray-600">Confiança: {`${Math.round((ai.avaliacao_score ?? 0) * 100)}%`}</div>
+                </div>
+              ) : null}
+              {trainingFeedbackEnabled ? (
+                <div className="mt-6 w-full max-w-xl rounded-2xl border border-orange-200 bg-orange-50 p-5">
+                  <p className="text-center font-orbitron font-semibold text-[var(--primary)]">Avaliação profissional — treinamento ON</p>
+                  <label className="mt-4 block text-sm font-semibold text-[var(--text)]" htmlFor="feedback-profissional">Feedback sobre a performance</label>
+                  <textarea id="feedback-profissional" value={feedback} onChange={(event) => setFeedback(event.target.value)} className="mt-2 min-h-24 w-full rounded-xl border border-gray-300 bg-white p-3 text-sm text-gray-800 placeholder:text-gray-500 outline-none focus:border-[var(--primary)]" placeholder="Descreva a performance da criança" />
+                  <p className="mt-4 text-sm font-semibold text-[var(--text)]">Nota da performance: {nota === null ? "selecione de 0 a 5" : `${nota} de 5`}</p>
+                  <div className="mt-2 flex items-center justify-center gap-1">
+                    {[1, 2, 3, 4, 5].map((value) => (
+                      <button key={value} type="button" aria-label={`${value} estrelas`} onClick={() => setNota(value)} className="rounded p-1 text-yellow-500 hover:bg-yellow-100">
+                        <Star size={28} fill={nota !== null && nota >= value ? "currentColor" : "none"} />
+                      </button>
+                    ))}
+                    <button type="button" onClick={() => setNota(0)} className="ml-2 rounded px-2 py-1 text-xs text-gray-600 hover:bg-gray-200">0 estrelas</button>
                   </div>
-                  {ai.avaliacao_final ? (
-                    <div className="mt-1 text-sm text-gray-600">
-                      Classificação: {ai.avaliacao_final}
-                    </div>
-                  ) : null}
-                  <div className="mt-1 text-sm text-gray-600">
-                    Confiança:{" "}
-                    {typeof ai.avaliacao_score === "number"
-                      ? `${Math.round(ai.avaliacao_score * 100)}%`
-                      : "—"}
-                  </div>
+                  {error ? <p className="mt-2 text-center text-sm text-red-600">{error}</p> : null}
+                  {saved ? <p className="mt-2 text-center text-sm font-semibold text-green-700">Feedback salvo.</p> : <Button text="Salvar avaliação" onClick={saveFeedback} disabled={nota === null} isLoading={saving} className="mt-4 w-full px-4 py-2.5" />}
                 </div>
               ) : null}
             </>
           ) : (
-            <Image
-              src="/img/viva.png"
-              height={400}
-              width={275}
-              alt="Personagem de missao cumprida"
-            />
+            <Image src={timedOut ? "/img/sad.png" : "/img/viva.png"} height={timedOut ? 296 : 400} width={timedOut ? 200 : 275} alt={timedOut ? "Personagem de tempo esgotado" : "Personagem de missão cumprida"} />
           )}
         </div>
       </div>

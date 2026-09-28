@@ -18,12 +18,13 @@ import { useAudio } from "@/context/AudioContext";
 import { useEyeTracking } from "@/context/EyeTrackingContext";
 import { useGameContext } from "@/context/GameContext";
 import { usePatient } from "@/context/PatientContext";
+import { useTrainingMode } from "@/context/TrainingModeContext";
 import { usePhaseOneGaze } from "@/hooks/usePhaseOneGaze";
 import { useSocketIO } from "@/hooks/useWebSocket";
 
 type Stage = "intro" | "starting" | "running" | "finished" | "interrupted";
 type TargetEvent = { fase?: number; alvo: PhaseOneTarget | number; motivo_termino?: string };
-type FinishEvent = { fase?: number; metricas?: Metricas; motivo?: string };
+type FinishEvent = { fase?: number; metricas?: Metricas; motivo?: string; experimento_id?: string };
 const NAVBAR_LABEL = "ENCONTRE E FIXE OS OLHOS NOS 5 ALVOS DURANTE 5 SEGUNDOS" as const;
 
 const getTargetWithBackendHitbox = (
@@ -63,6 +64,7 @@ export function GameScreen() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [resuming, setResuming] = useState(false);
   const [result, setResult] = useState<Metricas | undefined>();
+  const [experimentId, setExperimentId] = useState<string | null>(null);
   const {
     isPaused, setIsPaused, setIsGameActive, setAudioGameStarted,
     timeLeft, setTimeLeft, setPhase, setHits, setErrors,
@@ -71,6 +73,7 @@ export function GameScreen() {
   const { startAudio, pauseAudio } = useAudio();
   const { socket, isConnected } = useSocketIO();
   const { selectedPacienteId, setSelectedPacienteId } = usePatient();
+  const { isTrainingMode } = useTrainingMode();
   // Tracking callbacks change with provider state; cleanup uses the latest one.
   const trackingRef = useRef({ stopTracking, pauseAudio });
   useEffect(() => { trackingRef.current = { stopTracking, pauseAudio }; }, [stopTracking, pauseAudio]);
@@ -139,6 +142,7 @@ export function GameScreen() {
       stageRef.current = "finished";
       setStage("finished");
       setResult(data.metricas);
+      setExperimentId(data.experimento_id ?? null);
       setTarget(null);
       setSettingsOpen(false);
       setIsGameActive(false);
@@ -254,7 +258,7 @@ export function GameScreen() {
       targetsRef.current = buildPhaseOneTargets(rect, window.innerWidth, window.innerHeight);
       setTimeLeft(60);
       setIsPaused(false);
-      socket.emit("iniciar_fase1", { fase1: targetsRef.current, usuarioId: selectedPacienteId });
+      socket.emit("iniciar_fase1", { fase1: targetsRef.current, usuarioId: selectedPacienteId, modoTreinamento: isTrainingMode });
     } finally {
       startingRef.current = false;
     }
@@ -357,7 +361,7 @@ export function GameScreen() {
         <Link href="/menu" className={styles.secondaryButton}>Voltar ao menu</Link>
       </div></div>}
       {stage === "finished" && <div className={styles.overlay}>
-        {timedOutRef.current ? <TimeOut data={result} /> : <SuccessScreen fase={2} data={result} />}
+        {timedOutRef.current && !isTrainingMode ? <TimeOut data={result} /> : <SuccessScreen fase={2} faseAtual={1} data={result} experimentoId={experimentId} timedOut={timedOutRef.current} />}
       </div>}
     </div>
   );
