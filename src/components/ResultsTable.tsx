@@ -109,7 +109,7 @@ export function ResultsTable({ results, data, fase }: Readonly<Props>) {
       {data === undefined || fase !== 3 ? null : (
         <div className="flex gap-10 flex-col">
           {GROUPS.map(({ label, key }) => (
-            <PlanetGroup key={key} label={label} planetIds={data[key]?.map((planet) => planet.id) ?? []} />
+            <PlanetGroup key={key} label={label} planetIds={data[key] ?? []} />
           ))}
         </div>
       )}

@@ -158,17 +158,22 @@ export function GameScreen() {
       setRound1NoticeSeconds((currentSeconds) => {
         if (currentSeconds <= 1) {
           window.clearInterval(intervalId);
-          setShowRound1Notice(false);
-          handleCloseForm();
           return 0;
         }
-
         return currentSeconds - 1;
       });
     }, 1000);
 
     return () => window.clearInterval(intervalId);
   }, [showRound1Notice]);
+
+  useEffect(() => {
+    if (showRound1Notice === false) return;
+    if (round1NoticeSeconds !== 0) return;
+
+    setShowRound1Notice(false);
+    handleCloseForm();
+  }, [round1NoticeSeconds, showRound1Notice]);
 
   useEffect(() => {
     if (isGameActive === false) return;
@@ -294,11 +299,15 @@ export function GameScreen() {
           <Card title="Atenção">
             <div className="flex flex-col items-center gap-4 text-center">
               <p className="text-xl text-[#4a4a4a] font-orbitron">
-                <T text="A rodada 1 terminou. A rodada 2 vai começar em breve." /></p>
+                <T text="A rodada 1 terminou. A rodada 2 vai começar em breve." />
+              </p>
               <p className="text-lg text-[#4a4a4a] font-orbitron">
-                <T text="Preste atenção na próxima rodada." /></p>
+                <T text="Preste atenção na próxima rodada." />
+              </p>
               <p className="text-2xl text-[var(--primary)] font-orbitron">
-                <T text="Fechando em" />{" "}{round1NoticeSeconds}<T text="s" /></p>
+                <T text="Fechando em" /> {round1NoticeSeconds}
+                <T text="s" />
+              </p>
             </div>
           </Card>
         </div>

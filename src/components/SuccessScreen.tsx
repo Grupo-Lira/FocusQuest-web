@@ -16,8 +16,8 @@ export type Metricas = {
   acertos: number;
   total_comissao: number;
   total_omissao: number;
-  planetas_vistos?: { id: number }[];
-  planetas_ignorados?: { id: number }[];
+  planetas_vistos?: number[];
+  planetas_ignorados?: number[];
 };
 
 type Props = {

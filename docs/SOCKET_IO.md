@@ -136,10 +136,11 @@ ou de outro sistema não determinado aqui.
 | ---------------------------- | --------------------------------------- | ----------------------------------------------------------- |
 | `resposta_planeta`           | `{ planeta: number, correto: boolean }` | Marca a resposta e habilita continuação após três retornos. |
 | `fase_2_rodada_1_finalizada` | Payload não utilizado                   | Fecha o formulário e agenda o início da segunda rodada.     |
-| `fase_atual_finalizada`      | Tratado como objeto de métricas         | Preenche a tela de resultados.                              |
+| `fase_atual_finalizada`      | `{ fase: 2, acertos: number, planetas_vistos: number[], planetas_ignorados: number[], experimento_id: string }` | Preenche a tela de resultados. |
 
-O mesmo nome `fase_atual_finalizada` é emitido e recebido. Preserve a distinção de
-direção na documentação e nos testes.
+As listas `planetas_vistos` e `planetas_ignorados` contêm IDs numéricos dos
+planetas, como `[2, 5]`. O mesmo nome `fase_atual_finalizada` é
+emitido e recebido. Preserve a distinção de direção na documentação e nos testes.
 
 ### Cleanup
 
