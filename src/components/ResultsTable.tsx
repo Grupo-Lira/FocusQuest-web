@@ -26,8 +26,8 @@ const PLANETS: ReadonlyArray<Planet> = [
   { id: 2, image: "/img/focos-fase-2/blue-green.png", name: "Cyanthia" },
   { id: 3, image: "/img/focos-fase-2/blue.png", name: "Azurion" },
   { id: 4, image: "/img/focos-fase-2/orange.png", name: "Embera" },
-  { id: 5, image: "/img/focos-fase-2/pink.png", name: "Rosalia" },
-  { id: 6, image: "/img/focos-fase-2/green.png", name: "Verdara" },
+  { id: 5, image: "/img/focos-fase-2/green.png", name: "Rosalia" },
+  { id: 6, image: "/img/focos-fase-2/pink.png", name: "Verdara" },
   { id: 7, image: "/img/focos-fase-2/purple.png", name: "Violetor" },
 ] as const;
 
