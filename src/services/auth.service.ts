@@ -16,7 +16,7 @@ export const login = async (
   credentials: Auth.Login.Body
 ): Promise<AuthResult<Auth.Login.Response>> => {
   try {
-    const data = await BRequest.post("/auth/login", credentials);
+    const data = await BRequest.post<Auth.Login.Response>("/auth/login", credentials);
     return { data, error: null };
   } catch (err) {
     return {

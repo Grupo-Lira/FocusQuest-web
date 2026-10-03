@@ -58,7 +58,7 @@ cliente.
 | `/calibration` | Calibração guiada por nove regiões, cinco cliques por região | Não | WebGazer local; não envia ao backend |
 | `/fase/1` | Cinco alvos com gaze | Lista pacientes | Socket.IO e WebGazer |
 | `/fase/2` | Memória visual em duas rodadas | Lista pacientes | Socket.IO; sem WebGazer |
-| `/fase/3` | Atenção alternada estrela/radar | Não | Socket.IO e WebGazer |
+| `/fase/3` | Atenção alternada estrela/radar | Lista pacientes | Socket.IO e WebGazer |
 | `/fichas` | Lista e ações de pacientes | Lista, exclusão, PDF | Não |
 | `/fichas/criar` | Criação de paciente | Criação | Não |
 | `/fichas/editar/[id]` | Edição, métricas e exclusão | Consulta, edição, exclusão | Não |
@@ -107,13 +107,14 @@ Mantém `phase`, `hits`, `errors`, `timeLeft`, `isPaused`, `isGameActive` e
 
 Como o provider pertence ao layout raiz, seus valores podem sobreviver a uma
 navegação com `Link`. A fase 1 define `phase=1` e reinicia timer, placar e flags ao
-montar. As fases 2 e 3 também definem `phase`, mas não há reset central entre rotas.
+montar. A fase 3 também reinicia timer e flags ao abrir. A fase 2 define `phase`,
+mas não há reset central entre rotas.
 
 ### PatientContext
 
-Persiste `selectedPacienteId` em `localStorage`. As fases 1 e 2 apresentam um modal
-e atualizam esse valor. A fase 3 exige um valor existente e redireciona para fichas
-caso ele esteja vazio. O paciente não é limpo automaticamente no logout.
+Persiste `selectedPacienteId` em `localStorage`. As três fases apresentam um modal
+de seleção ao abrir e atualizam esse valor antes das instruções. O paciente não é
+limpo automaticamente no logout.
 
 ### AudioContext
 
@@ -224,9 +225,11 @@ envia dados do WebGazer.
 
 ### Fase 3
 
-A tela calcula caixas para uma estrela e um radar, inicia o WebGazer e envia novos
-samples a cada 250 ms. O backend alterna o alvo por `brilhar_alvo_fase3`. Pause e
-resume são enviados ao backend e também pausam/retomam o WebGazer.
+A tela solicita a seleção do paciente antes das instruções e reinicia o estado
+local da fase. Depois, calcula caixas para uma estrela e um radar, inicia o
+WebGazer e envia novos samples a cada 250 ms. O backend alterna o alvo por
+`brilhar_alvo_fase3`. Pause e resume são enviados ao backend e também
+pausam/retomam o WebGazer.
 
 ## Componentes e estilo
 
@@ -252,8 +255,7 @@ verificação do backend.
 ## Limitações conhecidas
 
 - Não há infraestrutura de testes automatizados.
-- Lint e typecheck falham no estado atual; consulte `DEVELOPMENT.md`.
-- O build ignora erros de ESLint e TypeScript.
+- O build executa ESLint e verificação de tipos; consulte `DEVELOPMENT.md`.
 - Hooks/serviços sem consumidor: `useShiningStars`, `fase/3/useGameLogic` e o polling
   HTTP ocular.
 - A busca de pacientes e a paginação visual não filtram/recortam os registros.

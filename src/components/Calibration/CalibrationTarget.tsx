@@ -20,7 +20,10 @@ export function CalibrationTarget({
   onClick,
 }: Props) {
   const t = useT();
-  const charges = Array.from({ length: clicksRequired }, (_, index) => index < clicks);
+  const charges = Array.from({ length: clicksRequired }, (_, index) => ({
+    number: index + 1,
+    isCharged: index < clicks,
+  }));
   const remainingClicks = clicksRequired - clicks;
   const edgeInset = "3.5rem";
   const positionStyle = {
@@ -47,9 +50,9 @@ export function CalibrationTarget({
       </span>
 
       <span className="absolute -bottom-5 left-1/2 z-20 flex -translate-x-1/2 gap-1 rounded-full bg-[#07152A]/80 px-2 py-1 shadow-lg">
-        {charges.map((isCharged, index) => (
+        {charges.map(({ number, isCharged }) => (
           <span
-            key={`${target.id}-charge-${index}`}
+            key={`${target.id}-charge-${number}`}
             aria-hidden="true"
             className={`h-2.5 w-2.5 rounded-full transition-all duration-300 ${
               isCharged

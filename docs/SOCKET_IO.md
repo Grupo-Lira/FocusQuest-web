@@ -149,7 +149,8 @@ mesmo evento e referência.
 
 ## Fase 3
 
-Origem: `src/app/fase/3/GameScreen.tsx`.
+Origem: `src/app/fase/3/GameScreen.tsx`. A tela solicita a seleção do paciente
+a cada entrada antes de emitir `iniciar_fase3`; `usuarioId` recebe o ID escolhido.
 
 ### Frontend -> Backend
 

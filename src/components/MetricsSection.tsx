@@ -121,8 +121,8 @@ export function MetricsSection({ metricas, onObservacoesChange }: MetricsSection
             <h4 className="text-[var(--primary)] font-orbitron uppercase font-semibold text-sm tracking-wide mb-2">
               <T text="Observações por IA" /></h4>
             <div className="space-y-2">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="border-b border-gray-200 h-6"></div>
+              {[1, 2, 3, 4, 5].map((line) => (
+                <div key={line} className="border-b border-gray-200 h-6"></div>
               ))}
             </div>
           </div>
@@ -230,8 +230,8 @@ export function ComparisonChart({ dados, acertos, idadePaciente }: ComparisonCha
       <div className="flex items-stretch h-[200px]">
         {/* Eixo Y */}
         <div className="flex flex-col justify-between py-5 pr-2 text-[10px] text-slate-400 text-right w-[25px]">
-          {labelsY.map((label, idx) => (
-            <span key={idx}>{label}</span>
+          {labelsY.map((label) => (
+            <span key={label}>{label}</span>
           ))}
         </div>
 
@@ -249,9 +249,9 @@ export function ComparisonChart({ dados, acertos, idadePaciente }: ComparisonCha
             </defs>
 
             {/* Linhas de Grade */}
-            {labelsY.map((val, idx) => (
+            {labelsY.map((val) => (
               <line
-                key={idx}
+                key={val}
                 x1="0"
                 y1={getY(val)}
                 x2={width}
@@ -275,7 +275,7 @@ export function ComparisonChart({ dados, acertos, idadePaciente }: ComparisonCha
             {/* Pontos da Média */}
             {dados.map((d, i) => (
               <circle
-                key={i}
+                key={d.idade}
                 cx={getX(i)}
                 cy={getY(d.mediaAcertos)}
                 r="3"
@@ -317,8 +317,8 @@ export function ComparisonChart({ dados, acertos, idadePaciente }: ComparisonCha
 
       {/* Eixo X (Idades) */}
       <div className="flex justify-between ml-[33px] pt-2 border-t border-slate-100">
-        {dados.map((d, i) => (
-          <span key={i} className="text-[10px] text-slate-500 font-bold">
+        {dados.map((d) => (
+          <span key={d.idade} className="text-[10px] text-slate-500 font-bold">
             {d.idade}<T text="a" /></span>
         ))}
       </div>

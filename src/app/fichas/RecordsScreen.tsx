@@ -1,4 +1,4 @@
-import { Search, Plus } from "lucide-react";
+import { Search } from "lucide-react";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { RecordsTable } from "./RecordsTable";

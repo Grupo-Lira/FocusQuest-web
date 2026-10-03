@@ -88,21 +88,9 @@ npm run build
 npm run start
 ```
 
-`next.config.ts` contém:
-
-```text
-eslint.ignoreDuringBuilds = true
-typescript.ignoreBuildErrors = true
-```
-
-Logo, uma build concluída não comprova que lint e TypeScript estejam corretos. Rode
-as verificações separadamente. Erros de parsing ou compilação do módulo ainda podem
-impedir a build mesmo com essas flags.
-
-Na validação da nova fase 1, a build encontrou o import duplicado preexistente de
-`PatientSelectModal` em `src/app/fase/2/GameScreen.tsx`, que impede o parsing dessa
-rota. A rota da fase 1 compilou e foi exercitada separadamente no servidor de
-desenvolvimento.
+`npm run build` executa compilação, ESLint e verificação de tipos. O
+`next.config.ts` não desativa essas validações. Use os comandos separados abaixo
+para diagnosticar falhas antes de repetir a build.
 
 O uso de `next/font/google` pode exigir acesso às fontes durante o processo de build,
 dependendo do cache e do comportamento da versão do Next.
@@ -115,15 +103,9 @@ O script declarado é:
 npm run lint
 ```
 
-No estado documentado, ele falha antes de analisar o código:
-
-```text
-Unexpected identifier 'semi'
-```
-
-A causa é o token inválido em `eslint.config.mjs`, no início do objeto `rules`. Isso
-é uma falha preexistente; não considere o lint validado até que a configuração seja
-corrigida e o comando seja executado novamente.
+O arquivo `eslint.config.mjs` usa as regras do Next e do Prettier. Os namespaces
+de tipos e referências a componentes declarados abaixo do uso são permitidos pelas
+regras locais; os demais erros de lint bloqueiam o build.
 
 ## TypeScript
 
@@ -133,14 +115,8 @@ Não existe script `typecheck`. Use o binário local sem criar o cache increment
 ./node_modules/.bin/tsc --noEmit --incremental false
 ```
 
-Erros conhecidos no estado documentado:
-
-1. `PatientSelectModal` é importado duas vezes em `src/app/fase/2/GameScreen.tsx`.
-2. `src/app/fichas/criar/page.tsx` passa props que não existem em `PacienteForm`.
-3. `ResultsTable` espera IDs numéricos, mas recebe objetos `{ id: number }` das
-   métricas de planetas.
-
-Ao trabalhar em outra área, diferencie essas falhas de novos erros introduzidos.
+O typecheck também roda durante `npm run build`. Execute este comando separado
+quando precisar isolar um erro de TypeScript.
 
 ## Formatação
 
@@ -246,8 +222,8 @@ O middleware exclui `/img` do controle de cookie, mas não exclui `/audio` e
 ## Checklist antes de entregar uma mudança
 
 1. Confira `git diff` e preserve mudanças preexistentes do usuário.
-2. Execute o typecheck e identifique falhas novas versus conhecidas.
-3. Execute o lint quando a configuração estiver funcional.
+2. Execute o typecheck.
+3. Execute o lint.
 4. Para código executável, rode `npm run build` quando seguro.
 5. Valide manualmente o fluxo alterado.
 6. Para Socket.IO, verifique listeners, cleanup e reconexão.

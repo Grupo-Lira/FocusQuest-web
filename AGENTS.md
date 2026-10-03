@@ -38,8 +38,8 @@ npm run lint
 ./node_modules/.bin/tsc --noEmit --incremental false
 ```
 
-Não há scripts de teste, formatação ou typecheck. O lint e o typecheck têm falhas
-preexistentes registradas em [DEVELOPMENT.md](DEVELOPMENT.md).
+Não há scripts de teste, formatação ou typecheck. O build executa ESLint e
+verificação de tipos; veja [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## Convenções observadas
 
@@ -68,8 +68,8 @@ preexistentes registradas em [DEVELOPMENT.md](DEVELOPMENT.md).
   duplicados.
 - Estado do `GameContext` vive no layout raiz e pode sobreviver à navegação do App
   Router. Resete explicitamente o que uma fase não pode herdar.
-- A fase 3 depende do paciente salvo no `localStorage`; considere também logout e
-  troca de paciente ao alterar esse fluxo.
+- A fase 3 solicita paciente em cada entrada e persiste a escolha no
+  `localStorage`; considere também logout e troca de paciente ao alterar esse fluxo.
 - WebGazer é singleton global. Evite múltiplos `begin`, gaze listeners concorrentes
   e streams de câmera sem cleanup.
 - Diferencie `pause()` de `end()` e preserve a calibração ao usar `clearData()`.
@@ -80,7 +80,7 @@ preexistentes registradas em [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## Validação esperada
 
-- Mudança de UI: execute typecheck e lint, separando falhas preexistentes.
+- Mudança de UI: execute typecheck e lint.
 - Mudança HTTP: valide sucesso, erro e presença do Bearer token.
 - Mudança de fase/Socket.IO: valide conexão, cleanup, timeout, pause e navegação.
 - Mudança ocular: valide permissão negada, calibração, navegação, câmera e envio de

@@ -22,7 +22,10 @@ export function NavbarCalibration({
 }: Props) {
   const t = useT();
   const onOpenSettings = () => setIsModalOpen(true);
-  const charges = Array.from({ length: clicksRequired }, (_, index) => index < clicksOnTarget);
+  const charges = Array.from({ length: clicksRequired }, (_, index) => ({
+    number: index + 1,
+    isCharged: index < clicksOnTarget,
+  }));
   const getMapTargetClass = (targetIndex: number) => {
     if (targetIndex < currentTarget) return "bg-[#76D872] shadow-[0_0_7px_rgba(118,216,114,0.85)]";
     if (targetIndex === currentTarget) return "bg-[#FFB000] shadow-[0_0_8px_rgba(255,176,0,1)]";
@@ -46,9 +49,9 @@ export function NavbarCalibration({
             <T text="Energia" />{" "}{clicksOnTarget}/{clicksRequired}
           </span>
           <span className="flex gap-1" aria-label={t("{count} de {total} cargas preenchidas", { count: clicksOnTarget, total: clicksRequired })}>
-            {charges.map((isCharged, index) => (
+            {charges.map(({ number, isCharged }) => (
               <span
-                key={index}
+                key={number}
                 aria-hidden="true"
                 className={`h-2.5 w-2.5 rounded-full ${
                   isCharged ? "bg-[#FFB000] shadow-[0_0_7px_rgba(255,176,0,0.95)]" : "bg-[#D9D9D9]"

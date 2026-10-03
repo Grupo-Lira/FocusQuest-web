@@ -55,7 +55,7 @@ export function LanguageSync() {
   const { language } = useLanguage();
   useEffect(() => {
     document.documentElement.lang = language;
-    const description = document.querySelector<HTMLMetaElement>('meta[name="description"]');
+    const description = document.querySelector<HTMLMetaElement>("meta[name=\"description\"]");
     if (description) {
       description.content = translate(
         "Desafie a sua mente com o Focus Quest, um jogo de perguntas e respostas que testa seus conhecimentos em diversas áreas. Aprenda enquanto se diverte!",

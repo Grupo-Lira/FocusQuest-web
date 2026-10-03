@@ -1,5 +1,5 @@
 import { T, useT } from "@/i18n/client";
-import { MoreVertical, Download } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 import { useState } from "react";
 import { DeleteConfirmModal } from "@/components/DeleteConfirmModal";
 import { Pagination } from "@/components/Pagination";
