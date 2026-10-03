@@ -4,13 +4,13 @@ import { useT } from "@/i18n/client";
 
 type PlanetInstance = {
   src: string;
-  start: { left: string | number; bottom: number | string };
-  end: { left: string | number; bottom: number | string };
-  side: "left" | "right";
+  start: { left: string; top: string };
+  end: { left: string; top: string };
+  duration: number;
 };
 
 type Props = {
-  readonly activePlanet: PlanetInstance | null;
+  activePlanet: PlanetInstance | null;
 };
 
 const TRANSITION = { duration: 2, ease: "easeInOut" } as const;
@@ -20,13 +20,15 @@ export function PlanetsAnimation({ activePlanet }: Props) {
   const t = useT();
   if (activePlanet === null) return null;
 
+  const transition = { duration: activePlanet.duration, ease: "easeInOut" } as const;
+
   return (
     <motion.div
       key={activePlanet.src}
       initial={activePlanet.start}
       animate={activePlanet.end}
       exit={EXIT_VARIANT}
-      transition={TRANSITION}
+      transition={transition}
       className="absolute"
     >
       <Image src={activePlanet.src} alt={t("Planeta")} width={120} height={120} />
