@@ -19,15 +19,12 @@ export const steps: StepProps[] = [
 
 export const fase1Steps: StepProps[] = [
   { id: 1, description: "Seja bem-vindo ao seu primeiro desafio, astronauta." },
-  { id: 2, description: "Prepare-se para testar sua concentração." },
-  { id: 3, description: "Na tela, aparecerão cinco estrelas." },
-  { id: 4, description: "Fixe os olhos em qual estiver brilhando até ela sumir." },
-  { id: 5, description: "Você terá 1 minuto para completar a missão." },
-  { id: 6, description: "Seja rápido e mantenha o foco." },
-  {
-    id: 7,
-    description: "Evite olhar para as distrações — elas tiram seus pontos!",
-  },
+  { id: 2, description: "Uma região da tela vai receber uma estrela." },
+  { id: 3, description: "Olhe para a estrela dentro da área destacada." },
+  { id: 4, description: "Mantenha o olhar por 5 segundos. Não precisa clicar." },
+  { id: 5, description: "A área muda de lugar a cada estrela conquistada." },
+  { id: 6, description: "Você terá 1 minuto para completar a missão." },
+  { id: 7, description: "Evite olhar para as distrações durante o desafio." },
   {
     id: 8,
     description: "Boa sorte, astronauta. Que sua visão seja precisa!",

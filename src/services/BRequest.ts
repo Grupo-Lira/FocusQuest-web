@@ -1,28 +1,25 @@
 const FINAL_API_URL = "/api";
 
-type Callback = (data?: any) => void;
 type Url = string;
 type Headers = Record<string, string>;
 type DataObject = object | null;
 type Method = "POST" | "PUT" | "PATCH" | "GET" | "DELETE";
 
-type RequestWithoutBody = (
+type RequestWithoutBody = <T = unknown>(
   url: Url,
-  callback?: Callback,
   headers?: Headers
-) => Promise<any>;
-type RequestWithBody = (
+) => Promise<T>;
+type RequestWithBody = <T = unknown>(
   url: Url,
   dataObject?: DataObject,
-  callback?: Callback,
   headers?: Headers
-) => Promise<any>;
-type Call = (
+) => Promise<T>;
+type Call = <T = unknown>(
   url: Url,
   method: Method,
   dataObject?: DataObject,
   headers?: Headers
-) => Promise<any>;
+) => Promise<T>;
 
 type RequestDownload = (url: Url, headers?: Headers) => Promise<Blob>;
 
@@ -57,29 +54,29 @@ const AuthHeaders = (): Headers => {
 };
 
 const backendRequest: BackendRequest = {
-  get(url, callback = () => { }, headers = AuthHeaders()) {
-    return this.sync(url, "GET", null, headers);
+  get<T = unknown>(url: Url, headers = AuthHeaders()): Promise<T> {
+    return this.sync<T>(url, "GET", null, headers);
   },
 
-  post(url, dataObject = null, callback = () => { }, headers = AuthHeaders()) {
-    return this.sync(url, "POST", dataObject, headers);
+  post<T = unknown>(url: Url, dataObject: DataObject = null, headers = AuthHeaders()): Promise<T> {
+    return this.sync<T>(url, "POST", dataObject, headers);
   },
 
-  put(url, dataObject = null, callback = () => { }, headers = AuthHeaders()) {
-    return this.sync(url, "PUT", dataObject, headers);
+  put<T = unknown>(url: Url, dataObject: DataObject = null, headers = AuthHeaders()): Promise<T> {
+    return this.sync<T>(url, "PUT", dataObject, headers);
   },
 
-  patch(url, dataObject = null, callback = () => { }, headers = AuthHeaders()) {
-    return this.sync(url, "PATCH", dataObject, headers);
+  patch<T = unknown>(url: Url, dataObject: DataObject = null, headers = AuthHeaders()): Promise<T> {
+    return this.sync<T>(url, "PATCH", dataObject, headers);
   },
 
-  delete(url, dataObject = null, callback = () => { }, headers = AuthHeaders()) {
-    return this.sync(url, "DELETE", dataObject, headers);
+  delete<T = unknown>(url: Url, dataObject: DataObject = null, headers = AuthHeaders()): Promise<T> {
+    return this.sync<T>(url, "DELETE", dataObject, headers);
   },
 
   async download(url: Url, headers = AuthHeaders()) {
     // Remover barra inicial da URL para evitar barra dupla
-    const cleanUrl = url.startsWith('/') ? url.slice(1) : url;
+    const cleanUrl = url.startsWith("/") ? url.slice(1) : url;
     const fullUrl = `${FINAL_API_URL}/${cleanUrl}`;
     const response = await fetch(fullUrl, {
       method: "GET",
@@ -95,7 +92,7 @@ const backendRequest: BackendRequest = {
     return response.blob();
   },
 
-  async sync(url, method, dataObject = null, headers = AuthHeaders()) {
+  async sync<T = unknown>(url: Url, method: Method, dataObject: DataObject = null, headers = AuthHeaders()): Promise<T> {
     const cleanUrl = url.startsWith("/") ? url : `/${url}`;
     const fullUrl = `${FINAL_API_URL}${cleanUrl}`;
 
@@ -113,10 +110,10 @@ const backendRequest: BackendRequest = {
 
     const contentType = response.headers.get("content-type") || "";
     if (contentType.includes("application/json")) {
-      return response.json();
+      return (await response.json()) as T;
     }
 
-    return response.text();
+    return (await response.text()) as T;
   },
 };
 

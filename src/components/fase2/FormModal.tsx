@@ -1,3 +1,4 @@
+import { T, useT } from "@/i18n/client";
 import Image from "next/image";
 import { PlanetaResposta } from "@/app/fase/2/GameScreen";
 import { Button } from "../Button";
@@ -67,20 +68,17 @@ export function FormModal({
   planetasSelecionados,
   controleSelecionado,
 }: Props) {
+  const t = useT();
   const isDisabled = planetasSelecionados.length < MIN_ANSWERS_REQUIRED;
   const buttons = <Button text="Continuar" onClick={onClose} disabled={isDisabled} />;
   const instructionText = {
     [ControleEnum.CONTROLE_ARDUINO]: (
       <p className="text-xl text-[#4a4a4a] font-orbitron text-center">
-        Vote utilizando o painel com os botões dos planetas que você viu aparecer durante
-        o jogo.
-      </p>
+        <T text="Vote utilizando o painel com os botões dos planetas que você viu aparecer durante o jogo." /></p>
     ),
     [ControleEnum.CONTROLE_MOUSE]: (
       <p className="text-xl text-[#4a4a4a] font-orbitron text-center">
-        Utilizando o mouse, clique na imagem dos planetas que você viu aparecer durante o
-        jogo.
-      </p>
+        <T text="Utilizando o mouse, clique na imagem dos planetas que você viu aparecer durante o jogo." /></p>
     ),
   }[controleSelecionado];
 
@@ -97,7 +95,7 @@ export function FormModal({
               <button
                 key={`planet-button-${planet.id}`}
                 type="button"
-                aria-label={`Selecionar Planeta ${planet.name}`}
+                aria-label={t("Selecionar Planeta {name}", { name: planet.name })}
                 onClick={() => onClick(planet.id)}
               >
                 <PlanetCard

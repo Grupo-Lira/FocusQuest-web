@@ -1,5 +1,6 @@
 "use client";
 
+import { T, useT } from "@/i18n/client";
 import Link from "next/link";
 import { Gamepad2, MousePointer2 } from "lucide-react";
 import { Card } from "../Card";
@@ -20,6 +21,7 @@ const OPTION_CARD_CLASS =
   "w-full min-h-[230px] rounded-[28px] border-2 border-transparent bg-gradient-to-b from-white to-[#f7f2ea] shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-[var(--primary)] hover:shadow-2xl" as const;
 
 const ControlOption = ({ icon, title, description, onClick }: ControlOptionProps) => {
+  const t = useT();
   return (
     <button type="button" onClick={onClick} className={OPTION_CARD_CLASS}>
       <div className="flex h-full flex-col items-center justify-center gap-4 px-6 py-8 text-center">
@@ -27,8 +29,8 @@ const ControlOption = ({ icon, title, description, onClick }: ControlOptionProps
           {icon}
         </div>
         <div className="flex flex-col gap-2">
-          <p className="text-2xl font-orbitron text-[#4a4a4a]">{title}</p>
-          <p className="text-base text-[#4a4a4a]">{description}</p>
+          <p className="text-2xl font-orbitron text-[#4a4a4a]">{t(title)}</p>
+          <p className="text-base text-[#4a4a4a]">{t(description)}</p>
         </div>
       </div>
     </button>
@@ -41,8 +43,7 @@ export function ControlSelectModal({ onSelect }: Props) {
       href="/menu"
       className="inline-flex rounded-xl bg-gray-200 px-6 py-2.5 font-orbitron text-gray-700 transition-all duration-300 hover:bg-gray-300"
     >
-      Voltar menu
-    </Link>
+      <T text="Voltar menu" /></Link>
   );
 
   return (
@@ -50,8 +51,7 @@ export function ControlSelectModal({ onSelect }: Props) {
       <Card title="Selecionar Controle" buttons={buttons}>
         <div className="flex flex-col gap-4">
           <p className="max-w-2xl text-center text-lg text-[#4a4a4a] font-orbitron">
-            Escolha como este usuário irá controlar o sistema.
-          </p>
+            <T text="Escolha como este usuário irá controlar o sistema." /></p>
 
           <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
             <ControlOption

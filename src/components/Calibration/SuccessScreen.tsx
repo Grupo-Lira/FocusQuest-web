@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Button } from "../Button";
 import { Card } from "../Card";
+import { useT } from "@/i18n/client";
 
 type Props = {
   onRestart: () => void;
@@ -11,6 +12,7 @@ const redirectToMenu = () => {
 };
 
 export function SuccessScreen({ onRestart }: Readonly<Props>) {
+  const t = useT();
   const buttons = (
     <div className="flex gap-4">
       <Button text="Reiniciar" onClick={onRestart} />
@@ -27,7 +29,7 @@ export function SuccessScreen({ onRestart }: Readonly<Props>) {
               src="/img/successCalibration.svg"
               height={400}
               width={275}
-              alt="Personagem de missao cumprida"
+              alt={t("Personagem de missao cumprida")}
             />
           </div>
         </div>

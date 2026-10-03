@@ -1,5 +1,6 @@
 "use client";
 
+import { T } from "@/i18n/client";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -8,6 +9,7 @@ import { Input } from "@/components/Input";
 import { InputPassword } from "@/components/InputPassword";
 import { login } from "@/services/auth.service";
 import { saveAuthToken } from "@/utils/authStorage";
+import { useT } from "@/i18n/client";
 
 const SOCIAL_PROVIDERS = [
   { src: "/img/google.svg", alt: "Entrar com Google" },
@@ -33,11 +35,12 @@ const redirectAfterLogin = () => {
 };
 
 const SocialLoginButtons = () => {
+  const t = useT();
   const buttons = SOCIAL_PROVIDERS.map((provider) => (
     <button key={provider.src} type="button">
       <Image
         src={provider.src}
-        alt={provider.alt}
+        alt={t(provider.alt)}
         width={50}
         height={50}
         className="drop-shadow-lg"
@@ -49,6 +52,7 @@ const SocialLoginButtons = () => {
 };
 
 export default function Home() {
+  const t = useT();
   const [form, setForm] = useState<FormState>(INITIAL_FORM_STATE);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -61,7 +65,7 @@ export default function Home() {
 
   const onSubmit = async () => {
     if (isFormValid(form) === false) {
-      setErrorMessage("Informe e-mail e senha.");
+      setErrorMessage(t("Informe e-mail e senha."));
       return;
     }
 
@@ -71,7 +75,7 @@ export default function Home() {
     setIsLoading(false);
 
     if (error !== null || data === null) {
-      setErrorMessage(error ?? "Falha ao realizar login.");
+      setErrorMessage(error ?? t("Falha ao realizar login."));
       return;
     }
 
@@ -82,7 +86,7 @@ export default function Home() {
   return (
     <div className="flex items-center justify-center min-h-screen">
       <div className="bg-[var(--white)] px-[4.5rem] py-12 rounded-4xl flex flex-col gap-4 items-center">
-        <p className="text-4xl text-[var(--primary)] font-orbitron">Fazer Login</p>
+        <p className="text-4xl text-[var(--primary)] font-orbitron"><T text="Fazer Login" /></p>
         <div className="flex flex-col gap-4 items-center">
           <Input
             type="email"
@@ -99,23 +103,21 @@ export default function Home() {
           />
           <div className="flex flex-col items-center">
             <p>
-              Ainda não possui uma conta?{" "}
+              <T text="Ainda não possui uma conta?" />{" "}
               <Link className="text-[var(--primary)] font-bold" href="/signin/">
-                Crie uma
-              </Link>
+                <T text="Crie uma" /></Link>
             </p>
             <button type="button" className="text-[var(--primary)] font-bold">
-              Esqueci minha senha
-            </button>
+              <T text="Esqueci minha senha" /></button>
           </div>
           {errorMessage === null ? null : (
-            <p className="text-red-600 font-semibold text-sm">{errorMessage}</p>
+            <p className="text-red-600 font-semibold text-sm">{t(errorMessage)}</p>
           )}
         </div>
         <Button text="Login" onClick={onSubmit} isLoading={isLoading} />
         <div className="flex items-center justify-center w-full">
           <hr className="flex-grow border-t border-gray-300" />
-          <span className="mx-5">ou</span>
+          <span className="mx-5"><T text="ou" /></span>
           <hr className="flex-grow border-t border-gray-300" />
         </div>
         <SocialLoginButtons />

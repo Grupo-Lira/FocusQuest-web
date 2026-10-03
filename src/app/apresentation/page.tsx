@@ -1,5 +1,6 @@
 "use client";
 
+import { T } from "@/i18n/client";
 import { useState } from "react";
 import { Button } from "@/components/Button";
 import { SettingsButton } from "@/components/SettingsButton";
@@ -17,27 +18,22 @@ const WelcomeCard = ({ onOpenSettings }: { onOpenSettings: () => void }) => {
     <div className="bg-[var(--white)] px-[4.5rem] py-12 rounded-4xl flex flex-col gap-4 items-center relative">
       <SettingsButton onClick={onOpenSettings} />
       <p className="text-4xl text-[var(--primary)] font-orbitron">
-        Bem-vindo ao FocusQuest!
-      </p>
+        <T text="Bem-vindo ao FocusQuest!" /></p>
       <div className="max-w-[31.25rem] font-semibold text-[var(--text)] text-center flex flex-col gap-4.5">
         <p>
-          Embarque numa missão intergaláctica que vai testar sua atenção, foco e precisão.
-        </p>
+          <T text="Embarque numa missão intergaláctica que vai testar sua atenção, foco e precisão." /></p>
         <p>
-          Explore 3 planetas, cada um com desafios progressivos inspirados no{" "}
+          <T text="Explore 3 planetas, cada um com desafios progressivos inspirados no" />{" "}
           <a
             href={CPT_WIKIPEDIA_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="text-[var(--primary)] underline bg-transparent p-0 m-0"
           >
-            Teste de Desempenho Contínuo Roosevelt.
-          </a>
+            <T text="Teste de Desempenho Contínuo Roosevelt." /></a>
         </p>
         <p>
-          Use apenas o poder do seu olhar para vencer as distrações e conquistar seu lugar
-          no ranking da galáxia!
-        </p>
+          <T text="Use apenas o poder do seu olhar para vencer as distrações e conquistar seu lugar no ranking da galáxia!" /></p>
       </div>
       <Button text="Iniciar Jornada" onClick={redirectToMenu} />
     </div>

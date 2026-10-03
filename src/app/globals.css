@@ -127,6 +127,133 @@ body {
   transform-origin: center;
 }
 
+.calibration-space {
+  background:
+    radial-gradient(circle at 50% 45%, rgba(255, 166, 64, 0.18), transparent 28%),
+    linear-gradient(rgba(4, 17, 40, 0.42), rgba(4, 17, 40, 0.72)),
+    url("/img/background.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.calibration-target__glow {
+  position: absolute;
+  width: 4.6rem;
+  height: 4.6rem;
+  border-radius: 9999px;
+  background: rgba(255, 211, 74, 0.86);
+  filter: blur(18px);
+  animation: calibration-glow 1.5s ease-in-out infinite;
+}
+
+.calibration-target__orbit {
+  position: absolute;
+  border: 2px solid rgba(255, 229, 128, 0.9);
+  border-radius: 9999px;
+  pointer-events: none;
+}
+
+.calibration-target__orbit--outer {
+  width: 6.5rem;
+  height: 6.5rem;
+  border-style: dashed;
+  animation: calibration-orbit 5s linear infinite;
+}
+
+.calibration-target__orbit--inner {
+  width: 4.75rem;
+  height: 4.75rem;
+  border-color: rgba(255, 249, 211, 0.8);
+  animation: calibration-pulse-ring 1.5s ease-out infinite;
+}
+
+.calibration-target__star {
+  animation: calibration-star-float 1.8s ease-in-out infinite;
+}
+
+.calibration-coach__astronaut {
+  animation: calibration-float 3s ease-in-out infinite;
+}
+
+.calibration-target:active .calibration-target__star {
+  animation: calibration-hit 0.34s ease-out;
+}
+
+@keyframes calibration-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes calibration-orbit {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes calibration-pulse-ring {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.7);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes calibration-star-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-4deg) scale(1);
+  }
+  50% {
+    transform: translateY(-8px) rotate(4deg) scale(1.08);
+  }
+}
+
+@keyframes calibration-hit {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.35);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes calibration-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .calibration-target__glow,
+  .calibration-target__orbit,
+  .calibration-target__star,
+  .calibration-coach__astronaut,
+  .calibration-target:active .calibration-target__star {
+    animation: none;
+  }
+}
+
 /* Custom Scrollbar Styles */
 ::-webkit-scrollbar {
   width: 10px;

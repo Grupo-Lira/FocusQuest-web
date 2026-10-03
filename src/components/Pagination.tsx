@@ -1,3 +1,5 @@
+import { useT } from "@/i18n/client";
+
 type Props = {
   readonly total: number;
   readonly currentPage: number;
@@ -5,6 +7,7 @@ type Props = {
 };
 
 export function Pagination({ total, currentPage, onPageChange }: Props) {
+  const t = useT();
   const pageSize = 10;
   const totalPages = Math.ceil(total / pageSize);
 
@@ -18,7 +21,7 @@ export function Pagination({ total, currentPage, onPageChange }: Props) {
   return (
     <div className="flex items-center justify-between mt-4">
       <p className="text-sm text-[var(--text)]">
-        {total} {total === 1 ? "registro encontrado" : "registros encontrados"}
+        {total} {t(total === 1 ? "registro encontrado" : "registros encontrados")}
       </p>
       <div className="flex gap-2">
         {pages.map((page) => (

@@ -1,5 +1,6 @@
 "use client";
 
+import { T, useT } from "@/i18n/client";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { Button } from "./Button";
@@ -14,6 +15,7 @@ type Props = {
 };
 
 export function PatientSelectModal({ isOpen, onSelect, onCancel }: Props) {
+  const t = useT();
   const [pacientes, setPacientes] = useState<Paciente.Profile[]>([]);
   const [selectedId, setSelectedId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
@@ -61,25 +63,24 @@ export function PatientSelectModal({ isOpen, onSelect, onCancel }: Props) {
   if (!isOpen) return null;
 
   const selectedPaciente = pacientes.find((p) => p.id === selectedId);
-  const displayValue = selectedPaciente ? selectedPaciente.nome : "Selecione...";
+  const displayValue = selectedPaciente ? selectedPaciente.nome : t("Selecione...");
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm">
       <Card title="Selecionar Paciente">
         <form onSubmit={handleSubmit} className="flex flex-col gap-6 pt-4">
           {isLoading ? (
-            <p className="text-[var(--text)]">Carregando pacientes...</p>
+            <p className="text-[var(--text)]"><T text="Carregando pacientes..." /></p>
           ) : error ? (
-            <p className="text-red-500 text-sm">{error}</p>
+            <p className="text-red-500 text-sm">{t(error)}</p>
           ) : pacientes.length === 0 ? (
             <div className="flex flex-col items-center gap-2 text-center">
-              <p className="text-[var(--text)]">Crie uma ficha de paciente</p>
+              <p className="text-[var(--text)]"><T text="Crie uma ficha de paciente" /></p>
               <Link
                 href="/fichas"
                 className="text-[#FF6A00] underline font-medium hover:text-[#e55d00]"
               >
-                Criar Ficha de Paciente
-              </Link>
+                <T text="Criar Ficha de Paciente" /></Link>
             </div>
           ) : (
             <div className="relative flex flex-col gap-1" ref={selectRef}>
@@ -118,8 +119,7 @@ export function PatientSelectModal({ isOpen, onSelect, onCancel }: Props) {
                     }}
                     className="px-4 py-3 hover:bg-orange-50 cursor-pointer text-gray-400 text-sm transition-colors"
                   >
-                    Selecione...
-                  </div>
+                    <T text="Selecione..." /></div>
 
                   {pacientes.map((paciente) => (
                     <div
@@ -137,7 +137,7 @@ export function PatientSelectModal({ isOpen, onSelect, onCancel }: Props) {
                       <span>{paciente.nome}</span>
                       {paciente.rg && (
                         <span className="text-xs text-gray-400 ml-2">
-                          RG: {paciente.rg}
+                          <T text="RG:" />{" "}{paciente.rg}
                         </span>
                       )}
                     </div>

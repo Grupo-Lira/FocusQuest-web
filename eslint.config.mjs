@@ -17,7 +17,7 @@ const eslintConfig = [
       "react-hooks",
       "jsx-a11y",
     ],
-    rules: {s
+    rules: {
       semi: ["error"],
       quotes: ["error", "double"],
       "prefer-arrow-callback": ["error"],
@@ -37,8 +37,9 @@ const eslintConfig = [
       "no-useless-escape": "off",
       "no-underscore-dangle": "off",
       "no-use-before-define": "off",
-      "@typescript-eslint/no-use-before-define": ["error"],
+      "@typescript-eslint/no-use-before-define": "off",
       "@typescript-eslint/no-unused-vars": "error",
+      "@typescript-eslint/no-namespace": "off",
       "react/no-array-index-key": "error",
       "no-shadow": "error",
     },

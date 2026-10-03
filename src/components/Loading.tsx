@@ -1,8 +1,11 @@
+import { useT } from "@/i18n/client";
+
 type Props = {
   message?: string;
 };
 
 export function Loading({ message }: Props) {
+  const t = useT();
   return (
     <div className="h-screen w-full flex flex-col items-center justify-center bg-transparent gap-4">
       <div className="relative flex items-center justify-center w-16 h-16">
@@ -11,7 +14,7 @@ export function Loading({ message }: Props) {
       </div>
 
       <p className="text-[var(--text)] text-white font-medium text-lg animate-pulse tracking-wide">
-        {message}
+        {message ? t(message) : null}
       </p>
     </div>
   );
