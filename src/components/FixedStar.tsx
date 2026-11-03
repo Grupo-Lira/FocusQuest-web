@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useT } from "@/i18n/client";
 
 type Props = {
   readonly top: number;
@@ -23,6 +24,7 @@ const getGlowClass = (isShining: boolean | undefined) => {
 };
 
 export function FixedStar({ top, left, isShining }: Props) {
+  const t = useT();
   const buttonClass = getButtonClass(isShining);
   const glowClass = getGlowClass(isShining);
   const positionStyle = { top: `${top}%`, left: `${left}%` };
@@ -33,7 +35,7 @@ export function FixedStar({ top, left, isShining }: Props) {
       <Image
         width={40}
         height={38}
-        alt="Estrela"
+        alt={t("Estrela")}
         src="/img/star.svg"
         className="relative z-10"
       />

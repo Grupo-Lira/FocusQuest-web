@@ -1,5 +1,6 @@
 "use client";
 
+import { T } from "@/i18n/client";
 import { useState, useEffect } from "react";
 import { Button } from "./Button";
 import { Card } from "./Card";
@@ -100,7 +101,7 @@ export function ProfileEditModal({ isOpen, onClose }: Props) {
       <Card title="Editar Perfil">
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <label className="text-[var(--text)] font-semibold">Nome</label>
+            <label className="text-[var(--text)] font-semibold"><T text="Nome" /></label>
             <Input
               type="text"
               placeholder="Digite seu nome"
@@ -110,7 +111,7 @@ export function ProfileEditModal({ isOpen, onClose }: Props) {
             />
           </div>
           <div className="flex flex-col gap-2">
-            <label className="text-[var(--text)] font-semibold">Email</label>
+            <label className="text-[var(--text)] font-semibold"><T text="Email" /></label>
             <Input
               type="text"
               placeholder="Digite seu email"
@@ -120,7 +121,7 @@ export function ProfileEditModal({ isOpen, onClose }: Props) {
             />
           </div>
           <div className="flex flex-col gap-2">
-            <label className="text-[var(--text)] font-semibold">Telefone</label>
+            <label className="text-[var(--text)] font-semibold"><T text="Telefone" /></label>
             <Input
               type="text"
               placeholder="Digite seu telefone"
@@ -130,7 +131,7 @@ export function ProfileEditModal({ isOpen, onClose }: Props) {
             />
           </div>
           <div className="flex flex-col gap-2">
-            <label className="text-[var(--text)] font-semibold">Especialidade</label>
+            <label className="text-[var(--text)] font-semibold"><T text="Especialidade" /></label>
             <Input
               type="text"
               placeholder="Digite sua especialidade"

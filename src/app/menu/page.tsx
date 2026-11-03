@@ -1,6 +1,9 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
+import { useT } from "@/i18n/client";
 
 type Level = {
   id: number;
@@ -53,25 +56,30 @@ const getLightIcon = (disabled: boolean) => {
   return "/img/luz.svg";
 };
 
-// Gives each planet a slightly different duration and delay
-// so the floating movement doesn't look synchronized.
-const getFloatStyle = (id: number): React.CSSProperties => {
-  const duration = `${6 + id * 1.2}s`;
-  const delay = `${id * 0.4}s`;
-  const style = { "--float-duration": duration, animationDelay: delay };
-  return style as React.CSSProperties;
-};
+const LevelMarker = ({ level }: { level: Level }) => {
+  // Gives each planet a slightly different duration and delay
+  // so the floating movement doesn't look synchronized.
+  const getFloatStyle = (id: number): React.CSSProperties => {
+    const duration = `${6 + id * 1.2}s`;
+    const delay = `${id * 0.4}s`;
+    const style = { "--float-duration": duration, animationDelay: delay };
+    return style as React.CSSProperties;
+  };
 
-type Props = {
-  level: Level;
-};
-
-const LevelMarker = ({ level }: Props) => {
+  const t = useT();
+  // const borderClass = getBorderClass(level.disabled);
+  // const badgeBgClass = getBadgeBackgroundClass(level.disabled);
+  // const lightIcon = getLightIcon(level.disabled);
   const borderClass = getBorderClass(false);
   const badgeBgClass = getBadgeBackgroundClass(false);
-  const lightIcon = getLightIcon(false);
   const floatStyle = getFloatStyle(level.id);
-  const alt = `Planeta ${level.id}`;
+  const lightIcon = getLightIcon(false);
+
+  const alt = t("Planeta {id}", { id: level.id });
+
+  type Props = {
+    level: Level;
+  };
 
   return (
     <Link href={level.href}>

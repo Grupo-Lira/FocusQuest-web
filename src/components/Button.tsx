@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/client";
 
 type Props = {
   text: string;
@@ -47,6 +48,7 @@ export const Button = ({
   variant = "primary",
   form,
 }: Props) => {
+  const t = useT();
   const isDisabled = disabled === true || isLoading === true;
   const disabledClass = getDisabledClass(isDisabled);
   const sizeClass = getSizeClass(className);
@@ -62,7 +64,7 @@ export const Button = ({
       disabled={isDisabled}
       form={form}
     >
-      {label}
+      {t(label)}
     </button>
   );
 };

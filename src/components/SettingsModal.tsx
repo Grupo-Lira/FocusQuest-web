@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useAudio } from "@/context/AudioContext";
 import { Button } from "./Button";
 import { Card } from "./Card";
+import { useT } from "@/i18n/client";
 
 type Props = {
   readonly isInitialGame?: boolean;
@@ -32,6 +33,7 @@ const redirectToMenu = () => {
 };
 
 const VolumeSlider = ({ iconSrc, iconAlt, value, onChange }: VolumeSliderProps) => {
+  const t = useT();
   const onInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     onChange(Number(event.target.value));
   };
@@ -39,7 +41,7 @@ const VolumeSlider = ({ iconSrc, iconAlt, value, onChange }: VolumeSliderProps) 
 
   return (
     <div className="flex items-center gap-4">
-      <Image src={iconSrc} height={40} width={40} alt={iconAlt} />
+      <Image src={iconSrc} height={40} width={40} alt={t(iconAlt)} />
       <input
         type="range"
         min="0"

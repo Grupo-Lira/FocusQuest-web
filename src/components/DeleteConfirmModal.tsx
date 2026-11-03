@@ -1,5 +1,6 @@
 "use client";
 
+import { T } from "@/i18n/client";
 import { Button } from "./Button";
 import { Card } from "./Card";
 
@@ -25,12 +26,11 @@ export function DeleteConfirmModal({
       <Card title="Confirmar Exclusão">
         <div className="flex flex-col gap-4">
           <p className="text-[var(--text)]">
-            Tem certeza que deseja excluir o paciente{" "}
+            <T text="Tem certeza que deseja excluir o paciente" />{" "}
             <span className="font-semibold">{patientName}</span>?
           </p>
           <p className="text-sm text-gray-600">
-            Esta ação não pode ser desfeita.
-          </p>
+            <T text="Esta ação não pode ser desfeita." /></p>
           <div className="flex gap-4 justify-center mt-4">
             <Button
               text="Cancelar"

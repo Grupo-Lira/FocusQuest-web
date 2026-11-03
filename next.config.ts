@@ -9,14 +9,6 @@ const BACKEND_INTERNAL_URL = (
 ).replace(/\/+$/, "");
 
 const nextConfig: NextConfig = {
-  eslint: {
-    // Allow production builds to complete even if ESLint errors are present
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    // Allow production builds to complete even if TypeScript errors are present
-    ignoreBuildErrors: true,
-  },
   async rewrites() {
     return [
       {

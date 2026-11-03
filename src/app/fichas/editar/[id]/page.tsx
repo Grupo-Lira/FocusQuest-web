@@ -1,5 +1,6 @@
 "use client";
 
+import { T } from "@/i18n/client";
 import { Button } from "@/components/Button";
 import { Navbar } from "@/components/Navbar";
 import { DeleteConfirmModal } from "@/components/DeleteConfirmModal";
@@ -164,11 +165,9 @@ export default function EditarFichaPage() {
           ) : (
             <div className="flex flex-col items-center justify-center gap-2 mt-4 p-6 border-[1.5px] border-[var(--primary)] rounded-3xl">
               <p className="text-xl font-orbitron text-[var(--primary)] font-semibold uppercase tracking-wider">
-                Métricas
-              </p>
+                <T text="Métricas" /></p>
               <p className="text-sm font-medium text-red-600 text-center">
-                Finalize o atendimento para que as métricas sejam preenchidas
-              </p>
+                <T text="Finalize o atendimento para que as métricas sejam preenchidas" /></p>
             </div>
           )}
 

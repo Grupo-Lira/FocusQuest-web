@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { X, CheckCircle, AlertCircle } from "lucide-react";
+import { useT } from "@/i18n/client";
 
 type ToastType = "success" | "error";
 
@@ -13,6 +14,7 @@ type Props = {
 };
 
 export function Toast({ message, type, onClose, duration = 3000 }: Props) {
+  const t = useT();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -39,7 +41,7 @@ export function Toast({ message, type, onClose, duration = 3000 }: Props) {
         className={`${bgColor} text-white px-6 py-4 rounded-xl shadow-lg flex items-center gap-3 min-w-[300px] max-w-md`}
       >
         <Icon size={20} className="flex-shrink-0" />
-        <p className="flex-1 font-medium text-sm">{message}</p>
+        <p className="flex-1 font-medium text-sm">{t(message)}</p>
         <button
           onClick={() => {
             setIsVisible(false);

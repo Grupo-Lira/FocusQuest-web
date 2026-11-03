@@ -1,3 +1,5 @@
+import { useT } from "@/i18n/client";
+
 type RadioProps = {
   label: string;
   name: string;
@@ -13,6 +15,7 @@ export function RadioGroup({
   checked,
   onChange,
 }: Readonly<RadioProps>) {
+  const t = useT();
   return (
     <label className="flex items-center gap-2 cursor-pointer">
       <input
@@ -23,7 +26,7 @@ export function RadioGroup({
         onChange={onChange}
         className="w-4 h-4 accent-[var(--primary)]"
       />
-      <span className="text-[var(--text)] font-medium">{label}</span>
+      <span className="text-[var(--text)] font-medium">{t(label)}</span>
     </label>
   );
 }

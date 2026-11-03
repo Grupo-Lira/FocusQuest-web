@@ -1,11 +1,13 @@
 "use client";
 
-import { Bolt, Home, ScanEyeIcon, Users } from "lucide-react";
+import { Bolt, Home, Languages, ScanEyeIcon, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { ProfileEditModal } from "./ProfileEditModal";
+import { TrainingModeToggle } from "./TrainingModeToggle";
+import { useLanguage, useT } from "@/i18n/client";
 
 type NavLinkItem = {
   id: number;
@@ -35,11 +37,12 @@ const getLinkClass = (isActive: boolean) => {
 
 const NavLink = ({ link, isActive }: { link: NavLinkItem; isActive: boolean }) => {
   const linkClass = getLinkClass(isActive);
+  const t = useT();
 
   return (
     <Link href={link.href} className={linkClass}>
       {link.icon}
-      <p>{link.label}</p>
+      <p>{t(link.label)}</p>
     </Link>
   );
 };
@@ -65,18 +68,38 @@ const Avatar = ({ onClick }: { onClick: () => void }) => {
 export function Navbar() {
   const pathname = usePathname();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { language, setLanguage } = useLanguage();
+  const t = useT();
 
   return (
     <>
       {/* Reduzimos o padding do container (px-4 py-2) 
         e trocamos o gap-40 (que era enorme) por um gap-12
       */}
-      <div className="bg-[var(--white)] px-4 py-2 flex items-center w-fit rounded-full gap-12 shadow-sm border border-gray-100">
+      <div className="bg-[var(--white)] px-4 py-2 flex flex-wrap items-center justify-center w-fit max-w-[calc(100vw-1rem)] rounded-full gap-2 sm:gap-6 shadow-sm border border-gray-100">
         {/* Reduzimos o gap entre os links de 5 para 2 */}
-        <div className="flex gap-2">
-          {LINKS.map((link) => (
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          {LINKS.slice(0, 3).map((link) => (
             <NavLink key={link.id} link={link} isActive={pathname === link.href} />
           ))}
+          <TrainingModeToggle />
+          {LINKS.slice(3).map((link) => (
+            <NavLink key={link.id} link={link} isActive={pathname === link.href} />
+          ))}
+          <div className="flex items-center gap-1.5 rounded-full bg-[var(--white)] px-2 py-1 text-sm font-semibold text-[var(--primary)] inner-shadow">
+            <Languages size={18} aria-hidden="true" />
+            <label htmlFor="site-language" className="sr-only">{t("Idioma")}</label>
+            <select
+              id="site-language"
+              aria-label={t("Idioma")}
+              value={language}
+              onChange={(event) => setLanguage(event.target.value as "pt-BR" | "en")}
+              className="cursor-pointer bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+            >
+              <option value="pt-BR">Português</option>
+              <option value="en">English</option>
+            </select>
+          </div>
         </div>
         <Avatar onClick={() => setIsModalOpen(true)} />
       </div>

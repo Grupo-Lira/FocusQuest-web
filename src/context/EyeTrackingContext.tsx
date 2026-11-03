@@ -1,11 +1,30 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
+type GazePrediction = { x: number | null; y: number | null } | null;
+
+type WebGazerApi = {
+  resume: () => Promise<void> | void;
+  removeMouseEventListeners: () => Promise<void> | void;
+  clearData: () => Promise<void> | void;
+  setRegression: (regression: string) => WebGazerApi;
+  setTracker: (tracker: string) => WebGazerApi;
+  saveDataAcrossSessions: (enabled: boolean) => WebGazerApi;
+  showVideo: (visible: boolean) => WebGazerApi;
+  showFaceOverlay: (visible: boolean) => WebGazerApi;
+  showFaceFeedbackBox: (visible: boolean) => WebGazerApi;
+  applyKalmanFilter: (enabled: boolean) => WebGazerApi;
+  setGazeListener: (listener: (data: GazePrediction) => void) => WebGazerApi;
+  showPredictionPoints: (visible: boolean) => Promise<void> | void;
+  begin: () => Promise<void> | void;
+  pause: () => Promise<void> | void;
+  end: () => Promise<void> | void;
+};
+
 declare global {
-  interface Window {
-    webgazer: any;
-  }
-  var webgazer: any;
+  // Global properties require var in TypeScript ambient declarations.
+  // eslint-disable-next-line no-var
+  var webgazer: WebGazerApi | undefined;
 }
 
 export interface GazeData {
@@ -19,7 +38,7 @@ interface EyeTrackingContextType {
   isTracking: boolean;
   isPaused: boolean;
   error: string | null;
-  startTracking: (trackWithMouse: boolean, isTutorial: boolean) => Promise<void>;
+  startTracking: (trackWithMouse: boolean, isTutorial: boolean) => Promise<boolean>;
   stopTracking: () => void;
   fullStopTracking: () => void;
   lastGazeData: GazeData | null;
@@ -28,8 +47,6 @@ interface EyeTrackingContextType {
 interface EyeTrackingProviderProps {
   readonly children: React.ReactNode;
 }
-
-type dataType = { x: number | null; y: number | null };
 
 const EyeTrackingContext = createContext<EyeTrackingContextType>(
   {} as EyeTrackingContextType
@@ -43,7 +60,7 @@ export function EyeTrackingProvider({ children }: EyeTrackingProviderProps) {
   const [error, setError] = useState<string | null>(null);
   const [lastGazeData, setLastGazeData] = useState<GazeData | null>(null);
 
-  const updateGazeData = useCallback((data: dataType) => {
+  const updateGazeData = useCallback((data: GazePrediction) => {
     if (data && data.x !== null && data.y !== null) {
       setLastGazeData({
         x: data.x,
@@ -63,10 +80,12 @@ export function EyeTrackingProvider({ children }: EyeTrackingProviderProps) {
     async (trackWithMouse: boolean, isTutorial: boolean) => {
       console.log(`isPaused: ${isPaused}`);
       console.log(`isWebGazerLoaded: ${isWebGazerLoaded}`);
+      setError(null);
 
-      if (!isWebGazerLoaded) {
+      const webgazer = globalThis.webgazer;
+      if (!isWebGazerLoaded || !webgazer) {
         setError("WebGazer not loaded yet.");
-        return;
+        return false;
       }
 
       if (!hasPermission) {
@@ -77,50 +96,57 @@ export function EyeTrackingProvider({ children }: EyeTrackingProviderProps) {
           setHasPermission(false);
           setError("Permissão de câmera negada.");
           console.error(e);
-          return;
+          return false;
         }
       }
 
-      if (isPaused) {
-        await globalThis.webgazer.resume();
-        if (!trackWithMouse) {
-          await globalThis.webgazer.removeMouseEventListeners();
-        }
-        if (isTutorial) await globalThis.webgazer.clearData();
-        setIsPaused(false);
-      } else {
-        console.log("Caiu no if do beggin");
-        if (isTutorial) {
-          await globalThis.webgazer.clearData();
+      try {
+        if (isPaused) {
+          await webgazer.resume();
+          if (!trackWithMouse) {
+            await webgazer.removeMouseEventListeners();
+          }
+          if (isTutorial) await webgazer.clearData();
+          setIsPaused(false);
+        } else {
+          console.log("Caiu no if do beggin");
+          if (isTutorial) {
+            await webgazer.clearData();
+          }
+
+          await webgazer
+            .setRegression("weightedRidge")
+            .setTracker("TFFacemesh")
+            .saveDataAcrossSessions(true) //Em prod podemos deixar true para salvar a calibração no navegador para próximos usos
+            .showVideo(false) // Ocultar vídeo
+            .showFaceOverlay(false) // Ocultar overlay da face
+            .showFaceFeedbackBox(false) // Ocultar caixa de feedback
+            .applyKalmanFilter(true)
+            .setGazeListener((data) => {
+              updateGazeData(data);
+            });
+
+          await webgazer.showPredictionPoints(true);
+          await webgazer.begin();
+
+          if (!trackWithMouse) {
+            await webgazer.removeMouseEventListeners();
+          }
         }
 
-        await globalThis.webgazer
-          .setRegression("weightedRidge")
-          .setTracker("TFFacemesh")
-          .saveDataAcrossSessions(true) //Em prod podemos deixar true para salvar a calibração no navegador para próximos usos
-          .showVideo(false) // Ocultar vídeo
-          .showFaceOverlay(false) // Ocultar overlay da face
-          .showFaceFeedbackBox(false) // Ocultar caixa de feedback
-          .applyKalmanFilter(true)
-          .setGazeListener((data: any) => {
-            updateGazeData(data);
-          });
-
-        await globalThis.webgazer.showPredictionPoints(true);
-        await globalThis.webgazer.begin();
-
-        if (!trackWithMouse) {
-          await globalThis.webgazer.removeMouseEventListeners();
-        }
+        setIsTracking(true);
+        return true;
+      } catch (e) {
+        setError("Não foi possível iniciar o rastreamento ocular.");
+        console.error(e);
+        return false;
       }
-
-      setIsTracking(true);
     },
     [isWebGazerLoaded, isPaused, hasPermission, updateGazeData]
   );
 
   const stopTracking = useCallback(async () => {
-    if (isTracking) {
+    if (isTracking && globalThis.webgazer) {
       console.log("Parando o rastreamento ocular...");
       await globalThis.webgazer.pause();
 

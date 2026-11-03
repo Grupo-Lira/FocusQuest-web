@@ -15,6 +15,7 @@ type Props = {
   readonly onStart: () => void;
   readonly onCloseForm: () => void;
   readonly onClickPlaneta: (planetaId: number) => void;
+  readonly experimentoId?: string | null;
 };
 
 const OVERLAY_CLASS =
@@ -30,6 +31,7 @@ export function GameOverlay({
   onStart,
   onCloseForm,
   onClickPlaneta,
+  experimentoId,
 }: Props) {
   if (audioGameStarted === false) {
     return <OverlayInstruction onComplete={onStart} steps={fase2Steps} />;
@@ -38,7 +40,7 @@ export function GameOverlay({
   if (showSuccessModal === true) {
     return (
       <div className={OVERLAY_CLASS}>
-        <SuccessScreen fase={3} data={data} />
+        <SuccessScreen fase={3} faseAtual={2} data={data} experimentoId={experimentoId} />
       </div>
     );
   }

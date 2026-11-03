@@ -1,5 +1,6 @@
 "use client";
 
+import { T } from "@/i18n/client";
 import { AnimatedElement } from "@/components/AnimatedElements/AnimatedElement";
 import { Card } from "@/components/Card";
 import { NavbarGame } from "@/components/NavbarGame";
@@ -18,9 +19,9 @@ import { stars } from "@/constants/fase2Stars";
 import { useAudio } from "@/context/AudioContext";
 import { useGameContext } from "@/context/GameContext";
 import { usePatient } from "@/context/PatientContext";
+import { useTrainingMode } from "@/context/TrainingModeContext";
 import { usePlanets } from "@/hooks/usePlanets";
 import { useSocketIO } from "@/hooks/useWebSocket";
-import { PatientSelectModal } from "@/components/PatientSelectModal";
 
 import { AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
@@ -28,6 +29,7 @@ export type PlanetaResposta = {
   planeta: number;
   correto: boolean;
 };
+type Fase2Metricas = Metricas & { experimento_id?: string };
 
 const ROUND_TIME_SECONDS = 15;
 const STAR_PICK_INTERVAL_MS = 2000;
@@ -50,7 +52,8 @@ export function GameScreen() {
   const [showRound1Notice, setShowRound1Notice] = useState(false);
   const [round1NoticeSeconds, setRound1NoticeSeconds] = useState(ROUND_1_NOTICE_SECONDS);
   const [shiningStar, setShiningStar] = useState<string | null>(null);
-  const [data, setData] = useState<Metricas | undefined>(undefined);
+  const [data, setData] = useState<Fase2Metricas | undefined>(undefined);
+  const [experimentId, setExperimentId] = useState<string | null>(null);
   const [planetasSelecionados, setPlanetasSelecionados] = useState<PlanetaResposta[]>([]);
   const [currentRound, setCurrentRound] = useState(FIRST_ROUND);
   const [isPatientSelectOpen, setIsPatientSelectOpen] = useState(true);
@@ -76,6 +79,7 @@ export function GameScreen() {
   const { activePlanets, startGame, resetPlanets } = usePlanets();
   const { socket, isConnected } = useSocketIO();
   const { selectedPacienteId, setSelectedPacienteId } = usePatient();
+  const { isTrainingMode } = useTrainingMode();
 
   const handleStartGame = () => {
     setIsGameActive(true);
@@ -88,6 +92,7 @@ export function GameScreen() {
       fase: 2,
       usuarioId: selectedPacienteId,
       controleJogo: controleSelecionado,
+      modoTreinamento: isTrainingMode,
     });
   };
 
@@ -153,17 +158,22 @@ export function GameScreen() {
       setRound1NoticeSeconds((currentSeconds) => {
         if (currentSeconds <= 1) {
           window.clearInterval(intervalId);
-          setShowRound1Notice(false);
-          handleCloseForm();
           return 0;
         }
-
         return currentSeconds - 1;
       });
     }, 1000);
 
     return () => window.clearInterval(intervalId);
   }, [showRound1Notice]);
+
+  useEffect(() => {
+    if (showRound1Notice === false) return;
+    if (round1NoticeSeconds !== 0) return;
+
+    setShowRound1Notice(false);
+    handleCloseForm();
+  }, [round1NoticeSeconds, showRound1Notice]);
 
   useEffect(() => {
     if (isGameActive === false) return;
@@ -220,9 +230,10 @@ export function GameScreen() {
       setPlanetasSelecionados((prev) => [...prev, response]);
     };
 
-    const handleFaseConcluida = (response: Metricas) => {
+    const handleFaseConcluida = (response: Fase2Metricas) => {
       console.debug("Fase concluída. Métricas recebidas:", response);
       setData(response);
+      setExperimentId(response.experimento_id ?? null);
     };
 
     const handleRodada1Finalizada = () => {
@@ -258,7 +269,7 @@ export function GameScreen() {
         onSelect={handlePatientSelect}
         onCancel={handlePatientSelectCancel}
       />
-      
+
       {isControlSelectOpen === true ? (
         <ControlSelectModal onSelect={handleControlSelect} />
       ) : null}
@@ -274,6 +285,7 @@ export function GameScreen() {
         data={data}
         planetasSelecionados={planetasSelecionados}
         controleSelecionado={controleSelecionado}
+        experimentoId={experimentId}
         showFormModal={showFormModal}
         onStart={handleStartGame}
         onCloseForm={handleCloseForm}
@@ -287,13 +299,14 @@ export function GameScreen() {
           <Card title="Atenção">
             <div className="flex flex-col items-center gap-4 text-center">
               <p className="text-xl text-[#4a4a4a] font-orbitron">
-                A rodada 1 terminou. A rodada 2 vai começar em breve.
+                <T text="A rodada 1 terminou. A rodada 2 vai começar em breve." />
               </p>
               <p className="text-lg text-[#4a4a4a] font-orbitron">
-                Preste atenção na próxima rodada.
+                <T text="Preste atenção na próxima rodada." />
               </p>
               <p className="text-2xl text-[var(--primary)] font-orbitron">
-                Fechando em {round1NoticeSeconds}s
+                <T text="Fechando em" /> {round1NoticeSeconds}
+                <T text="s" />
               </p>
             </div>
           </Card>

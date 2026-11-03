@@ -41,7 +41,7 @@ export function Clouds() {
         <Image
           key={cloud.id}
           src={cloud.src}
-          alt="nuvem"
+          alt=""
           className={cloud.className}
           height={144}
           width={280}

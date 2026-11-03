@@ -1,3 +1,5 @@
+import { useT } from "@/i18n/client";
+
 type Props = {
   label: string;
   type: string;
@@ -15,14 +17,15 @@ export function FormInput({
   value,
   onChange,
 }: Readonly<Props>) {
+  const t = useT();
   return (
     <div className="flex flex-col gap-1 w-full">
       <label className="text-[var(--primary)] font-orbitron uppercase font-semibold text-xs tracking-wide">
-        {label}
+        {t(label)}
       </label>
       <input
         type={type}
-        placeholder={placeholder}
+        placeholder={t(placeholder)}
         name={name}
         value={value}
         onChange={onChange}
