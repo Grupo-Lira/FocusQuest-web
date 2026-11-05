@@ -97,7 +97,10 @@ const pickPathIndex = (lastIndex: number | null): number => {
 
 const buildPlanetInstance = (src: string, pathIndex: number): PlanetInstance => {
   const path = PATH_GENERATORS[pathIndex]();
-  const duration = randomBetween(MIN_TRAVEL_DURATION_SECONDS, MAX_TRAVEL_DURATION_SECONDS);
+  const duration = randomBetween(
+    MIN_TRAVEL_DURATION_SECONDS,
+    MAX_TRAVEL_DURATION_SECONDS
+  );
   const instance = { src, start: path.start, end: path.end, duration };
   return instance;
 };
@@ -107,6 +110,13 @@ export function usePlanets() {
   const appearedPlanetsRef = useRef<string[]>([]);
   const planetCountRef = useRef(0);
   const lastPathIndexRef = useRef<number | null>(null);
+
+  const timeoutsRef = useRef<NodeJS.Timeout[]>([]);
+
+  const clearAllTimeouts = () => {
+    timeoutsRef.current.forEach(clearTimeout);
+    timeoutsRef.current = [];
+  };
 
   const removeActivePlanetBySrc = (src: string) => {
     setActivePlanets((prev) => prev.filter((planet) => planet.src !== src));
@@ -128,7 +138,7 @@ export function usePlanets() {
     appearedPlanetsRef.current.push(planetToShow.id);
     planetCountRef.current += 1;
 
-    setTimeout(() => {
+    const removeId = setTimeout(() => {
       removeActivePlanetBySrc(planetToShow.src);
     }, VISIBLE_DURATION_MS);
 
@@ -152,9 +162,10 @@ export function usePlanets() {
     for (const [index, time] of APPEARANCE_SCHEDULE_MS.entries()) {
       const planetIdToShow = planetsForThisRound[index];
       if (planetIdToShow) {
-        setTimeout(() => {
+        const spawnId = setTimeout(() => {
           triggerSpecificPlanet(planetIdToShow);
         }, time);
+        timeoutsRef.current.push(spawnId);
       }
     }
 
@@ -167,6 +178,7 @@ export function usePlanets() {
   };
 
   const resetPlanets = () => {
+    clearAllTimeouts();
     appearedPlanetsRef.current = [];
     planetCountRef.current = 0;
     lastPathIndexRef.current = null;

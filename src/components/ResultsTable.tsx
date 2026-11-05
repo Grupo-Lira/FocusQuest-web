@@ -1,3 +1,4 @@
+import { T, useT } from "@/i18n/client";
 import Image from "next/image";
 import { Metricas } from "./SuccessScreen";
 
@@ -42,6 +43,9 @@ const TD_CLASS = "text-[var(--text)] w-[250px] text-left pl-3 py-2.5" as const;
 
 const findPlanet = (id: number) => {
   const planet = PLANETS.find((item) => item.id === id);
+  if (planet === undefined) {
+    console.error(`Planeta com ID ${id} não encontrado.`);
+  }
   return planet;
 };
 
@@ -59,13 +63,14 @@ const PlanetGroup = ({
   planetIds,
 }: {
   label: string;
-  planetIds: ReadonlyArray<{ id: number }>;
+  planetIds: ReadonlyArray<number>;
 }) => {
+  const t = useT();
   return (
     <div className="flex flex-col gap-3">
-      <p className={TH_CLASS}>{label}</p>
+      <p className={TH_CLASS}>{t(label)}</p>
       <div className="flex flex-wrap gap-3">
-        {planetIds.map(({ id }) => {
+        {planetIds.map((id) => {
           const planet = findPlanet(id);
           if (planet === undefined) return null;
           return <PlanetCard key={id} planet={planet} />;
@@ -76,10 +81,11 @@ const PlanetGroup = ({
 };
 
 const ResultRow = ({ result }: { result: Result }) => {
+  const t = useT();
   return (
     <tr className="border-b border-[#FFD3C7] hover:bg-[#f3f2f2]">
-      <td className={TD_CLASS}>{result.name}</td>
-      <td className={TD_CLASS}>{result.score}</td>
+      <td className={TD_CLASS}>{t(result.name)}</td>
+      <td className={TD_CLASS}>{t(result.score)}</td>
     </tr>
   );
 };
@@ -90,8 +96,8 @@ export function ResultsTable({ results, data, fase }: Readonly<Props>) {
       <table className="results-table w-full">
         <thead className="hover:bg-[#fff3e8]">
           <tr>
-            <th className={TH_CLASS}>Métrica</th>
-            <th className={TH_CLASS}>Valor</th>
+            <th className={TH_CLASS}><T text="Métrica" /></th>
+            <th className={TH_CLASS}><T text="Valor" /></th>
           </tr>
         </thead>
         <tbody>

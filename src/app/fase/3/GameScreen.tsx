@@ -6,6 +6,7 @@ import { OverlayInstruction } from "@/components/Calibration/OverlayInstruction"
 import { AnimatedElement } from "@/components/AnimatedElements/AnimatedElement";
 import { FixedStar } from "@/components/FixedStar";
 import { NavbarGame } from "@/components/NavbarGame";
+import { PatientSelectModal } from "@/components/PatientSelectModal";
 import { SettingsModal } from "@/components/SettingsModal";
 import { Metricas, SuccessScreen } from "@/components/SuccessScreen";
 import { animatedElements } from "@/config/gameConfig";
@@ -14,7 +15,9 @@ import { useAudio } from "@/context/AudioContext";
 import { GazeData, useEyeTracking } from "@/context/EyeTrackingContext";
 import { useGameContext } from "@/context/GameContext";
 import { usePatient } from "@/context/PatientContext";
+import { useTrainingMode } from "@/context/TrainingModeContext";
 import { useSocketIO } from "@/hooks/useWebSocket";
+import { useT } from "@/i18n/client";
 
 type Fase3BoundingBox = {
   x_min: number;
@@ -23,10 +26,19 @@ type Fase3BoundingBox = {
   y_max: number;
 };
 
+type Phase3SuccessPayload = {
+  metricas?: Metricas | null;
+  avaliacao_final?: string | null;
+  avaliacao_score?: number | null;
+  experimento_id?: string;
+  [key: string]: unknown;
+};
+
 const NAVBAR_LABEL =
   "FOQUE OS OLHOS NAS ESTRELAS E QUANDO O SINALIZADOR ACENDER, FOQUE NELE!" as const;
 const TIME_EXCEEDED_REASON = "TEMPO_FASE_EXCEDIDO" as const;
 const PHASE_NUMBER = 3;
+const PHASE_TIME_SECONDS = 30;
 const START_TRACKING_DELAY_MS = 500;
 const GAZE_EMIT_INTERVAL_MS = 250;
 const DEFAULT_TOLERANCE_X = 0.15;
@@ -79,8 +91,11 @@ const isRadarTarget = (alvo: string | undefined) => {
 };
 
 export function GameScreen() {
+  const t = useT();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPatientSelectOpen, setIsPatientSelectOpen] = useState(true);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successData, setSuccessData] = useState<Phase3SuccessPayload | null>(null);
   const [isShining, setIsShining] = useState(false);
   const [successModalData, setSuccessModalData] = useState<Metricas | null>(null);
 
@@ -92,11 +107,13 @@ export function GameScreen() {
     setAudioGameStarted,
     isGameActive,
     timeLeft,
+    setTimeLeft,
     setPhase,
   } = useGameContext();
   const { startAudio } = useAudio();
   const { socket, isConnected } = useSocketIO();
-  const { selectedPacienteId } = usePatient();
+  const { selectedPacienteId, setSelectedPacienteId } = usePatient();
+  const { isTrainingMode } = useTrainingMode();
   const { stopTracking, isWebGazerLoaded, startTracking, lastGazeData, isTracking } =
     useEyeTracking();
 
@@ -105,6 +122,7 @@ export function GameScreen() {
   const lastGazeRef = useRef<GazeData | null>(null);
   const lastSentGazeRef = useRef<GazeData | null>(null);
   const fase3ConfigRef = useRef<Fase3BoundingBox[]>([]);
+  const phaseStartedRef = useRef(false);
 
   const buildPhaseConfig = () => {
     const estrela = getBoundingBox(starContainerRef.current);
@@ -115,10 +133,20 @@ export function GameScreen() {
     return fase3;
   };
 
+  const pausePhase3 = () => {
+    socket?.emit("fase_3_pause");
+    stopTracking();
+  };
+
+  const resumePhase3 = async () => {
+    socket?.emit("fase_3_resume");
+    await startTracking(false, false);
+    startAudio();
+  };
+
   const handleStartGame = async () => {
     if (!selectedPacienteId) {
-      alert("Por favor, selecione um paciente na ficha antes de iniciar a fase.");
-      window.location.href = "/fichas";
+      setIsPatientSelectOpen(true);
       return;
     }
 
@@ -137,31 +165,60 @@ export function GameScreen() {
           usuarioId: selectedPacienteId,
           alvoInicialNome: "ESTRELA",
           fase3,
+          modoTreinamento: isTrainingMode,
         });
       }
     }
 
+    phaseStartedRef.current = true;
     setIsGameActive(true);
     setAudioGameStarted(true);
+    setIsPaused(false);
     startAudio();
+  };
+
+  const handlePatientSelect = (pacienteId: string) => {
+    setSelectedPacienteId(pacienteId);
+    setIsPatientSelectOpen(false);
+  };
+
+  const handlePatientSelectCancel = () => {
+    window.location.href = "/menu";
   };
 
   const onCloseSettings = async () => {
     setIsModalOpen(false);
     setIsPaused(false);
-    await startTracking(false, false);
-    startAudio();
+    await resumePhase3();
   };
 
   const onOpenSettings = () => {
     setIsModalOpen(true);
     setIsPaused(true);
-    stopTracking();
+    pausePhase3();
+  };
+
+  const onNavbarPauseToggle = async (nextPaused: boolean) => {
+    if (nextPaused === true) {
+      pausePhase3();
+      return;
+    }
+
+    await resumePhase3();
   };
 
   useEffect(() => {
     setPhase(PHASE_NUMBER);
-  }, [setPhase]);
+    setTimeLeft(PHASE_TIME_SECONDS);
+    setIsGameActive(false);
+    setAudioGameStarted(false);
+    setIsPaused(false);
+
+    return () => {
+      setIsGameActive(false);
+      setAudioGameStarted(false);
+    };
+  }, [setPhase, setTimeLeft, setIsGameActive, setAudioGameStarted, setIsPaused]);
 
   useEffect(() => {
     if (socket === null) return;
@@ -176,8 +233,10 @@ export function GameScreen() {
     };
   }, [socket]);
 
+  //Trigger para contador de TEMPO finalizado.
   useEffect(() => {
-    if (timeLeft !== 0) return;
+    if (timeLeft !== 0 || !phaseStartedRef.current) return;
+    phaseStartedRef.current = false;
     socket?.emit("fase_3_tempo_excedido");
     stopTracking();
     setShowSuccessModal(true);
@@ -187,16 +246,21 @@ export function GameScreen() {
   useEffect(() => {
     if (socket === null) return;
 
-    socket.on("fase_concluida", (data) => {
+    socket.on("fase_concluida", (data: Phase3SuccessPayload) => {
       setIsPaused(true);
       stopTracking();
-      setSuccessModalData(data?.metricas);
 
+      // store full payload (for AI fields) and the metrics separately
+      setSuccessData(data ?? null);
+      setSuccessModalData(data?.metricas ?? null);
+
+      // prefer develop behavior: if metrics are present, show modal
       if (data?.metricas) {
         setShowSuccessModal(true);
         return;
       }
 
+      // fallback: show modal when not time-exceeded
       const shouldShowSuccess = timeLeft !== 0 && data?.motivo !== TIME_EXCEEDED_REASON;
       if (shouldShowSuccess === true) {
         setShowSuccessModal(true);
@@ -253,8 +317,13 @@ export function GameScreen() {
 
   return (
     <div className="fase3-container relative w-full h-screen overflow-hidden">
+      <PatientSelectModal
+        isOpen={isPatientSelectOpen}
+        onSelect={handlePatientSelect}
+        onCancel={handlePatientSelectCancel}
+      />
       <div className="flex justify-center mt-6 relative z-11">
-        <NavbarGame label={NAVBAR_LABEL} />
+        <NavbarGame label={NAVBAR_LABEL} onPauseToggle={onNavbarPauseToggle} />
       </div>
 
       <div>
@@ -262,19 +331,28 @@ export function GameScreen() {
         <div className="base-sinalizador" />
       </div>
 
-      {audioGameStarted === false ? (
+      {!isPatientSelectOpen && audioGameStarted === false ? (
         <OverlayInstruction onComplete={handleStartGame} steps={fase3Steps} />
       ) : null}
 
       {showSuccessModal === true ? (
         <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
-          <SuccessScreen fase={4} data={successModalData ?? undefined} />
+          <SuccessScreen
+            fase={4}
+            faseAtual={3}
+            experimentoId={successData?.experimento_id ?? null}
+            data={successModalData ?? successData?.metricas ?? undefined}
+            ai={{
+              avaliacao_final: successData?.avaliacao_final ?? null,
+              avaliacao_score: successData?.avaliacao_score ?? null,
+            }}
+          />
         </div>
       ) : null}
 
       <button
         type="button"
-        aria-label="Open settings"
+        aria-label={t("Configurações")}
         className="bg-[var(--primary)] z-20 w-11 h-11 rounded-full absolute flex items-center justify-center button-glow transition-all duration-300 top-9 right-9"
         onClick={onOpenSettings}
       >

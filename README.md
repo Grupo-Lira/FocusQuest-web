@@ -1,193 +1,149 @@
 # FocusQuest Frontend
 
-Aplicação Next.js responsável pela interface gamificada do FocusQuest. Ela exibe o fluxo de apresentação, calibração, menu, fases, fichas, configurações e autenticação, consumindo a API do backend e o canal de Socket.IO para sincronizar o andamento dos experimentos.
+Frontend do FocusQuest, uma aplicação gamificada para aplicação de experimentos de
+atenção com suporte a rastreamento ocular. A interface permite autenticar o
+profissional, gerenciar pacientes, calibrar o WebGazer, executar três fases do
+experimento e consultar métricas e relatórios.
 
-## Visão Geral
+O projeto usa Next.js com App Router e se comunica com o backend por HTTP e
+Socket.IO. As fases 1 e 3 enviam coordenadas do olhar; a fase 2 usa respostas por
+mouse ou por um controle externo tratado pelo backend.
 
-Este frontend concentra a experiência visual do sistema. Ele orquestra a navegação entre as telas do jogo, faz chamadas para o backend, acompanha eventos em tempo real e carrega os assets visuais e sonoros usados nas fases.
+## Stack principal
 
-## 🚀 Funcionalidades
+- Next.js 15.2.4 e App Router
+- React 19
+- TypeScript 5
+- Tailwind CSS 4
+- Socket.IO Client 4
+- WebGazer carregado no navegador
+- Framer Motion e animações CSS
 
-- **Missões Intergalácticas**: Explore 3 planetas com desafios progressivos.
-- **Desafios de Foco**: Encontre e fixe o olhar em estrelas enquanto evita distrações.
-- **Sistema de Pontuação**: Acompanhe acertos, erros e precisão.
-- **Áudio Imersivo**: Sons de fundo para aumentar a imersão.
-- **Ranking Global**: Compare seu desempenho com outros jogadores.
-- **Configurações Personalizáveis**: Ajuste música e volume durante o jogo.
+As versões efetivamente resolvidas estão em `package-lock.json`. Os containers usam
+Node.js 20; o `package.json` ainda não declara uma versão em `engines`.
 
-## 🖼️ Capturas de Tela
+## Funcionalidades implementadas
 
-### Tela Inicial
+- Cadastro, login e logout de profissionais.
+- Edição do perfil do profissional.
+- Cadastro, listagem, edição e exclusão de pacientes.
+- Download de relatório PDF por paciente.
+- Calibração do rastreamento ocular com nove pontos.
+- Fase 1: envio de gaze e acompanhamento de cinco alvos.
+- Fase 2: duas rodadas de memória visual com mouse ou controle externo.
+- Fase 3: atenção alternada entre uma estrela e um sinalizador.
+- Exibição de métricas do experimento e dados comparativos do paciente.
+- Música por fase e elementos visuais animados.
 
-![Tela Inicial](public/img/screenshot-home.png)
+Não há implementação funcional de ranking, autenticação social, recuperação de
+senha ou busca de pacientes, embora existam elementos visuais relacionados a
+algumas dessas funcionalidades.
 
-### Tela de Jogo
+## Requisitos
 
-![Tela de Jogo](public/img/screenshot-game.png)
+- Node.js 20 recomendado, por ser a versão usada nos Dockerfiles.
+- npm e acesso a uma instância compatível do backend FocusQuest.
+- Navegador com suporte a câmera, `getUserMedia`, WebSocket e armazenamento local.
+- HTTPS ou `localhost` para conceder permissão de câmera.
 
-### Tela de Resultados
+## Configuração
 
-![Tela de Resultados](public/img/screenshot-results.png)
-
-## 🛠️ Tecnologias Utilizadas
-
-- **Next.js**: Framework principal da interface.
-- **React**: Biblioteca para construção da UI.
-- **TypeScript**: Tipagem estática do projeto.
-- **Tailwind CSS**: Estilização utilitária.
-- **Framer Motion**: Animações e transições.
-- **Socket.IO Client**: Comunicação em tempo real com o backend.
-- **Lucide React**: Ícones modernos e personalizáveis.
-
-## 📂 Estrutura do Projeto
-
-```plaintext
-FocusQuest-web/
-├── next.config.ts
-├── package.json
-├── postcss.config.mjs
-├── public/
-│   ├── audio/
-│   ├── img/
-│   └── mediapipe/
-├── src/
-│   ├── app/
-│   │   ├── apresentation/
-│   │   ├── calibration/
-│   │   ├── fase/
-│   │   ├── fichas/
-│   │   ├── menu/
-│   │   ├── settings/
-│   │   ├── signin/
-│   │   └── services/
-│   ├── components/
-│   │   ├── AnimatedElements/
-│   │   ├── Calibration/
-│   │   └── fase2/
-│   ├── config/
-│   ├── constants/
-│   ├── context/
-│   ├── hooks/
-│   ├── interface/
-│   ├── services/
-│   ├── types/
-│   └── utils/
-├── src/middleware.ts
-├── eslint.config.mjs
-├── tsconfig.json
-└── README.md
-```
-
-## 📦 Como Executar
-
-### Projeto Hospedado na GCP:
-- Link: https://focusquest-frontend-kxhuw4rwka-uc.a.run.app/
-
-### Pelo monorepo (recomendado)
-
-Se você quer subir frontend, backend, MongoDB e Redis juntos, use o monorepo.
-
-Monorepo: https://github.com/Grupo-Lira/focusquest-monorepo
-
-1. Clone o monorepo com os submodules:
+Crie o arquivo local de ambiente a partir do exemplo:
 
 ```bash
-git clone --recurse-submodules https://github.com/Grupo-Lira/focusquest-monorepo.git
-cd focusquest-monorepo
+cp .env.example .env.local
 ```
 
-2. Suba os serviços com Docker Compose:
+Variáveis usadas pela aplicação:
+
+| Variável | Finalidade |
+| --- | --- |
+| `NEXT_PUBLIC_API_URL` | URL pública do backend, usada pelo Socket.IO e como referência para os rewrites. |
+| `BACKEND_INTERNAL_URL` | URL do backend acessível pelo servidor Next.js, especialmente em Docker. |
+
+`NEXT_PUBLIC_API_URL` é exposta ao navegador e não deve conter segredos. Consulte
+[DEVELOPMENT.md](DEVELOPMENT.md) para as variáveis declaradas nos exemplos, mas que
+não são consumidas pelo código atual.
+
+## Execução local
+
+Instale exatamente as dependências do lockfile:
 
 ```bash
-docker compose up --build
+npm ci
 ```
 
-3. Acesse o frontend em `http://localhost:3000`.
-
-### Pelo frontend separado
-
-Se preferir rodar somente a interface, execute o frontend isoladamente.
-
-1. Clone o repositório:
-
-```bash
-git clone https://github.com/Grupo-Lira/FocusQuest-web.git
-cd FocusQuest-web
-```
-
-2. Instale as dependências:
-
-```bash
-npm install
-```
-
-3. Crie o arquivo de ambiente local a partir do exemplo e ajuste a URL da API, se necessário:
-
-```bash
-cp .env.example .env
-```
-
-4. Inicie o servidor de desenvolvimento:
+Inicie o servidor de desenvolvimento:
 
 ```bash
 npm run dev
 ```
 
-5. Acesse o jogo no navegador em `http://localhost:3000`.
+A aplicação ficará disponível, por padrão, em `http://localhost:3000`.
 
-## 🕹️ Como Jogar
+Para gerar e executar a build de produção:
 
-1. Selecione a opção **"Criar uma conta"**  
-   *(Essa funcionalidade é destinada aos doutores responsáveis pela aplicação do teste).*
+```bash
+npm run build
+npm run start
+```
 
-2. Preencha os campos:
-   - E-mail
-   - Senha
-   - Confirmar senha
+O repositório também contém `Dockerfile` e `Dockerfile.local`, mas não contém um
+arquivo Docker Compose próprio.
 
-   Em seguida, clique em **"Cadastrar"**.
+## Fluxo básico
 
-3. Faça login utilizando os dados cadastrados.
+```text
+login ou cadastro
+  -> apresentação
+  -> menu
+     -> fichas de pacientes
+     -> calibração
+     -> fase 1
+     -> fase 2
+     -> fase 3
+     -> métricas e relatório do paciente
+```
 
-4. No menu principal, selecione a opção **"Calibração"**.  
-   *(Sem essa etapa, as fases não funcionarão corretamente).*
+A calibração é necessária para a qualidade do rastreamento, mas o frontend atual
+não bloqueia as fases quando ela não foi concluída. As fases 1 e 2 solicitam a
+seleção de um paciente; a fase 3 reutiliza o paciente persistido no navegador.
 
-5. Após finalizar a calibração, as fases serão liberadas.  
-   Inicie pela **Fase 1**.
+## Estrutura resumida
 
-6. Ao iniciar a Fase 1, será exibida a opção **"Selecionar Paciente"**.
+```text
+src/app/          rotas, layout global e telas das fases
+src/components/   componentes compartilhados e componentes de domínio
+src/context/      estado global de jogo, áudio, paciente, toasts e Eye Tracking
+src/hooks/        Socket.IO e comportamentos auxiliares das fases
+src/services/     autenticação, usuários, pacientes e relatórios
+src/constants/    passos de tutorial, estrelas e tipos de controle
+src/config/       configuração dos elementos animados
+src/types/        contratos TypeScript de HTTP e métricas
+public/audio/     trilhas das três fases
+public/img/       imagens, ícones e screenshots
+public/mediapipe/ cópia local do Face Mesh; sem consumidor confirmado no código
+```
 
-7. Caso o banco de dados ainda não esteja populado, será necessário criar um perfil de paciente.
+## Estado das validações
 
-8. No menu principal:
-   - selecione **"Fichas"**
-   - clique em **"Criar nova ficha"**
-   - preencha os dados solicitados
-   - confirme a criação
+Ainda não foi identificada infraestrutura de testes automatizados.
 
-9. Após criar o paciente:
-   - volte para a Fase 1
-   - selecione o paciente criado
+O script `npm run lint` existe, mas a configuração ESLint atual contém um erro de
+sintaxe e precisa ser corrigida antes que o comando funcione. O typecheck também
+possui erros conhecidos. Veja a lista e os comandos de diagnóstico em
+[DEVELOPMENT.md](DEVELOPMENT.md).
 
-   O sistema entenderá que aquele paciente será o participante da sessão.
-   
-## 📖 Documentação do Código
+## Documentação
 
-### Contexto do Jogo
+- [ARCHITECTURE.md](ARCHITECTURE.md): rotas, providers, estado e integrações.
+- [docs/EYE_TRACKING.md](docs/EYE_TRACKING.md): WebGazer, calibração, câmera e ciclo de vida.
+- [docs/SOCKET_IO.md](docs/SOCKET_IO.md): conexão e eventos das três fases.
+- [DEVELOPMENT.md](DEVELOPMENT.md): ambiente, comandos, Docker e troubleshooting.
+- [AGENTS.md](AGENTS.md): regras operacionais para agentes de código.
 
-O contexto global do jogo é gerenciado pelo `GameContext`, que fornece estados como `hits`, `errors`, `timeLeft`, e funções para atualizá-los.
+## Capturas de tela
 
-### Lógica do Jogo
-
-A lógica principal do jogo está no hook `useGameLogic`, que gerencia as estrelas, nível de progresso e interações do jogador.
-
-### Configurações do Jogo
-
-Os elementos animados e suas configurações estão definidos em `gameConfig`.
-
-## 🛠️ Scripts Disponíveis
-
-`npm run dev`: Inicia o servidor de desenvolvimento.
-`npm run build`: Gera a build de produção.
-`npm run start`: Inicia o servidor de produção.
-`npm run lint`: Executa o linter para verificar erros no código.
+| Início | Jogo | Resultados |
+| --- | --- | --- |
+| ![Tela inicial](public/img/screenshot-home.png) | ![Tela de jogo](public/img/screenshot-game.png) | ![Tela de resultados](public/img/screenshot-results.png) |

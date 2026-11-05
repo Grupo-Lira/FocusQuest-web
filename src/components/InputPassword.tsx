@@ -1,5 +1,6 @@
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
+import { useT } from "@/i18n/client";
 
 type Props = {
   placeholder: string;
@@ -23,6 +24,7 @@ export const InputPassword = ({
   value,
 }: Readonly<Props>) => {
   const [showPassword, setShowPassword] = useState(false);
+  const t = useT();
 
   const onToggleVisibility = () => setShowPassword(!showPassword);
   const inputType = getInputType(showPassword);
@@ -31,7 +33,7 @@ export const InputPassword = ({
     <div className="relative">
       <input
         type={inputType}
-        placeholder={placeholder}
+        placeholder={t(placeholder)}
         onChange={onChange}
         name={name}
         value={value}
@@ -39,6 +41,7 @@ export const InputPassword = ({
       />
       <button
         type="button"
+        aria-label={t(showPassword ? "Ocultar senha" : "Mostrar senha")}
         onClick={onToggleVisibility}
         className="absolute right-4 top-3.5 text-gray-500"
       >

@@ -1,10 +1,11 @@
-import { Search, Plus } from "lucide-react";
+import { Search } from "lucide-react";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { RecordsTable } from "./RecordsTable";
 import { listPacientes } from "@/services/paciente.service";
 import { useEffect, useState } from "react";
 import { Paciente } from "@/types/paciente.types";
+import { T, useT } from "@/i18n/client";
 
 const noop = () => {};
 
@@ -44,7 +45,7 @@ export function RecordsScreen() {
     return (
       <Card title="Fichas">
         <div className="flex items-center justify-center py-8">
-          <p className="text-red-600">{error}</p>
+          <p className="text-red-600"><T text={error} /></p>
         </div>
       </Card>
     );
@@ -75,11 +76,12 @@ export function RecordsScreen() {
 }
 
 const SearchBar = () => {
+  const t = useT();
   return (
     <div className="flex items-center pl-4 h-10 rounded-full font-semibold bg-[var(--white)] text-[var(--text)] inner-shadow w-[400px]">
       <input
         type="text"
-        placeholder="Pesquisar por jogador"
+        placeholder={t("Pesquisar por jogador")}
         className="flex-grow bg-transparent outline-none text-sm"
       />
       <button
